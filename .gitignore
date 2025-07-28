@@ -42,3 +42,6 @@ Backend/database/*.db
 .vscode/
 *.swp
 *.swo
+
+# Ignore specific files that are not part of the project structure
+progress.md
