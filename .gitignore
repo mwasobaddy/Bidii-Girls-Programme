@@ -1,27 +1,44 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# Frontend dependencies and build files
+Frontend/node_modules/
+Frontend/.next/
+Frontend/out/
+Frontend/build/
 
-# next.js
-/.next/
-/out/
+# Backend dependencies (if any in future)
+Backend/node_modules/
 
-# production
-/build
+# Build files
+Backend/database/setup-database.sh
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# Environment files
 .env*
+Frontend/.env*
+Backend/.env*
 
-# vercel
+# Vercel
 .vercel
+Frontend/.vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+Frontend/next-env.d.ts
+
+# Database files (if any local db files are created)
+Backend/*.db
+Backend/*.sqlite
+Backend/database/*.db
+
+# IDE and OS files
+.DS_Store
+.vscode/
+*.swp
+*.swo

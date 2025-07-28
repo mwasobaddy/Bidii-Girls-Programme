@@ -28,34 +28,82 @@ import {
   Building,
   Tag,
   ImageIcon,
+  AlertCircle,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 
-// Mock data for existing content
-const mockBlogs = [
-  {
-    id: 1,
-    title: "Breaking the Silence: Why Period Education Matters",
-    category: "Education",
-    excerpt: "Exploring the importance of comprehensive menstrual health education...",
-    content: "Period education is crucial for empowering girls...",
-    author: "Sarah Wanjiku",
-    date: "March 15, 2024",
-    images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=400&width=600"],
-  },
-  {
-    id: 2,
-    title: "Success Story: How Maria Overcame Period Poverty",
-    category: "Success Stories",
-    excerpt: "Meet Maria, a 16-year-old from Kibera...",
-    content: "Maria's story is one of resilience...",
-    author: "Grace Muthoni",
-    date: "March 10, 2024",
-    images: ["/placeholder.svg?height=400&width=600"],
-  },
-]
+// Database Types
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  status: string;
+  progress: number;
+  budget: number;
+  raised: number;
+  beneficiaries: number;
+  start_date: string;
+  featured_image?: string;
+  created_at: string;
+  updated_at: string;
+}
 
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  author: string;
+  featured_image?: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  bio: string;
+  email: string;
+  image?: string;
+  order_index: number;
+}
+
+interface GalleryImage {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  image_url: string;
+  alt_text: string;
+  order_index: number;
+}
+
+interface DatabaseErrorProps {
+  message: string;
+}
+
+function DatabaseError({ message }: DatabaseErrorProps) {
+  return (
+    <div className="flex items-center justify-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+      <div className="text-center">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Database Error</h3>
+        <p className="text-red-600 dark:text-red-300 mb-4">{message}</p>
+        <p className="text-sm text-red-500 dark:text-red-400">
+          Please check your database connection or contact the administrator.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Mock data for features not yet implemented (will be replaced gradually)
 const mockCampaigns = [
   {
     id: 1,
@@ -79,20 +127,6 @@ const mockCampaigns = [
   },
 ]
 
-const mockProjects = [
-  {
-    id: 1,
-    title: "Menstrual Hygiene Education Program",
-    description:
-      "Comprehensive education program teaching girls about menstrual health, hygiene practices, and body positivity in 10 schools across Kibera slum.",
-    location: "Kibera, Nairobi",
-    status: "Completed",
-    beneficiaries: 250,
-    linkedBlog: 1,
-    featureImage: "/placeholder.svg?height=300&width=400",
-  },
-]
-
 const mockStories = [
   {
     id: 1,
@@ -102,31 +136,6 @@ const mockStories = [
     beneficiaryAge: "16",
     location: "Kibera, Nairobi",
     featureImage: "/placeholder.svg?height=300&width=400",
-  },
-]
-
-const mockTeamMembers = [
-  {
-    id: 1,
-    name: "Sarah Wanjiku",
-    role: "Founder & Executive Director",
-    bio: "Sarah founded Bidii Girls Program in 2021 after witnessing firsthand the challenges girls face due to period poverty.",
-    email: "sarah@bidiigirls.org",
-    facebook: "https://facebook.com/sarah.wanjiku",
-    instagram: "https://instagram.com/sarah_wanjiku",
-    tiktok: "",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 2,
-    name: "Grace Muthoni",
-    role: "Program Manager",
-    bio: "Grace oversees our educational programs and community outreach initiatives.",
-    email: "grace@bidiigirls.org",
-    facebook: "",
-    instagram: "https://instagram.com/grace_muthoni",
-    tiktok: "https://tiktok.com/@grace_muthoni",
-    image: "/placeholder.svg?height=200&width=200",
   },
 ]
 
@@ -145,23 +154,6 @@ const mockSponsors = [
   },
 ]
 
-const mockGalleryImages = [
-  {
-    id: 1,
-    title: "Menstrual Health Workshop",
-    category: "Education",
-    description: "Girls learning about menstrual health and hygiene practices",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 2,
-    title: "Sanitary Pad Distribution",
-    category: "Distribution",
-    description: "Monthly distribution of hygiene products to girls in need",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-]
-
 const mockCategories = [
   { id: 1, name: "Education", description: "Educational content and resources" },
   { id: 2, name: "Success Stories", description: "Inspiring success stories from beneficiaries" },
@@ -173,6 +165,8 @@ const mockCategories = [
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [editType, setEditType] = useState<string>("")
   const [viewingItem, setViewingItem] = useState<any>(null)
@@ -180,17 +174,19 @@ export default function AdminPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
 
-  // State for all content types
+  // Database-driven state
+  const [projects, setProjects] = useState<Project[]>([])
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
+
+  // Mock state for features not yet implemented
   const [partnershipApplications, setPartnershipApplications] = useState<any[]>([])
   const [volunteerApplications, setVolunteerApplications] = useState<any[]>([])
   const [categories, setCategories] = useState(mockCategories)
   const [campaigns, setCampaigns] = useState(mockCampaigns)
-  const [projects, setProjects] = useState(mockProjects)
   const [stories, setStories] = useState(mockStories)
-  const [blogs, setBlogs] = useState(mockBlogs)
-  const [teamMembers, setTeamMembers] = useState(mockTeamMembers)
   const [sponsors, setSponsors] = useState(mockSponsors)
-  const [galleryImages, setGalleryImages] = useState(mockGalleryImages)
 
   // Form states for all content types
   const [newBlog, setNewBlog] = useState({
@@ -199,6 +195,7 @@ export default function AdminPage() {
     category: "",
     excerpt: "",
     author: "",
+    featured_image: "",
     images: [] as string[],
   })
 
@@ -236,9 +233,6 @@ export default function AdminPage() {
     role: "",
     bio: "",
     email: "",
-    facebook: "",
-    instagram: "",
-    tiktok: "",
     image: "",
   })
 
@@ -263,10 +257,78 @@ export default function AdminPage() {
   const { toast } = useToast()
   const router = useRouter()
 
+  // Database fetching functions
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects');
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      const data = await response.json();
+      setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      setError('Failed to load projects from database');
+    }
+  };
+
+  const fetchBlogPosts = async () => {
+    try {
+      const response = await fetch('/api/blog');
+      if (!response.ok) throw new Error('Failed to fetch blog posts');
+      const data = await response.json();
+      setBlogPosts(data);
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      setError('Failed to load blog posts from database');
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch('/api/team');
+      if (!response.ok) throw new Error('Failed to fetch team members');
+      const data = await response.json();
+      setTeamMembers(data);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      setError('Failed to load team members from database');
+    }
+  };
+
+  const fetchGalleryImages = async () => {
+    try {
+      const response = await fetch('/api/gallery');
+      if (!response.ok) throw new Error('Failed to fetch gallery images');
+      const data = await response.json();
+      setGalleryImages(data);
+    } catch (error) {
+      console.error('Error fetching gallery images:', error);
+      setError('Failed to load gallery images from database');
+    }
+  };
+
+  const loadDatabaseData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await Promise.all([
+        fetchProjects(),
+        fetchBlogPosts(),
+        fetchTeamMembers(),
+        fetchGalleryImages()
+      ]);
+    } catch (error) {
+      console.error('Error loading database data:', error);
+      setError('Failed to connect to database');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const authStatus = localStorage.getItem("adminAuth")
     if (authStatus === "true") {
       setIsAuthenticated(true)
+      loadDatabaseData()
       // Load applications from localStorage
       const partners = JSON.parse(localStorage.getItem("partnershipApplications") || "[]")
       const volunteers = JSON.parse(localStorage.getItem("volunteerApplications") || "[]")
@@ -277,13 +339,24 @@ export default function AdminPage() {
     }
   }, [router])
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    })
-    router.push("/admin/login")
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem("adminAuth")
+      localStorage.removeItem("adminUser")
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out from the database.",
+      })
+      router.push("/admin/login")
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Error",
+        description: "There was an error logging out, but local session cleared.",
+      })
+      router.push("/admin/login")
+    }
   }
 
   const handleImageUpload = (setter: Function, field?: string) => {
@@ -350,6 +423,7 @@ export default function AdminPage() {
           category: item.category,
           excerpt: item.excerpt,
           author: item.author,
+          featured_image: item.featured_image || "",
           images: item.images || [],
         })
         break
@@ -416,7 +490,7 @@ export default function AdminPage() {
           setStories(stories.filter((item) => item.id !== id))
           break
         case "blog":
-          setBlogs(blogs.filter((item) => item.id !== id))
+          setBlogPosts(blogPosts.filter((item) => item.id !== id))
           break
         case "team":
           setTeamMembers(teamMembers.filter((item) => item.id !== id))
@@ -533,9 +607,9 @@ export default function AdminPage() {
           images: newBlog.images,
         }
         if (editingItem) {
-          setBlogs(blogs.map((item) => (item.id === editingItem.id ? blogData : item)))
+          setBlogPosts(blogPosts.map((item) => (item.id === editingItem.id ? blogData : item)))
         } else {
-          setBlogs([...blogs, blogData])
+          setBlogPosts([...blogPosts, blogData])
         }
         setNewBlog({
           title: "",
@@ -543,6 +617,7 @@ export default function AdminPage() {
           category: "",
           excerpt: "",
           author: "",
+          featured_image: "",
           images: [],
         })
         break
@@ -674,6 +749,7 @@ export default function AdminPage() {
       category: "",
       excerpt: "",
       author: "",
+      featured_image: "",
       images: [],
     })
     setNewTeamMember({
@@ -711,13 +787,36 @@ export default function AdminPage() {
     )
   }
 
+  if (loading) {
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400">Loading database content...</p>
+            </div>
+            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-transparent">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e51083]"></div>
+            <p className="ml-4 text-gray-600 dark:text-gray-400">Loading database content...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="pt-16 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your content, projects, campaigns, and team</p>
+            <p className="text-gray-600 dark:text-gray-400">Manage your database-driven content, projects, and team</p>
           </div>
           <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-transparent">
             <LogOut className="h-4 w-4" />
@@ -725,13 +824,19 @@ export default function AdminPage() {
           </Button>
         </div>
 
-        {/* Stats Overview */}
+        {error && (
+          <div className="mb-8">
+            <DatabaseError message={error} />
+          </div>
+        )}
+
+        {/* Stats Overview - Database-driven */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
           <Card className="hover:scale-105 transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Active Campaigns</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Mock Campaigns</p>
                   <p className="text-2xl font-bold">{campaigns.length}</p>
                 </div>
                 <Target className="h-8 w-8 text-[#e51083]" />
@@ -743,7 +848,7 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Completed Projects</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Database Projects</p>
                   <p className="text-2xl font-bold">{projects.length}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-[#e51083]" />
@@ -755,7 +860,7 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Success Stories</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Mock Stories</p>
                   <p className="text-2xl font-bold">{stories.length}</p>
                 </div>
                 <Heart className="h-8 w-8 text-[#e51083]" />
@@ -767,8 +872,8 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Blog Posts</p>
-                  <p className="text-2xl font-bold">{blogs.length}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Database Blogs</p>
+                  <p className="text-2xl font-bold">{blogPosts.length}</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-[#e51083]" />
               </div>
@@ -801,15 +906,15 @@ export default function AdminPage() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="campaigns" className="space-y-6">
+        <Tabs defaultValue="projects" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="projects">DB Projects</TabsTrigger>
             <TabsTrigger value="stories">Stories</TabsTrigger>
-            <TabsTrigger value="blogs">Blogs</TabsTrigger>
-            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="blogs">DB Blogs</TabsTrigger>
+            <TabsTrigger value="team">DB Team</TabsTrigger>
             <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
-            <TabsTrigger value="gallery">Gallery</TabsTrigger>
+            <TabsTrigger value="gallery">DB Gallery</TabsTrigger>
             <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
@@ -906,7 +1011,7 @@ export default function AdminPage() {
                           <SelectValue placeholder="Select a blog post" />
                         </SelectTrigger>
                         <SelectContent>
-                          {blogs.map((blog) => (
+                          {blogPosts.map((blog) => (
                             <SelectItem key={blog.id} value={blog.id.toString()}>
                               {blog.title}
                             </SelectItem>
@@ -1121,7 +1226,7 @@ export default function AdminPage() {
                           <SelectValue placeholder="Select a blog post" />
                         </SelectTrigger>
                         <SelectContent>
-                          {blogs.map((blog) => (
+                          {blogPosts.map((blog) => (
                             <SelectItem key={blog.id} value={blog.id.toString()}>
                               {blog.title}
                             </SelectItem>
@@ -1174,61 +1279,83 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <Card key={project.id} className="overflow-hidden">
-                  <div className="relative">
-                    <Image
-                      src={project.featureImage || "/placeholder.svg"}
-                      alt={project.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge className="absolute top-2 right-2 bg-green-500">{project.status}</Badge>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{project.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <span className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {project.beneficiaries} girls
-                      </span>
+              {projects.length > 0 ? (
+                projects.map((project) => (
+                  <Card key={project.id} className="overflow-hidden">
+                    <div className="relative">
+                      <Image
+                        src={project.featured_image || "/placeholder.svg"}
+                        alt={project.title}
+                        width={400}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                      <Badge className="absolute top-2 right-2 bg-green-500">{project.status}</Badge>
+                      <Badge className="absolute top-2 left-2 bg-blue-500">{project.progress}%</Badge>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleView(project, "project")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(project, "project")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(project.id, "project")}
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardHeader>
+                      <CardTitle className="text-lg">{project.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
+                      <div className="space-y-2 text-sm text-gray-500 mb-4">
+                        <span className="flex items-center">
+                          <Users className="h-4 w-4 mr-1" />
+                          {project.beneficiaries} beneficiaries
+                        </span>
+                        <span className="flex items-center">
+                          <Target className="h-4 w-4 mr-1" />
+                          Location: {project.location}
+                        </span>
+                        <div className="flex justify-between">
+                          <span>Budget: ${project.budget?.toLocaleString()}</span>
+                          <span>Raised: ${project.raised?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleView(project, "project")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(project, "project")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(project.id, "project")}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-400">
+                        Database ID: {project.id} • Created: {new Date(project.created_at).toLocaleDateString()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Projects Found</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No projects are currently available in the database. Create your first project to get started.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -1538,69 +1665,82 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {blogs.map((blog) => (
-                <Card key={blog.id} className="overflow-hidden">
-                  <div className="relative">
-                    <Image
-                      src={blog.images?.[0] || "/placeholder.svg"}
-                      alt={blog.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge className="absolute top-2 left-2 bg-[#e51083]">{blog.category}</Badge>
-                    {blog.images && blog.images.length > 1 && (
-                      <Badge className="absolute top-2 right-2 bg-black/70 text-white">
-                        <ImageIcon className="h-3 w-3 mr-1" />
-                        {blog.images.length}
+              {blogPosts.length > 0 ? (
+                blogPosts.map((blog) => (
+                  <Card key={blog.id} className="overflow-hidden">
+                    <div className="relative">
+                      <Image
+                        src={blog.featured_image || "/placeholder.svg"}
+                        alt={blog.title}
+                        width={400}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                      <Badge className="absolute top-2 left-2 bg-[#e51083]">{blog.category}</Badge>
+                      <Badge className="absolute top-2 right-2 bg-green-500">
+                        {blog.published ? 'Published' : 'Draft'}
                       </Badge>
-                    )}
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg line-clamp-2">{blog.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      <p>
-                        <strong>Author:</strong> {blog.author}
-                      </p>
-                      <p>
-                        <strong>Date:</strong> {blog.date}
-                      </p>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{blog.excerpt}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleView(blog, "blog")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(blog, "blog")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(blog.id, "blog")}
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardHeader>
+                      <CardTitle className="text-lg line-clamp-2">{blog.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <p>
+                          <strong>Author:</strong> {blog.author}
+                        </p>
+                        <p>
+                          <strong>Created:</strong> {new Date(blog.created_at).toLocaleDateString()}
+                        </p>
+                        <p>
+                          <strong>Slug:</strong> {blog.slug}
+                        </p>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{blog.excerpt}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleView(blog, "blog")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(blog, "blog")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(blog.id, "blog")}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-400">
+                        Database ID: {blog.id} • Updated: {new Date(blog.updated_at).toLocaleDateString()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Blog Posts Found</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No blog posts are currently available in the database. Create your first blog post to get started.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -1741,62 +1881,79 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teamMembers.map((member) => (
-                <Card key={member.id} className="overflow-hidden">
-                  <div className="relative">
-                    <Image
-                      src={member.image || "/placeholder.svg"}
-                      alt={member.name}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{member.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      <p>
-                        <strong>Role:</strong> {member.role}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {member.email}
-                      </p>
+              {teamMembers.length > 0 ? (
+                teamMembers.map((member) => (
+                  <Card key={member.id} className="overflow-hidden">
+                    <div className="relative">
+                      <Image
+                        src={member.image || "/placeholder.svg"}
+                        alt={member.name}
+                        width={400}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                      <Badge className="absolute top-2 right-2 bg-blue-500">ID: {member.id}</Badge>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{member.bio}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleView(member, "team")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(member, "team")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(member.id, "team")}
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardHeader>
+                      <CardTitle className="text-lg">{member.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <p>
+                          <strong>Role:</strong> {member.role}
+                        </p>
+                        <p>
+                          <strong>Email:</strong> {member.email}
+                        </p>
+                        <p>
+                          <strong>Order:</strong> {member.order_index}
+                        </p>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{member.bio}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleView(member, "team")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(member, "team")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(member.id, "team")}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-400">
+                        Database Team Member • Order Position: {member.order_index}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Team Members Found</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No team members are currently available in the database. Add your first team member to get started.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -2040,55 +2197,69 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {galleryImages.map((item) => (
-                <Card key={item.id} className="overflow-hidden group">
-                  <div className="relative">
-                    <Image
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge className="absolute top-2 left-2 bg-black/70 text-white">{item.category}</Badge>
-                  </div>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.description}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleView(item, "gallery")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(item, "gallery")}
-                        className="flex-1 bg-transparent"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(item.id, "gallery")}
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
+              {galleryImages.length > 0 ? (
+                galleryImages.map((item) => (
+                  <Card key={item.id} className="overflow-hidden group">
+                    <div className="relative">
+                      <Image
+                        src={item.image_url || "/placeholder.svg"}
+                        alt={item.alt_text || item.title}
+                        width={300}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                      <Badge className="absolute top-2 left-2 bg-black/70 text-white">{item.category}</Badge>
+                      <Badge className="absolute top-2 right-2 bg-blue-500">#{item.order_index}</Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">{item.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.description}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleView(item, "gallery")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(item, "gallery")}
+                          className="flex-1 bg-transparent"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(item.id, "gallery")}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-400">
+                        Database ID: {item.id} • Alt Text: {item.alt_text}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <ImageIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Gallery Images Found</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No gallery images are currently available in the database. Upload your first image to get started.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
 

@@ -1,143 +1,113 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, User, Clock, ChevronLeft, ChevronRight, Share2 } from "lucide-react"
+import { ArrowLeft, Calendar, User, Clock, ChevronLeft, ChevronRight, Share2, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
-// Mock blog data - in real app, this would come from your database
-const blogPosts = {
-  "1": {
-    id: 1,
-    title: "Breaking the Silence: Why Period Education Matters",
-    content: `
-      <p>Period education is crucial for empowering girls and breaking down harmful stigmas that have persisted for generations. In many communities across Kenya, menstruation is still considered a taboo subject, leading to misinformation, shame, and ultimately, girls missing school during their periods.</p>
-      
-      <h2>The Current Situation</h2>
-      <p>According to recent studies, 1 in 10 girls in sub-Saharan Africa miss school during their menstrual period. This absence can lead to falling behind in studies, lower academic performance, and in some cases, dropping out of school entirely.</p>
-      
-      <h2>Our Approach</h2>
-      <p>At Bidii Girls Program, we believe that comprehensive menstrual health education is the foundation of change. Our workshops cover:</p>
-      <ul>
-        <li>Basic anatomy and menstrual cycle understanding</li>
-        <li>Proper hygiene practices</li>
-        <li>Myth-busting and addressing cultural taboos</li>
-        <li>Building confidence and self-esteem</li>
-      </ul>
-      
-      <h2>Impact Stories</h2>
-      <p>Since launching our education program, we've seen remarkable changes in the communities we serve. Girls are more confident, attendance rates have improved by 95%, and mothers are now having open conversations with their daughters about menstrual health.</p>
-      
-      <p>Education is the key to breaking the cycle of period poverty and empowering the next generation of girls to reach their full potential.</p>
-    `,
-    excerpt:
-      "Exploring the importance of comprehensive menstrual health education in breaking down stigma and empowering young girls.",
-    category: "Education",
-    author: "Sarah Wanjiku",
-    date: "March 15, 2024",
-    readTime: "5 min read",
-    images: [
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-    ],
-  },
-  "2": {
-    id: 2,
-    title: "Success Story: How Maria Overcame Period Poverty",
-    content: `
-      <p>Maria's story is one of resilience, determination, and the transformative power of support. At 16 years old, Maria was on the verge of dropping out of school due to period poverty when she first encountered our program.</p>
-      
-      <h2>The Challenge</h2>
-      <p>Living in Kibera with her grandmother, Maria couldn't afford sanitary products. Every month, she would miss 3-4 days of school, using old rags or staying home entirely. Her grades were suffering, and she felt hopeless about her future.</p>
-      
-      <h2>The Intervention</h2>
-      <p>When our team visited Maria's school, she was one of the first to join our menstrual health program. We provided her with:</p>
-      <ul>
-        <li>A year's supply of reusable sanitary pads</li>
-        <li>Comprehensive menstrual health education</li>
-        <li>Confidence-building workshops</li>
-        <li>Academic support and mentoring</li>
-      </ul>
-      
-      <h2>The Transformation</h2>
-      <p>Within six months, Maria's attendance improved to 100%. Her grades went from failing to being in the top 10% of her class. More importantly, she became a peer educator, helping other girls in her community.</p>
-      
-      <p>Today, Maria is in her final year of secondary school and dreams of becoming a doctor. She continues to volunteer with our program, proving that when we invest in girls, they become agents of change in their communities.</p>
-    `,
-    excerpt: "Meet Maria, a 16-year-old from Kibera who transformed her life through our menstrual hygiene program.",
-    category: "Success Stories",
-    author: "Grace Muthoni",
-    date: "March 10, 2024",
-    readTime: "3 min read",
-    images: [
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-    ],
-  },
-  "3": {
-    id: 3,
-    title: "The Economic Impact of Period Poverty in Kenya",
-    content: `
-      <p>Period poverty has far-reaching economic consequences that extend beyond individual girls to affect entire communities and the nation's development. Understanding these impacts is crucial for developing effective interventions.</p>
-      
-      <h2>Direct Economic Costs</h2>
-      <p>The average Kenyan girl spends approximately 2,000 KES annually on menstrual products. For families living on less than $2 per day, this represents a significant portion of their income, often forcing difficult choices between basic needs.</p>
-      
-      <h2>Educational Disruption</h2>
-      <p>When girls miss school due to their periods, the economic impact compounds over time:</p>
-      <ul>
-        <li>Lower educational attainment leads to reduced earning potential</li>
-        <li>Early marriage and pregnancy rates increase</li>
-        <li>Intergenerational poverty cycles continue</li>
-      </ul>
-      
-      <h2>Workplace Impact</h2>
-      <p>Adult women also face challenges in the workplace due to inadequate menstrual hygiene facilities and cultural stigma, leading to:</p>
-      <ul>
-        <li>Reduced productivity during menstrual periods</li>
-        <li>Increased absenteeism</li>
-        <li>Limited career advancement opportunities</li>
-      </ul>
-      
-      <h2>The Solution</h2>
-      <p>Investing in menstrual health and hygiene programs yields significant returns. For every $1 invested in menstrual health, there's an estimated $5 return in economic benefits through improved education, health, and productivity outcomes.</p>
-      
-      <p>Our comprehensive approach addresses not just the immediate need for products, but also the systemic barriers that perpetuate period poverty.</p>
-    `,
-    excerpt:
-      "Understanding how period poverty affects girls' education and economic opportunities in Kenyan communities.",
-    category: "Research",
-    author: "David Kimani",
-    date: "March 5, 2024",
-    readTime: "7 min read",
-    images: [
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-      "/placeholder.svg?height=400&width=600",
-    ],
-  },
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  author: string;
+  date: string;
+  readTime: string;
+  image: string;
+  images: string[];
+}
+
+// Error fallback component
+function DatabaseError({ message }: { message: string }) {
+  return (
+    <div className="pt-16 min-h-screen flex items-center justify-center">
+      <div className="text-center max-w-md mx-auto">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
+            Database Connection Error
+          </h2>
+          <p className="text-red-600 dark:text-red-300 mb-6">
+            {message}
+          </p>
+          <Link href="/blog">
+            <Button className="bg-[#e51083] hover:bg-[#c50e73]">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Blog
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function BlogPostPage() {
   const params = useParams()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const post = blogPosts[params.id as keyof typeof blogPosts]
+  useEffect(() => {
+    async function fetchPost() {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/blog/${params.id}`)
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Post not found')
+          } else {
+            const errorData = await response.json()
+            setError(errorData.error || 'Failed to fetch blog post')
+          }
+          return
+        }
+
+        const postData = await response.json()
+        setPost(postData)
+      } catch (err) {
+        console.error('Error fetching blog post:', err)
+        setError('Failed to connect to the database. Please check your database configuration.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (params.id) {
+      fetchPost()
+    }
+  }, [params.id])
+
+  if (loading) {
+    return (
+      <div className="pt-16 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e51083] mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading blog post...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <DatabaseError message={error} />
+  }
 
   if (!post) {
     return (
       <div className="pt-16 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Post Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            The blog post you're looking for doesn't exist or has been removed.
+          </p>
           <Link href="/blog">
             <Button className="bg-[#e51083] hover:bg-[#c50e73]">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -150,11 +120,11 @@ export default function BlogPostPage() {
   }
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % post.images.length)
+    setCurrentImageIndex((prev) => (prev + 1) % (post.images?.length || 1))
   }
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + post.images.length) % post.images.length)
+    setCurrentImageIndex((prev) => (prev - 1 + (post.images?.length || 1)) % (post.images?.length || 1))
   }
 
   return (
@@ -202,7 +172,7 @@ export default function BlogPostPage() {
             {/* Featured Image */}
             <div className="mb-12 animate-fade-in-up">
               <Image
-                src="/placeholder.svg?height=500&width=800"
+                src={post.image || "/placeholder.svg?height=500&width=800"}
                 alt={post.title}
                 width={800}
                 height={500}

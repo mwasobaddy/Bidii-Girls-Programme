@@ -8,37 +8,91 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Heart } from "lucide-react"
+import { Heart, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+
+interface LoginResponse {
+  success: boolean;
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+  };
+  error?: string;
+}
+
+interface DatabaseErrorProps {
+  message: string;
+}
+
+function DatabaseError({ message }: DatabaseErrorProps) {
+  return (
+    <div className="flex items-center justify-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+      <div className="text-center">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Authentication Error</h3>
+        <p className="text-red-600 dark:text-red-300 mb-4">{message}</p>
+        <p className="text-sm text-red-500 dark:text-red-400">
+          Please check your credentials or contact the administrator.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminLoginPage() {
   const [credentials, setCredentials] = useState({ email: "", password: "" })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (credentials.email === "admin@bidiigirls.org" && credentials.password === "admin123") {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      const data: LoginResponse = await response.json();
+
+      if (data.success && data.user) {
+        // Store user info in localStorage for client-side checks
         localStorage.setItem("adminAuth", "true")
+        localStorage.setItem("adminUser", JSON.stringify(data.user))
+        
         toast({
           title: "Login Successful",
-          description: "Welcome to the admin dashboard!",
+          description: `Welcome back, ${data.user.email}! Authenticated via database.`,
         })
+        
         router.push("/admin")
       } else {
+        setError(data.error || "Authentication failed")
         toast({
           title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
+          description: data.error || "Invalid credentials from database",
           variant: "destructive",
         })
       }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError("Failed to connect to authentication server")
+      toast({
+        title: "Connection Error",
+        description: "Unable to reach the authentication server. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -50,9 +104,15 @@ export default function AdminLoginPage() {
             <span className="text-xl font-bold">Bidii Girls Admin</span>
           </div>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <p className="text-gray-600 dark:text-gray-400">Access the admin dashboard</p>
+          <p className="text-gray-600 dark:text-gray-400">Access the admin dashboard via database authentication</p>
         </CardHeader>
         <CardContent>
+          {error ? (
+            <div className="mb-6">
+              <DatabaseError message={error} />
+            </div>
+          ) : null}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -63,6 +123,7 @@ export default function AdminLoginPage() {
                 value={credentials.email}
                 onChange={(e) => setCredentials((prev) => ({ ...prev, email: e.target.value }))}
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -74,20 +135,28 @@ export default function AdminLoginPage() {
                 value={credentials.password}
                 onChange={(e) => setCredentials((prev) => ({ ...prev, password: e.target.value }))}
                 required
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]" disabled={isLoading}>
-              {isLoading ? "Signing In..." : "Sign In"}
+            <Button 
+              type="submit" 
+              className="w-full bg-[#e51083] hover:bg-[#c50e73]" 
+              disabled={isLoading}
+            >
+              {isLoading ? "Authenticating via Database..." : "Sign In"}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Demo Credentials:</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Database Demo Credentials:</p>
             <p className="text-sm">
               <strong>Email:</strong> admin@bidiigirls.org
             </p>
             <p className="text-sm">
               <strong>Password:</strong> admin123
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+              Authentication is handled via MySQL database with secure password hashing.
             </p>
           </div>
         </CardContent>

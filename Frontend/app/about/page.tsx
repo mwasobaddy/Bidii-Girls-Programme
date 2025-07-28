@@ -1,63 +1,82 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { Mail, Linkedin, Twitter } from "lucide-react"
+import { Mail, Linkedin, Twitter, AlertCircle } from "lucide-react"
 
-const teamMembers = [
-  {
-    id: 1,
-    name: "Sarah Wanjiku",
-    role: "Founder & Executive Director",
-    image: "/placeholder.svg?height=300&width=300",
-    bio: "Sarah founded Bidii Girls Program in 2021 after witnessing firsthand the challenges girls face due to period poverty. With over 10 years of experience in community development, she leads our mission with passion and dedication.",
-    email: "sarah@bidiigirls.org",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    id: 2,
-    name: "Grace Muthoni",
-    role: "Program Manager",
-    image: "/placeholder.svg?height=300&width=300",
-    bio: "Grace oversees our educational programs and community outreach initiatives. Her background in social work and her deep understanding of local communities make her invaluable to our mission.",
-    email: "grace@bidiigirls.org",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    id: 3,
-    name: "David Kimani",
-    role: "Operations Director",
-    image: "/placeholder.svg?height=300&width=300",
-    bio: "David manages our day-to-day operations and ensures efficient distribution of resources. His expertise in logistics and supply chain management helps us reach more girls effectively.",
-    email: "david@bidiigirls.org",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    id: 4,
-    name: "Mary Akinyi",
-    role: "Community Coordinator",
-    image: "/placeholder.svg?height=300&width=300",
-    bio: "Mary works directly with schools and communities to implement our programs. Her grassroots approach and cultural sensitivity ensure our initiatives are well-received and effective.",
-    email: "mary@bidiigirls.org",
-    linkedin: "#",
-    twitter: "#",
-  },
-]
+interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  bio: string;
+  email: string;
+  image?: string;
+  order_index: number;
+}
+
+// Error fallback component
+function DatabaseError({ message }: { message: string }) {
+  return (
+    <div className="container mx-auto px-4 py-20">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
+            Database Connection Error
+          </h2>
+          <p className="text-red-600 dark:text-red-300 mb-6">
+            {message}
+          </p>
+          <div className="space-y-4">
+            <p className="text-sm text-red-500 dark:text-red-400">
+              Please ensure your database connection is working properly.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AboutPage() {
-  const [selectedMember, setSelectedMember] = useState<(typeof teamMembers)[0] | null>(null)
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchTeamMembers() {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/team')
+        
+        if (!response.ok) {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to fetch team members')
+          return
+        }
+
+        const members = await response.json()
+        setTeamMembers(members)
+      } catch (err) {
+        console.error('Error fetching team members:', err)
+        setError('Failed to connect to the database. Please check your database configuration.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTeamMembers()
+  }, [])
 
   // Scroll to top when component mounts
-  useState(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
-  })
+  }, [])
 
   return (
     <div className="pt-16">
@@ -174,32 +193,57 @@ export default function AboutPage() {
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member) => (
-              <Card
-                key={member.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setSelectedMember(member)}
-              >
-                <CardContent className="p-6 text-center">
-                  <Image
-                    src={member.image || "/placeholder.svg"}
-                    alt={member.name}
-                    width={200}
-                    height={200}
-                    className="rounded-full mx-auto mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
-                  <Badge variant="secondary" className="mb-4">
-                    {member.role}
-                  </Badge>
-                  <Button variant="outline" size="sm">
-                    View Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e51083]"></div>
+              <p className="ml-4 text-gray-600 dark:text-gray-400">Loading team members...</p>
+            </div>
+          ) : error ? (
+            <DatabaseError message={error} />
+          ) : teamMembers.length > 0 ? (
+            <>
+              <div className="mb-8 text-center">
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  Meet our {teamMembers.length} dedicated team member{teamMembers.length !== 1 ? 's' : ''} from our database
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {teamMembers.map((member) => (
+                  <Card
+                    key={member.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow duration-300 hover:scale-105"
+                    onClick={() => setSelectedMember(member)}
+                  >
+                    <CardContent className="p-6 text-center">
+                      <Image
+                        src={member.image || "/placeholder.svg"}
+                        alt={member.name}
+                        width={200}
+                        height={200}
+                        className="rounded-full mx-auto mb-4 border-4 border-gray-100 dark:border-gray-700"
+                      />
+                      <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
+                      <Badge variant="secondary" className="mb-4">
+                        {member.role}
+                      </Badge>
+                      <Button variant="outline" size="sm" className="hover:bg-[#e51083] hover:text-white transition-colors">
+                        View Profile
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-20">
+              <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Team Members Found</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                No team members are currently available. Please check back later or contact the administrator.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -218,7 +262,7 @@ export default function AboutPage() {
                     alt={selectedMember.name}
                     width={200}
                     height={200}
-                    className="rounded-full mx-auto mb-4"
+                    className="rounded-full mx-auto mb-4 border-4 border-gray-100 dark:border-gray-700"
                   />
                   <Badge variant="secondary" className="text-lg px-4 py-2">
                     {selectedMember.role}
@@ -228,41 +272,29 @@ export default function AboutPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold mb-2">About</h3>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{selectedMember.bio}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Experience & Background</h3>
                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                      With extensive experience in community development and social work, {selectedMember.name} brings
-                      valuable expertise to our mission. Their dedication to empowering girls and fighting period
-                      poverty has been instrumental in our success.
+                      {selectedMember.bio || "Biography information not available for this team member."}
                     </p>
                   </div>
 
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Contact & Social Media</h3>
-                    <div className="flex flex-col space-y-3">
+                  <div className="border-t pt-4">
+                    <h3 className="text-lg font-semibold mb-2">Database Information</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">Team Member ID: {selectedMember.id}</Badge>
+                      <Badge variant="outline">Role: {selectedMember.role}</Badge>
+                      <Badge variant="outline">Order: {selectedMember.order_index}</Badge>
+                    </div>
+                  </div>
+
+                  {selectedMember.email && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Contact Information</h3>
                       <div className="flex items-center space-x-3">
                         <Mail className="h-5 w-5 text-[#e51083]" />
                         <span className="text-gray-600 dark:text-gray-400">{selectedMember.email}</span>
                       </div>
-                      <div className="flex space-x-4">
-                        <Button variant="outline" size="sm" className="flex items-center space-x-2 bg-transparent">
-                          <Linkedin className="h-4 w-4" />
-                          <span>LinkedIn</span>
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex items-center space-x-2 bg-transparent">
-                          <Twitter className="h-4 w-4" />
-                          <span>Twitter</span>
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex items-center space-x-2 bg-transparent">
-                          <Mail className="h-4 w-4" />
-                          <span>Email</span>
-                        </Button>
-                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </>
