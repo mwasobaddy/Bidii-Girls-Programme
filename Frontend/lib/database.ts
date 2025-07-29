@@ -41,6 +41,23 @@ export async function executeQuery<T = any>(
   }
 }
 
+export async function executeInsert(
+  query: string,
+  params: any[] = []
+): Promise<{ insertId: number; affectedRows: number }> {
+  try {
+    const [result] = await pool.execute(query, params);
+    const insertResult = result as any;
+    return {
+      insertId: insertResult.insertId,
+      affectedRows: insertResult.affectedRows
+    };
+  } catch (error) {
+    console.error('Database insert error:', error);
+    throw error;
+  }
+}
+
 export async function executeQuerySingle<T = any>(
   query: string,
   params: any[] = []

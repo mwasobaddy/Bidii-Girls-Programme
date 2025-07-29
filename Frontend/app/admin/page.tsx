@@ -282,13 +282,45 @@ export default function AdminPage() {
 
   const fetchBlogPosts = async () => {
     try {
-      const response = await fetch('/api/blog');
+      const response = await fetch('/api/blog?admin=true');
       if (!response.ok) throw new Error('Failed to fetch blog posts');
       const data = await response.json();
       setBlogPosts(data);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
       setError('Failed to load blog posts from database');
+    }
+  };
+
+  const fetchStories = async () => {
+    try {
+      const response = await fetch('/api/blog?admin=true');
+      if (!response.ok) throw new Error('Failed to fetch stories');
+      const data = await response.json();
+      // Filter blog posts that are success stories
+      const storiesData = data
+        .filter((post: any) => post.category === 'Success Stories')
+        .map((post: any) => {
+          // Try to extract beneficiary info from content
+          const lines = post.content.split('\n');
+          const beneficiaryLine = lines.find((line: string) => line.includes('**Beneficiary:**'));
+          const ageLine = lines.find((line: string) => line.includes('**Age:**'));
+          const locationLine = lines.find((line: string) => line.includes('**Location:**'));
+          
+          return {
+            id: post.id,
+            title: post.title,
+            content: lines[0] || post.excerpt || '', // First line as main content
+            beneficiaryName: beneficiaryLine ? beneficiaryLine.replace('**Beneficiary:**', '').trim() : '',
+            beneficiaryAge: ageLine ? ageLine.replace('**Age:**', '').trim() : '',
+            location: locationLine ? locationLine.replace('**Location:**', '').trim() : '',
+            featureImage: post.featured_image || '',
+          };
+        });
+      setStories(storiesData);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+      setError('Failed to load stories from database');
     }
   };
 
@@ -323,6 +355,7 @@ export default function AdminPage() {
       await Promise.all([
         fetchProjects(),
         fetchBlogPosts(),
+        fetchStories(),
         fetchTeamMembers(),
         fetchGalleryImages()
       ]);
@@ -481,53 +514,92 @@ export default function AdminPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: number, type: string) => {
+  const handleDelete = async (id: number, type: string) => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-      switch (type) {
-        case "partnership":
-          const updatedPartners = partnershipApplications.filter((app) => app.id !== id)
-          setPartnershipApplications(updatedPartners)
-          localStorage.setItem("partnershipApplications", JSON.stringify(updatedPartners))
-          break
-        case "volunteer":
-          const updatedVolunteers = volunteerApplications.filter((app) => app.id !== id)
-          setVolunteerApplications(updatedVolunteers)
-          localStorage.setItem("volunteerApplications", JSON.stringify(updatedVolunteers))
-          break
-        case "category":
-          setCategories(categories.filter((cat) => cat.id !== id))
-          break
-        case "campaign":
-          setCampaigns(campaigns.filter((item) => item.id !== id))
-          break
-        case "project":
-          setProjects(projects.filter((item) => item.id !== id))
-          break
-        case "story":
-          setStories(stories.filter((item) => item.id !== id))
-          break
-        case "blog":
-          setBlogPosts(blogPosts.filter((item) => item.id !== id))
-          break
-        case "team":
-          setTeamMembers(teamMembers.filter((item) => item.id !== id))
-          break
-        case "sponsor":
-          setSponsors(sponsors.filter((item) => item.id !== id))
-          break
-        case "gallery":
-          setGalleryImages(galleryImages.filter((item) => item.id !== id))
-          break
-      }
+      try {
+        switch (type) {
+          case "partnership":
+            const updatedPartners = partnershipApplications.filter((app) => app.id !== id)
+            setPartnershipApplications(updatedPartners)
+            localStorage.setItem("partnershipApplications", JSON.stringify(updatedPartners))
+            break
+          case "volunteer":
+            const updatedVolunteers = volunteerApplications.filter((app) => app.id !== id)
+            setVolunteerApplications(updatedVolunteers)
+            localStorage.setItem("volunteerApplications", JSON.stringify(updatedVolunteers))
+            break
+          case "category":
+            setCategories(categories.filter((cat) => cat.id !== id))
+            break
+          case "campaign":
+            setCampaigns(campaigns.filter((item) => item.id !== id))
+            break
+          case "project":
+            // Delete from database
+            const response = await fetch(`/api/projects?id=${id}`, {
+              method: 'DELETE',
+            });
 
-      toast({
-        title: "Item Deleted",
-        description: `${type} has been deleted successfully.`,
-      })
+            if (!response.ok) {
+              throw new Error('Failed to delete project');
+            }
+
+            // Update local state
+            setProjects(projects.filter((item) => item.id !== id))
+            break
+          case "story":
+            // Delete story from database (as blog post)
+            const storyResponse = await fetch(`/api/blog?id=${id}`, {
+              method: 'DELETE',
+            });
+
+            if (!storyResponse.ok) {
+              throw new Error('Failed to delete story');
+            }
+
+            // Update local state
+            setStories(stories.filter((item) => item.id !== id))
+            break
+          case "blog":
+            // Delete blog post from database
+            const blogResponse = await fetch(`/api/blog?id=${id}`, {
+              method: 'DELETE',
+            });
+
+            if (!blogResponse.ok) {
+              throw new Error('Failed to delete blog post');
+            }
+
+            // Update local state
+            setBlogPosts(blogPosts.filter((item) => item.id !== id))
+            break
+          case "team":
+            setTeamMembers(teamMembers.filter((item) => item.id !== id))
+            break
+          case "sponsor":
+            setSponsors(sponsors.filter((item) => item.id !== id))
+            break
+          case "gallery":
+            setGalleryImages(galleryImages.filter((item) => item.id !== id))
+            break
+        }
+
+        toast({
+          title: "Item Deleted",
+          description: `${type} has been deleted successfully.`,
+        })
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        toast({
+          title: "Error",
+          description: `Failed to delete ${type}. Please try again.`,
+          variant: "destructive",
+        });
+      }
     }
   }
 
-  const handleSubmit = (e: React.FormEvent, type: string) => {
+  const handleSubmit = async (e: React.FormEvent, type: string) => {
     e.preventDefault()
 
     const newId = editingItem?.id || Date.now()
@@ -561,100 +633,246 @@ export default function AdminPage() {
         break
 
       case "Project":
-        const projectData = {
-          id: newId,
-          title: newProject.title,
-          description: newProject.description,
-          location: newProject.location,
-          status: newProject.status,
-          beneficiaries: Number.parseInt(newProject.beneficiaries),
-          linkedBlog: newProject.linkedBlog ? Number.parseInt(newProject.linkedBlog) : null,
-          featureImage: newProject.featureImage,
-          progress: Number.parseInt(newProject.progress) || 0,
-          budget: Number.parseInt(newProject.budget) || 0,
-          raised: Number.parseInt(newProject.raised) || 0,
-          start_date: newProject.start_date,
-          end_date: newProject.end_date,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+        try {
+          const projectData = {
+            title: newProject.title,
+            description: newProject.description,
+            location: newProject.location,
+            status: newProject.status,
+            beneficiaries: newProject.beneficiaries ? Number.parseInt(newProject.beneficiaries) : null,
+            featureImage: newProject.featureImage,
+            progress: Number.parseInt(newProject.progress) || 0,
+            budget: newProject.budget ? Number.parseInt(newProject.budget) : null,
+            raised: Number.parseInt(newProject.raised) || 0,
+            start_date: newProject.start_date || null,
+          }
+
+          if (editingItem) {
+            // Update existing project
+            const response = await fetch('/api/projects', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                id: editingItem.id,
+                ...projectData,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to update project');
+            }
+
+            const updatedProject = await response.json();
+            setProjects(projects.map((item) => (item.id === editingItem.id ? updatedProject : item)));
+          } else {
+            // Create new project
+            const response = await fetch('/api/projects', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(projectData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create project');
+            }
+
+            const newProjectData = await response.json();
+            setProjects([...projects, newProjectData]);
+          }
+
+          setNewProject({
+            title: "",
+            description: "",
+            location: "",
+            beneficiaries: "",
+            status: "completed",
+            featureImage: "",
+            linkedBlog: "",
+            progress: "",
+            budget: "",
+            raised: "",
+            start_date: "",
+            end_date: "",
+          });
+        } catch (error) {
+          console.error('Error saving project:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save project. Please try again.",
+            variant: "destructive",
+          });
+          return; // Don't close dialog or show success message
         }
-        if (editingItem) {
-          setProjects(projects.map((item) => (item.id === editingItem.id ? projectData : item)))
-        } else {
-          setProjects([...projects, projectData])
-        }
-        setNewProject({
-          title: "",
-          description: "",
-          location: "",
-          beneficiaries: "",
-          status: "completed",
-          featureImage: "",
-          linkedBlog: "",
-          progress: "",
-          budget: "",
-          raised: "",
-          start_date: "",
-          end_date: "",
-        })
         break
 
       case "Story":
-        const storyData = {
-          id: newId,
-          title: newStory.title,
-          content: newStory.content,
-          beneficiaryName: newStory.beneficiaryName,
-          beneficiaryAge: newStory.beneficiaryAge,
-          location: newStory.location,
-          featureImage: newStory.featureImage,
+        try {
+          // Create a comprehensive story content that includes the structured data
+          const storyContent = `${newStory.content}
+
+**Beneficiary:** ${newStory.beneficiaryName}
+**Age:** ${newStory.beneficiaryAge}
+**Location:** ${newStory.location}`;
+
+          const storyData = {
+            title: newStory.title,
+            content: storyContent,
+            category: "Success Stories",
+            excerpt: newStory.content.substring(0, 150) + "...",
+            author: "Bidii Team",
+            slug: newStory.title.toLowerCase().replace(/\s+/g, '-'),
+            published: true,
+            featured_image: newStory.featureImage,
+          }
+
+          if (editingItem) {
+            // Update existing story (as blog post)
+            const response = await fetch('/api/blog', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                id: editingItem.id,
+                ...storyData,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to update story');
+            }
+
+            const updatedStory = await response.json();
+            // Update local stories state
+            setStories(stories.map((item) => (item.id === editingItem.id ? {
+              id: updatedStory.id,
+              title: newStory.title,
+              content: newStory.content,
+              beneficiaryName: newStory.beneficiaryName,
+              beneficiaryAge: newStory.beneficiaryAge,
+              location: newStory.location,
+              featureImage: newStory.featureImage,
+            } : item)));
+          } else {
+            // Create new story (as blog post)
+            const response = await fetch('/api/blog', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(storyData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create story');
+            }
+
+            const newStoryData = await response.json();
+            // Add to local stories state
+            setStories([...stories, {
+              id: newStoryData.id,
+              title: newStory.title,
+              content: newStory.content,
+              beneficiaryName: newStory.beneficiaryName,
+              beneficiaryAge: newStory.beneficiaryAge,
+              location: newStory.location,
+              featureImage: newStory.featureImage,
+            }]);
+          }
+
+          setNewStory({
+            title: "",
+            content: "",
+            beneficiaryName: "",
+            beneficiaryAge: "",
+            location: "",
+            featureImage: "",
+          });
+        } catch (error) {
+          console.error('Error saving story:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save story. Please try again.",
+            variant: "destructive",
+          });
+          return; // Don't close dialog or show success message
         }
-        if (editingItem) {
-          setStories(stories.map((item) => (item.id === editingItem.id ? storyData : item)))
-        } else {
-          setStories([...stories, storyData])
-        }
-        setNewStory({
-          title: "",
-          content: "",
-          beneficiaryName: "",
-          beneficiaryAge: "",
-          location: "",
-          featureImage: "",
-        })
         break
 
       case "Blog":
-        const blogData = {
-          id: newId,
-          title: newBlog.title,
-          content: newBlog.content,
-          category: newBlog.category,
-          excerpt: newBlog.excerpt,
-          author: newBlog.author,
-          date: new Date().toLocaleDateString(),
-          images: newBlog.images,
-          slug: newBlog.slug || newBlog.title.toLowerCase().replace(/\s+/g, '-'),
-          published: newBlog.published,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+        try {
+          const blogData = {
+            title: newBlog.title,
+            content: newBlog.content,
+            category: newBlog.category,
+            excerpt: newBlog.excerpt,
+            author: newBlog.author,
+            slug: newBlog.slug || newBlog.title.toLowerCase().replace(/\s+/g, '-'),
+            published: newBlog.published,
+            featured_image: newBlog.featured_image,
+          }
+
+          if (editingItem) {
+            // Update existing blog post
+            const response = await fetch('/api/blog', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                id: editingItem.id,
+                ...blogData,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to update blog post');
+            }
+
+            const updatedBlogPost = await response.json();
+            setBlogPosts(blogPosts.map((item) => (item.id === editingItem.id ? updatedBlogPost : item)));
+          } else {
+            // Create new blog post
+            const response = await fetch('/api/blog', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(blogData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create blog post');
+            }
+
+            const newBlogPost = await response.json();
+            setBlogPosts([...blogPosts, newBlogPost]);
+          }
+
+          setNewBlog({
+            title: "",
+            content: "",
+            category: "",
+            excerpt: "",
+            author: "",
+            featured_image: "",
+            images: [],
+            slug: "",
+            published: false,
+          });
+        } catch (error) {
+          console.error('Error saving blog post:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save blog post. Please try again.",
+            variant: "destructive",
+          });
+          return; // Don't close dialog or show success message
         }
-        if (editingItem) {
-          setBlogPosts(blogPosts.map((item) => (item.id === editingItem.id ? blogData : item)))
-        } else {
-          setBlogPosts([...blogPosts, blogData])
-        }
-        setNewBlog({
-          title: "",
-          content: "",
-          category: "",
-          excerpt: "",
-          author: "",
-          featured_image: "",
-          images: [],
-          slug: "",
-          published: false,
-        })
         break
 
       case "Team Member":
