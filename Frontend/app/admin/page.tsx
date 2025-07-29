@@ -112,7 +112,7 @@ const mockCampaigns = [
     location: "Kibera, Nairobi",
     urgency: "Urgent",
     beneficiaries: 200,
-    linkedBlog: 1,
+    linkedBlog: 1 as number | null,
     featureImage: "/placeholder.svg?height=300&width=400",
   },
   {
@@ -122,7 +122,7 @@ const mockCampaigns = [
     location: "Mathare, Nairobi",
     urgency: "Active",
     beneficiaries: 500,
-    linkedBlog: 2,
+    linkedBlog: 2 as number | null,
     featureImage: "/placeholder.svg?height=300&width=400",
   },
 ]
@@ -197,6 +197,8 @@ export default function AdminPage() {
     author: "",
     featured_image: "",
     images: [] as string[],
+    slug: "",
+    published: false,
   })
 
   const [newProject, setNewProject] = useState({
@@ -207,6 +209,11 @@ export default function AdminPage() {
     status: "completed",
     featureImage: "",
     linkedBlog: "",
+    progress: "",
+    budget: "",
+    raised: "",
+    start_date: "",
+    end_date: "",
   })
 
   const [newCampaign, setNewCampaign] = useState({
@@ -234,6 +241,9 @@ export default function AdminPage() {
     bio: "",
     email: "",
     image: "",
+    facebook: "",
+    instagram: "",
+    tiktok: "",
   })
 
   const [newSponsor, setNewSponsor] = useState({
@@ -404,6 +414,11 @@ export default function AdminPage() {
           status: item.status.toLowerCase(),
           featureImage: item.featureImage,
           linkedBlog: item.linkedBlog?.toString() || "",
+          progress: item.progress?.toString() || "",
+          budget: item.budget?.toString() || "",
+          raised: item.raised?.toString() || "",
+          start_date: item.start_date || "",
+          end_date: item.end_date || "",
         })
         break
       case "story":
@@ -425,6 +440,8 @@ export default function AdminPage() {
           author: item.author,
           featured_image: item.featured_image || "",
           images: item.images || [],
+          slug: item.slug || "",
+          published: item.published || false,
         })
         break
       case "team":
@@ -553,6 +570,13 @@ export default function AdminPage() {
           beneficiaries: Number.parseInt(newProject.beneficiaries),
           linkedBlog: newProject.linkedBlog ? Number.parseInt(newProject.linkedBlog) : null,
           featureImage: newProject.featureImage,
+          progress: Number.parseInt(newProject.progress) || 0,
+          budget: Number.parseInt(newProject.budget) || 0,
+          raised: Number.parseInt(newProject.raised) || 0,
+          start_date: newProject.start_date,
+          end_date: newProject.end_date,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
         if (editingItem) {
           setProjects(projects.map((item) => (item.id === editingItem.id ? projectData : item)))
@@ -567,6 +591,11 @@ export default function AdminPage() {
           status: "completed",
           featureImage: "",
           linkedBlog: "",
+          progress: "",
+          budget: "",
+          raised: "",
+          start_date: "",
+          end_date: "",
         })
         break
 
@@ -605,6 +634,10 @@ export default function AdminPage() {
           author: newBlog.author,
           date: new Date().toLocaleDateString(),
           images: newBlog.images,
+          slug: newBlog.slug || newBlog.title.toLowerCase().replace(/\s+/g, '-'),
+          published: newBlog.published,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
         if (editingItem) {
           setBlogPosts(blogPosts.map((item) => (item.id === editingItem.id ? blogData : item)))
@@ -619,6 +652,8 @@ export default function AdminPage() {
           author: "",
           featured_image: "",
           images: [],
+          slug: "",
+          published: false,
         })
         break
 
@@ -633,6 +668,7 @@ export default function AdminPage() {
           instagram: newTeamMember.instagram,
           tiktok: newTeamMember.tiktok,
           image: newTeamMember.image,
+          order_index: teamMembers.length + 1,
         }
         if (editingItem) {
           setTeamMembers(teamMembers.map((item) => (item.id === editingItem.id ? teamData : item)))
@@ -677,6 +713,9 @@ export default function AdminPage() {
           category: newGalleryImage.category,
           description: newGalleryImage.description,
           image: newGalleryImage.image,
+          image_url: newGalleryImage.image,
+          alt_text: newGalleryImage.title,
+          order_index: galleryImages.length + 1,
         }
         if (editingItem) {
           setGalleryImages(galleryImages.map((item) => (item.id === editingItem.id ? galleryData : item)))
@@ -734,6 +773,11 @@ export default function AdminPage() {
       status: "completed",
       featureImage: "",
       linkedBlog: "",
+      progress: "",
+      budget: "",
+      raised: "",
+      start_date: "",
+      end_date: "",
     })
     setNewStory({
       title: "",
@@ -751,6 +795,8 @@ export default function AdminPage() {
       author: "",
       featured_image: "",
       images: [],
+      slug: "",
+      published: false,
     })
     setNewTeamMember({
       name: "",
@@ -2596,7 +2642,7 @@ export default function AdminPage() {
                         <Label>Status</Label>
                         <Select
                           value={newProject.status}
-                          onChange={(value) => setNewProject((prev) => ({ ...prev, status: value }))}
+                          onValueChange={(value) => setNewProject((prev) => ({ ...prev, status: value }))}
                         >
                           <SelectTrigger>
                             <SelectValue />
