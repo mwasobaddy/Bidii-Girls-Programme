@@ -45,3 +45,9 @@ Backend/database/*.db
 
 # Ignore specific files that are not part of the project structure
 progress.md
+
+node_modules
+.next
+.env.local
+.DS_Store
+*.log

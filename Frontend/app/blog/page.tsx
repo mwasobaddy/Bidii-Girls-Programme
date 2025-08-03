@@ -1,25 +1,29 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
-import { Calendar, User, ArrowRight, AlertCircle } from "lucide-react"
-import { getAllBlogPosts } from "@/lib/services"
-import { BlogPost } from "@/lib/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { Calendar, User, ArrowRight, AlertCircle } from "lucide-react";
+import { getAllBlogPosts } from "@/lib/services";
+import { BlogPost } from "@/lib/types";
+import { DonateButton } from "@/components/donate-button";
 
 // Transform database blog post to component format
 function transformBlogPost(post: BlogPost) {
   return {
     id: post.id,
     title: post.title,
-    excerpt: post.excerpt || post.content.substring(0, 150) + '...',
+    excerpt: post.excerpt || post.content.substring(0, 150) + "...",
     image: post.featured_image || "/placeholder.svg?height=200&width=300",
-    author: post.author || 'Bidii Team',
-    date: post.created_at ? new Date(post.created_at).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }) : 'Unknown date',
-    category: post.category || 'General',
+    author: post.author || "Bidii Team",
+    date: post.created_at
+      ? new Date(post.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "Unknown date",
+    category: post.category || "General",
     readTime: estimateReadTime(post.content),
     slug: post.slug,
   };
@@ -43,9 +47,7 @@ function DatabaseError({ message }: { message: string }) {
           <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
             Database Connection Error
           </h2>
-          <p className="text-red-600 dark:text-red-300 mb-6">
-            {message}
-          </p>
+          <p className="text-red-600 dark:text-red-300 mb-6">{message}</p>
           <div className="space-y-4">
             <p className="text-sm text-red-500 dark:text-red-400">
               Please ensure your database connection is working properly.
@@ -59,20 +61,22 @@ function DatabaseError({ message }: { message: string }) {
 
 export default async function BlogPage() {
   let blogPosts: ReturnType<typeof transformBlogPost>[] = [];
-  let errorMessage = '';
+  let errorMessage = "";
 
   try {
     const dbPosts = await getAllBlogPosts();
     blogPosts = dbPosts.map(transformBlogPost);
-    
+
     // If no posts found in database
     if (blogPosts.length === 0) {
-      errorMessage = 'No blog posts found in the database. Please add some blog posts or check if the seed data was imported correctly.';
+      errorMessage =
+        "No blog posts found in the database. Please add some blog posts or check if the seed data was imported correctly.";
     }
   } catch (error) {
-    console.error('Failed to fetch blog posts:', error);
-    errorMessage = 'Failed to connect to the database. Please check your database configuration.';
-    
+    console.error("Failed to fetch blog posts:", error);
+    errorMessage =
+      "Failed to connect to the database. Please check your database configuration.";
+
     // Return error component instead of dummy data
     return (
       <div className="pt-16">
@@ -89,7 +93,15 @@ export default async function BlogPage() {
     );
   }
 
-const categories = ["All", "Education", "Success Stories", "Research", "Community", "Sustainability", "Empowerment"]
+  const categories = [
+    "All",
+    "Education",
+    "Success Stories",
+    "Research",
+    "Community",
+    "Sustainability",
+    "Empowerment",
+  ];
 
   return (
     <div className="pt-16">
@@ -115,7 +127,8 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
             <h2 className="text-2xl font-bold mb-4">Explore by Category</h2>
             <div className="mb-4 text-center">
               <p className="text-lg text-gray-600 dark:text-gray-400">
-                Showing {blogPosts.length} blog post{blogPosts.length !== 1 ? 's' : ''} from our database
+                Showing {blogPosts.length} blog post
+                {blogPosts.length !== 1 ? "s" : ""} from our database
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -124,7 +137,9 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
                   key={category}
                   variant={category === "All" ? "default" : "outline"}
                   className={`cursor-pointer ${
-                    category === "All" ? "bg-[#e51083] hover:bg-[#c50e73]" : "hover:bg-[#e51083] hover:text-white"
+                    category === "All"
+                      ? "bg-[#e51083] hover:bg-[#c50e73]"
+                      : "hover:bg-[#e51083] hover:text-white"
                   }`}
                 >
                   {category}
@@ -141,7 +156,10 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {blogPosts.map((post) => (
-                <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                <Card
+                  key={post.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                >
                   <div className="relative">
                     <Image
                       src={post.image || "/placeholder.svg"}
@@ -150,15 +168,21 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
                       height={200}
                       className="w-full h-48 object-cover"
                     />
-                    <Badge className="absolute top-4 right-4 bg-[#e51083]">{post.category}</Badge>
+                    <Badge className="absolute top-4 right-4 bg-[#e51083]">
+                      {post.category}
+                    </Badge>
                   </div>
 
                   <CardHeader>
-                    <CardTitle className="text-xl line-clamp-2">{post.title}</CardTitle>
+                    <CardTitle className="text-xl line-clamp-2">
+                      {post.title}
+                    </CardTitle>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-3">{post.excerpt}</p>
+                    <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
+                      {post.excerpt}
+                    </p>
 
                     <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center space-x-4">
@@ -175,7 +199,7 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
                     </div>
 
                     <Link href={`/blog/${post.id}`}>
-                      <button className="w-full bg-[#e51083] hover:bg-[#c50e73] text-white py-2 px-4 rounded-md transition-colors duration-300 flex items-center justify-center">
+                      <button className="w-full bg-[#e51083] hover:bg-[#c50e73] text-white py-2 px-4 rounded-md transition-colors duration-300 flex items-center justify-center mt-4">
                         Read More <ArrowRight className="ml-2 h-4 w-4" />
                       </button>
                     </Link>
@@ -190,21 +214,48 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-md mx-auto">
               <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Blog Posts Found</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                No Blog Posts Found
+              </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                No blog posts are currently available. Please check back later or contact the administrator.
+                No blog posts are currently available. Please check back later
+                or contact the administrator.
               </p>
             </div>
           </div>
         </section>
       )}
 
-      {/* Newsletter Subscription */}
+      {/* Call to Action */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Join Our Mission</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Your support can help us expand our reach and impact more lives.
+            Every donation brings us closer to our goal of eradicating period
+            poverty.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto mb-12">
+            <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+            <Link href="/contact" className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full h-11 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-[#e51083]/20"
+              >
+                Volunteer with Us
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Subscription */}
+      <section className="py-20 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Stay Updated</h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Subscribe to our newsletter to get the latest stories and updates from our programs.
+            Subscribe to our newsletter to get the latest stories and updates
+            from our programs.
           </p>
           <div className="max-w-md mx-auto flex gap-2">
             <input
@@ -219,5 +270,5 @@ const categories = ["All", "Education", "Success Stories", "Research", "Communit
         </div>
       </section>
     </div>
-  )
+  );
 }

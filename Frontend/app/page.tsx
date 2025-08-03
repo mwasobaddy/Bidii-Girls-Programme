@@ -1,14 +1,20 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
   ArrowUp,
@@ -19,31 +25,52 @@ import {
   ChevronRight,
   BookOpen,
   Lightbulb,
-} from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { DonateButton } from "@/components/donate-button"
-import { useToast } from "@/hooks/use-toast"
-import { useLanguage } from "@/hooks/use-language"
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { DonateButton } from "@/components/donate-button";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/use-language";
 
 const sponsors = [
-  { name: "UNICEF", logo: "/placeholder.svg?height=80&width=120", website: "https://unicef.org" },
-  { name: "World Vision", logo: "/placeholder.svg?height=80&width=120", website: "https://worldvision.org" },
-  { name: "Save the Children", logo: "/placeholder.svg?height=80&width=120", website: "https://savethechildren.org" },
+  {
+    name: "UNICEF",
+    logo: "/placeholder.svg?height=80&width=120",
+    website: "https://unicef.org",
+  },
+  {
+    name: "World Vision",
+    logo: "/placeholder.svg?height=80&width=120",
+    website: "https://worldvision.org",
+  },
+  {
+    name: "Save the Children",
+    logo: "/placeholder.svg?height=80&width=120",
+    website: "https://savethechildren.org",
+  },
   {
     name: "Plan International",
     logo: "/placeholder.svg?height=80&width=120",
     website: "https://plan-international.org",
   },
-  { name: "ActionAid", logo: "/placeholder.svg?height=80&width=120", website: "https://actionaid.org" },
-  { name: "Oxfam", logo: "/placeholder.svg?height=80&width=120", website: "https://oxfam.org" },
-]
+  {
+    name: "ActionAid",
+    logo: "/placeholder.svg?height=80&width=120",
+    website: "https://actionaid.org",
+  },
+  {
+    name: "Oxfam",
+    logo: "/placeholder.svg?height=80&width=120",
+    website: "https://oxfam.org",
+  },
+];
 
 const featuredCampaigns = [
   {
     id: 1,
     title: "Emergency Period Kits for Kibera",
-    description: "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
+    description:
+      "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
     image: "/placeholder.svg?height=300&width=400",
     urgency: "Urgent",
     beneficiaries: 200,
@@ -52,7 +79,8 @@ const featuredCampaigns = [
   {
     id: 2,
     title: "School Toilet Renovation Project",
-    description: "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
+    description:
+      "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
     image: "/placeholder.svg?height=300&width=400",
     urgency: "Active",
     beneficiaries: 500,
@@ -61,19 +89,21 @@ const featuredCampaigns = [
   {
     id: 3,
     title: "Girls Leadership Training Program",
-    description: "Empowering 100 teenage girls with leadership skills and confidence-building workshops.",
+    description:
+      "Empowering 100 teenage girls with leadership skills and confidence-building workshops.",
     image: "/placeholder.svg?height=300&width=400",
     urgency: "Ongoing",
     beneficiaries: 100,
     linkedBlog: 3,
   },
-]
+];
 
 const featuredPosts = [
   {
     id: 1,
     title: "Breaking the Silence: Why Period Education Matters",
-    excerpt: "Exploring the importance of comprehensive menstrual health education...",
+    excerpt:
+      "Exploring the importance of comprehensive menstrual health education...",
     image: "/placeholder.svg?height=200&width=300",
     category: "Education",
     date: "March 15, 2024",
@@ -81,7 +111,8 @@ const featuredPosts = [
   {
     id: 2,
     title: "Success Story: How Maria Overcame Period Poverty",
-    excerpt: "Meet Maria, a 16-year-old from Kibera who transformed her life...",
+    excerpt:
+      "Meet Maria, a 16-year-old from Kibera who transformed her life...",
     image: "/placeholder.svg?height=200&width=300",
     category: "Success Stories",
     date: "March 10, 2024",
@@ -97,16 +128,17 @@ const featuredPosts = [
   {
     id: 4,
     title: "Community Champions Making a Difference",
-    excerpt: "Highlighting local leaders who are helping us reach more girls...",
+    excerpt:
+      "Highlighting local leaders who are helping us reach more girls...",
     image: "/placeholder.svg?height=200&width=300",
     category: "Community",
     date: "February 28, 2024",
   },
-]
+];
 
 export default function HomePage() {
-  const [currentSponsor, setCurrentSponsor] = useState(0)
-  const [currentBlog, setCurrentBlog] = useState(0)
+  const [currentSponsor, setCurrentSponsor] = useState(0);
+  const [currentBlog, setCurrentBlog] = useState(0);
   const [partnerForm, setPartnerForm] = useState({
     fullName: "",
     role: "",
@@ -114,77 +146,101 @@ export default function HomePage() {
     email: "",
     phoneNumber: "",
     type: "",
-  })
+  });
   const [volunteerForm, setVolunteerForm] = useState({
     fullName: "",
     email: "",
     phoneNumber: "",
     type: "volunteer",
-  })
-  const { toast } = useToast()
-  const { t } = useLanguage()
+  });
+  const { toast } = useToast();
+  const { t } = useLanguage();
 
   const nextSponsor = () => {
-    setCurrentSponsor((prev) => (prev + 1) % sponsors.length)
-  }
+    setCurrentSponsor((prev) => (prev + 1) % sponsors.length);
+  };
 
   const prevSponsor = () => {
-    setCurrentSponsor((prev) => (prev - 1 + sponsors.length) % sponsors.length)
-  }
+    setCurrentSponsor((prev) => (prev - 1 + sponsors.length) % sponsors.length);
+  };
 
   const nextBlog = () => {
-    setCurrentBlog((prev) => (prev + 1) % featuredPosts.length)
-  }
+    setCurrentBlog((prev) => (prev + 1) % featuredPosts.length);
+  };
 
   const prevBlog = () => {
-    setCurrentBlog((prev) => (prev - 1 + featuredPosts.length) % featuredPosts.length)
-  }
+    setCurrentBlog(
+      (prev) => (prev - 1 + featuredPosts.length) % featuredPosts.length
+    );
+  };
 
   const handlePartnerSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Save to localStorage for admin panel to access
-    const existingPartners = JSON.parse(localStorage.getItem("partnershipApplications") || "[]")
+    const existingPartners = JSON.parse(
+      localStorage.getItem("partnershipApplications") || "[]"
+    );
     const newPartner = {
       id: Date.now(),
       ...partnerForm,
       submittedAt: new Date().toISOString(),
-    }
-    localStorage.setItem("partnershipApplications", JSON.stringify([...existingPartners, newPartner]))
+    };
+    localStorage.setItem(
+      "partnershipApplications",
+      JSON.stringify([...existingPartners, newPartner])
+    );
 
     toast({
       title: "Data collected successfully",
       description: "We will contact you soon.",
-    })
-    setPartnerForm({ fullName: "", role: "", organizationName: "", email: "", phoneNumber: "", type: "" })
-  }
+    });
+    setPartnerForm({
+      fullName: "",
+      role: "",
+      organizationName: "",
+      email: "",
+      phoneNumber: "",
+      type: "",
+    });
+  };
 
   const handleVolunteerSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Save to localStorage for admin panel to access
-    const existingVolunteers = JSON.parse(localStorage.getItem("volunteerApplications") || "[]")
+    const existingVolunteers = JSON.parse(
+      localStorage.getItem("volunteerApplications") || "[]"
+    );
     const newVolunteer = {
       id: Date.now(),
       ...volunteerForm,
       submittedAt: new Date().toISOString(),
-    }
-    localStorage.setItem("volunteerApplications", JSON.stringify([...existingVolunteers, newVolunteer]))
+    };
+    localStorage.setItem(
+      "volunteerApplications",
+      JSON.stringify([...existingVolunteers, newVolunteer])
+    );
 
     toast({
       title: "Data collected successfully",
       description: "We will contact you soon.",
-    })
-    setVolunteerForm({ fullName: "", email: "", phoneNumber: "", type: "volunteer" })
-  }
+    });
+    setVolunteerForm({
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      type: "volunteer",
+    });
+  };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const scrollToBottom = () => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
-  }
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
 
   return (
     <div className="relative">
@@ -221,7 +277,8 @@ export default function HomePage() {
                   size="lg"
                   className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-all duration-300 w-full sm:w-auto"
                 >
-                  {t("learnMore")} <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  {t("learnMore")}{" "}
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             </div>
@@ -229,31 +286,49 @@ export default function HomePage() {
             {/* Mobile: Horizontal layout for statistics */}
             <div className="flex flex-row justify-center gap-4 sm:gap-6 md:hidden mt-8 pt-8 border-t border-white/20 animate-slide-up animation-delay-600">
               <div className="text-center flex-1">
-                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">5000+</div>
-                <div className="text-xs sm:text-sm text-gray-300">{t("girlsSupported")}</div>
+                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">
+                  5000+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-300">
+                  {t("girlsSupported")}
+                </div>
               </div>
               <div className="text-center flex-1">
-                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">20+</div>
-                <div className="text-xs sm:text-sm text-gray-300">{t("schoolsReached")}</div>
+                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">
+                  20+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-300">
+                  {t("schoolsReached")}
+                </div>
               </div>
               <div className="text-center flex-1">
-                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">10+</div>
-                <div className="text-xs sm:text-sm text-gray-300">{t("yearsImpact")}</div>
+                <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1">
+                  10+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-300">
+                  {t("yearsImpact")}
+                </div>
               </div>
             </div>
 
             {/* Desktop: Grid layout for statistics */}
             <div className="hidden md:grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-white/20 animate-slide-up animation-delay-600">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#e51083] mb-2">5000+ </div>
+                <div className="text-3xl font-bold text-[#e51083] mb-2">
+                  5000+{" "}
+                </div>
                 <div className="text-gray-300">{t("girlsSupported")}</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#e51083] mb-2">20+</div>
+                <div className="text-3xl font-bold text-[#e51083] mb-2">
+                  20+
+                </div>
                 <div className="text-gray-300">{t("schoolsReached")}</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#e51083] mb-2">10+</div>
+                <div className="text-3xl font-bold text-[#e51083] mb-2">
+                  10+
+                </div>
                 <div className="text-gray-300">{t("yearsImpact")}</div>
               </div>
             </div>
@@ -265,7 +340,9 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 md:py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("featuredCampaigns")}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+              {t("featuredCampaigns")}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
               {t("campaignsDescription")}
             </p>
@@ -292,18 +369,22 @@ export default function HomePage() {
                       campaign.urgency === "Urgent"
                         ? "bg-red-500"
                         : campaign.urgency === "Active"
-                          ? "bg-green-500"
-                          : "bg-blue-500"
+                        ? "bg-green-500"
+                        : "bg-blue-500"
                     }`}
                   >
                     {campaign.urgency}
                   </Badge>
                 </div>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base sm:text-lg">{campaign.title}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">
+                    {campaign.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{campaign.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                    {campaign.description}
+                  </p>
 
                   <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
                     <span className="flex items-center">
@@ -313,12 +394,14 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <DonateButton />
-                    <Link href={`/blog/${campaign.linkedBlog}`}>
+                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                    <Link
+                      href={`/blog/${campaign.linkedBlog}`}
+                      className="flex-1"
+                    >
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="w-full border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent transition-all duration-300"
+                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
                       >
                         {t("readMore")}
                       </Button>
@@ -350,8 +433,8 @@ export default function HomePage() {
                       campaign.urgency === "Urgent"
                         ? "bg-red-500"
                         : campaign.urgency === "Active"
-                          ? "bg-green-500"
-                          : "bg-blue-500"
+                        ? "bg-green-500"
+                        : "bg-blue-500"
                     }`}
                   >
                     {campaign.urgency}
@@ -361,7 +444,9 @@ export default function HomePage() {
                   <CardTitle className="text-lg">{campaign.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{campaign.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    {campaign.description}
+                  </p>
 
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span className="flex items-center">
@@ -371,12 +456,14 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <DonateButton />
-                    <Link href={`/blog/${campaign.linkedBlog}`}>
+                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                    <Link
+                      href={`/blog/${campaign.linkedBlog}`}
+                      className="flex-1"
+                    >
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent transition-all duration-300"
+                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
                       >
                         {t("readMore")}
                       </Button>
@@ -400,7 +487,10 @@ export default function HomePage() {
               {sponsors
                 .slice(
                   currentSponsor,
-                  currentSponsor + (typeof window !== "undefined" && window.innerWidth < 768 ? 2 : 4),
+                  currentSponsor +
+                    (typeof window !== "undefined" && window.innerWidth < 768
+                      ? 2
+                      : 4)
                 )
                 .map((sponsor, index) => (
                   <div key={index} className="flex-shrink-0 animate-fade-in">
@@ -446,33 +536,52 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div className="animate-fade-in-left">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">{t("ourImpact")}</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
+                {t("ourImpact")}
+              </h2>
               <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 mb-6 sm:mb-8">
                 {t("impactDescription")}
               </p>
 
               <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:scale-105 transition-transform duration-300">
-                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">5000+</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t("girlsSupported")}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">
+                    5000+
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {t("girlsSupported")}
+                  </div>
                 </div>
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:scale-105 transition-transform duration-300">
-                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">20+</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t("schoolsReached")}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">
+                    20+
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {t("schoolsReached")}
+                  </div>
                 </div>
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:scale-105 transition-transform duration-300">
-                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">10,000+</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t("productsDistributed")}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">
+                    10,000+
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {t("productsDistributed")}
+                  </div>
                 </div>
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:scale-105 transition-transform duration-300">
-                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">85%</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t("attendanceRate")}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-[#e51083] mb-1 sm:mb-2">
+                    85%
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {t("attendanceRate")}
+                  </div>
                 </div>
               </div>
 
               <Link href="/about">
                 <Button className="bg-[#e51083] hover:bg-[#c50e73] text-white hover:scale-105 transition-all duration-300 w-full sm:w-auto">
-                  {t("learnMoreAboutUs")} <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("learnMoreAboutUs")}{" "}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -494,7 +603,9 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 md:py-20 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("howWeHelp")}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+              {t("howWeHelp")}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
               {t("howWeHelpDescription")}
             </p>
@@ -529,8 +640,12 @@ export default function HomePage() {
                 <div className="bg-[#e51083] w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 hover:bg-[#c50e73] transition-colors duration-300">
                   <item.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{item.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{item.description}</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
@@ -553,7 +668,9 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="bg-white text-[#e51083] hover:bg-gray-100 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
-                  onClick={() => setPartnerForm((prev) => ({ ...prev, type: "partner" }))}
+                  onClick={() =>
+                    setPartnerForm((prev) => ({ ...prev, type: "partner" }))
+                  }
                 >
                   <Users className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   {t("becomePartner")}
@@ -569,7 +686,12 @@ export default function HomePage() {
                     <Input
                       id="partner-fullName"
                       value={partnerForm.fullName}
-                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, fullName: e.target.value }))}
+                      onChange={(e) =>
+                        setPartnerForm((prev) => ({
+                          ...prev,
+                          fullName: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
@@ -578,16 +700,28 @@ export default function HomePage() {
                     <Input
                       id="partner-role"
                       value={partnerForm.role}
-                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, role: e.target.value }))}
+                      onChange={(e) =>
+                        setPartnerForm((prev) => ({
+                          ...prev,
+                          role: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="partner-organizationName">Business/Organization Name</Label>
+                    <Label htmlFor="partner-organizationName">
+                      Business/Organization Name
+                    </Label>
                     <Input
                       id="partner-organizationName"
                       value={partnerForm.organizationName}
-                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, organizationName: e.target.value }))}
+                      onChange={(e) =>
+                        setPartnerForm((prev) => ({
+                          ...prev,
+                          organizationName: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
@@ -597,19 +731,34 @@ export default function HomePage() {
                       id="partner-email"
                       type="email"
                       value={partnerForm.email}
-                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setPartnerForm((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="partner-phoneNumber">Phone Number (Optional)</Label>
+                    <Label htmlFor="partner-phoneNumber">
+                      Phone Number (Optional)
+                    </Label>
                     <Input
                       id="partner-phoneNumber"
                       value={partnerForm.phoneNumber}
-                      onChange={(e) => setPartnerForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                      onChange={(e) =>
+                        setPartnerForm((prev) => ({
+                          ...prev,
+                          phoneNumber: e.target.value,
+                        }))
+                      }
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                  >
                     {t("submitPartnership")}
                   </Button>
                 </form>
@@ -622,7 +771,9 @@ export default function HomePage() {
                   size="lg"
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-[#e51083] bg-transparent hover:scale-105 transition-all duration-300 w-full sm:w-auto"
-                  onClick={() => setVolunteerForm((prev) => ({ ...prev, type: "volunteer" }))}
+                  onClick={() =>
+                    setVolunteerForm((prev) => ({ ...prev, type: "volunteer" }))
+                  }
                 >
                   <Heart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   {t("volunteerWithUs")}
@@ -638,7 +789,12 @@ export default function HomePage() {
                     <Input
                       id="volunteer-fullName"
                       value={volunteerForm.fullName}
-                      onChange={(e) => setVolunteerForm((prev) => ({ ...prev, fullName: e.target.value }))}
+                      onChange={(e) =>
+                        setVolunteerForm((prev) => ({
+                          ...prev,
+                          fullName: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
@@ -648,19 +804,34 @@ export default function HomePage() {
                       id="volunteer-email"
                       type="email"
                       value={volunteerForm.email}
-                      onChange={(e) => setVolunteerForm((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setVolunteerForm((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="volunteer-phoneNumber">Phone Number (Optional)</Label>
+                    <Label htmlFor="volunteer-phoneNumber">
+                      Phone Number (Optional)
+                    </Label>
                     <Input
                       id="volunteer-phoneNumber"
                       value={volunteerForm.phoneNumber}
-                      onChange={(e) => setVolunteerForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                      onChange={(e) =>
+                        setVolunteerForm((prev) => ({
+                          ...prev,
+                          phoneNumber: e.target.value,
+                        }))
+                      }
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                  >
                     {t("submitVolunteer")}
                   </Button>
                 </form>
@@ -674,7 +845,9 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 md:py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("ourProjects")}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+              {t("ourProjects")}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
               {t("projectsDescription")}
             </p>
@@ -698,17 +871,23 @@ export default function HomePage() {
                   />
                 </div>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base sm:text-lg">{project.title}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">
+                    {project.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{project.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                    {project.description}
+                  </p>
                   <div className="flex flex-col gap-2">
-                    <DonateButton />
-                    <Link href={`/blog/${project.linkedBlog}`}>
+                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                    <Link
+                      href={`/blog/${project.linkedBlog}`}
+                      className="flex-1"
+                    >
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="w-full border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent transition-all duration-300"
+                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
                       >
                         {t("readMore")}
                       </Button>
@@ -740,14 +919,18 @@ export default function HomePage() {
                   <CardTitle className="text-lg">{project.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{project.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    {project.description}
+                  </p>
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <DonateButton />
-                    <Link href={`/blog/${project.linkedBlog}`}>
+                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                    <Link
+                      href={`/blog/${project.linkedBlog}`}
+                      className="flex-1"
+                    >
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent transition-all duration-300"
+                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
                       >
                         {t("readMore")}
                       </Button>
@@ -772,8 +955,12 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 md:py-20 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("latestStories")}</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{t("storiesDescription")}</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+              {t("latestStories")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+              {t("storiesDescription")}
+            </p>
           </div>
 
           {/* Mobile: Horizontal scrolling carousel */}
@@ -793,13 +980,19 @@ export default function HomePage() {
                       height={200}
                       className="w-full h-40 object-cover"
                     />
-                    <Badge className="absolute top-3 left-3 bg-[#e51083] text-xs">{post.category}</Badge>
+                    <Badge className="absolute top-3 left-3 bg-[#e51083] text-xs">
+                      {post.category}
+                    </Badge>
                   </div>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base line-clamp-2">{post.title}</CardTitle>
+                    <CardTitle className="text-base line-clamp-2">
+                      {post.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 text-sm">{post.excerpt}</p>
+                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 text-sm">
+                      {post.excerpt}
+                    </p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">{post.date}</span>
                       <Link
@@ -818,39 +1011,49 @@ export default function HomePage() {
           {/* Desktop: Grid with carousel controls */}
           <div className="hidden md:block relative max-w-6xl mx-auto">
             <div className="grid grid-cols-3 gap-8">
-              {featuredPosts.slice(currentBlog, currentBlog + 3).map((post, index) => (
-                <Card
-                  key={post.id}
-                  className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
-                  style={{ animationDelay: `${index * 200}ms` }}
-                >
-                  <div className="relative">
-                    <Image
-                      src={post.image || "/placeholder.svg"}
-                      alt={post.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge className="absolute top-4 left-4 bg-[#e51083]">{post.category}</Badge>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg line-clamp-2">{post.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">{post.excerpt}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">{post.date}</span>
-                      <Link
-                        href={`/blog/${post.id}`}
-                        className="text-[#e51083] hover:text-[#c50e73] font-semibold text-sm transition-colors duration-300"
-                      >
-                        {t("readMore")}
-                      </Link>
+              {featuredPosts
+                .slice(currentBlog, currentBlog + 3)
+                .map((post, index) => (
+                  <Card
+                    key={post.id}
+                    className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
+                    style={{ animationDelay: `${index * 200}ms` }}
+                  >
+                    <div className="relative">
+                      <Image
+                        src={post.image || "/placeholder.svg"}
+                        alt={post.title}
+                        width={300}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                      <Badge className="absolute top-4 left-4 bg-[#e51083]">
+                        {post.category}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardHeader>
+                      <CardTitle className="text-lg line-clamp-2">
+                        {post.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">
+                          {post.date}
+                        </span>
+                        <Link
+                          href={`/blog/${post.id}`}
+                          className="text-[#e51083] hover:text-[#c50e73] font-semibold text-sm transition-colors duration-300"
+                        >
+                          {t("readMore")}
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
 
             <Button
@@ -902,5 +1105,5 @@ export default function HomePage() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

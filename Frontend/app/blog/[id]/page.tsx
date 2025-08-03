@@ -1,13 +1,23 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, User, Clock, ChevronLeft, ChevronRight, Share2, AlertCircle } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Share2,
+  AlertCircle,
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { DonateButton } from "@/components/donate-button";
 
 interface BlogPost {
   id: number;
@@ -32,9 +42,7 @@ function DatabaseError({ message }: { message: string }) {
           <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
             Database Connection Error
           </h2>
-          <p className="text-red-600 dark:text-red-300 mb-6">
-            {message}
-          </p>
+          <p className="text-red-600 dark:text-red-300 mb-6">{message}</p>
           <Link href="/blog">
             <Button className="bg-[#e51083] hover:bg-[#c50e73]">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -48,56 +56,60 @@ function DatabaseError({ message }: { message: string }) {
 }
 
 export default function BlogPostPage() {
-  const params = useParams()
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [post, setPost] = useState<BlogPost | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPost() {
       try {
-        setLoading(true)
-        const response = await fetch(`/api/blog/${params.id}`)
-        
+        setLoading(true);
+        const response = await fetch(`/api/blog/${params.id}`);
+
         if (!response.ok) {
           if (response.status === 404) {
-            setError('Post not found')
+            setError("Post not found");
           } else {
-            const errorData = await response.json()
-            setError(errorData.error || 'Failed to fetch blog post')
+            const errorData = await response.json();
+            setError(errorData.error || "Failed to fetch blog post");
           }
-          return
+          return;
         }
 
-        const postData = await response.json()
-        setPost(postData)
+        const postData = await response.json();
+        setPost(postData);
       } catch (err) {
-        console.error('Error fetching blog post:', err)
-        setError('Failed to connect to the database. Please check your database configuration.')
+        console.error("Error fetching blog post:", err);
+        setError(
+          "Failed to connect to the database. Please check your database configuration."
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
     if (params.id) {
-      fetchPost()
+      fetchPost();
     }
-  }, [params.id])
+  }, [params.id]);
 
   if (loading) {
     return (
       <div className="pt-16 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e51083] mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading blog post...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading blog post...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
-    return <DatabaseError message={error} />
+    return <DatabaseError message={error} />;
   }
 
   if (!post) {
@@ -116,16 +128,19 @@ export default function BlogPostPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % (post.images?.length || 1))
-  }
+    setCurrentImageIndex((prev) => (prev + 1) % (post.images?.length || 1));
+  };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + (post.images?.length || 1)) % (post.images?.length || 1))
-  }
+    setCurrentImageIndex(
+      (prev) =>
+        (prev - 1 + (post.images?.length || 1)) % (post.images?.length || 1)
+    );
+  };
 
   return (
     <div className="pt-16">
@@ -133,7 +148,10 @@ export default function BlogPostPage() {
       <section className="py-12 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <Link href="/blog">
-            <Button variant="ghost" className="mb-6 hover:scale-105 transition-transform">
+            <Button
+              variant="ghost"
+              className="mb-6 hover:scale-105 transition-transform"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Button>
@@ -141,7 +159,9 @@ export default function BlogPostPage() {
 
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-4 bg-[#e51083]">{post.category}</Badge>
-            <h1 className="text-3xl md:text-5xl font-bold mb-6 animate-fade-in-up">{post.title}</h1>
+            <h1 className="text-3xl md:text-5xl font-bold mb-6 animate-fade-in-up">
+              {post.title}
+            </h1>
 
             <div className="flex flex-wrap items-center gap-6 text-gray-600 dark:text-gray-400 mb-8">
               <div className="flex items-center space-x-2">
@@ -156,7 +176,11 @@ export default function BlogPostPage() {
                 <Clock className="h-4 w-4" />
                 <span>{post.readTime}</span>
               </div>
-              <Button variant="ghost" size="sm" className="ml-auto hover:scale-105 transition-transform">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto hover:scale-105 transition-transform"
+              >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
@@ -195,7 +219,9 @@ export default function BlogPostPage() {
                   <div className="relative">
                     <div className="aspect-video relative overflow-hidden rounded-lg">
                       <Image
-                        src={post.images[currentImageIndex] || "/placeholder.svg"}
+                        src={
+                          post.images[currentImageIndex] || "/placeholder.svg"
+                        }
                         alt={`Gallery image ${currentImageIndex + 1}`}
                         fill
                         className="object-cover transition-all duration-300"
@@ -232,7 +258,9 @@ export default function BlogPostPage() {
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
                           className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden transition-all duration-300 hover:scale-105 ${
-                            index === currentImageIndex ? "border-[#e51083]" : "border-gray-300"
+                            index === currentImageIndex
+                              ? "border-[#e51083]"
+                              : "border-gray-300"
                           }`}
                         >
                           <Image
@@ -259,18 +287,19 @@ export default function BlogPostPage() {
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-bold mb-4">Join Our Mission</h3>
                 <p className="mb-6">
-                  Help us continue creating stories like this. Your support makes a real difference in girls' lives.
+                  Help us continue creating stories like this. Your support
+                  makes a real difference in girls' lives.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button className="bg-white text-[#e51083] hover:bg-gray-100 hover:scale-105 transition-all">
-                    Donate Now
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-[#e51083] bg-transparent hover:scale-105 transition-all"
-                  >
-                    Volunteer With Us
-                  </Button>
+                  <DonateButton className="bg-white text-[#e51083] hover:bg-gray-100 hover:scale-105 transition-all" />
+                  <Link href="/contact">
+                    <Button
+                      variant="outline"
+                      className="w-full border-white text-white hover:bg-white hover:text-[#e51083] bg-transparent hover:scale-105 transition-all"
+                    >
+                      Volunteer With Us
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -278,5 +307,5 @@ export default function BlogPostPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }
