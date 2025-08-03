@@ -35,6 +35,18 @@ import Image from "next/image";
 import { RichTextEditor } from "@/components/rich-text-editor";
 
 // Database Types
+interface Campaign {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  urgency: string;
+  beneficiaries: number;
+  linked_blog?: number | null;
+  feature_image?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+}
 interface Project {
   id: number;
   title: string;
@@ -186,7 +198,7 @@ export default function AdminPage() {
   const [partnershipApplications, setPartnershipApplications] = useState<any[]>([])
   const [volunteerApplications, setVolunteerApplications] = useState<any[]>([])
   const [categories, setCategories] = useState(mockCategories)
-const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [stories, setStories] = useState(mockStories)
   const [sponsors, setSponsors] = useState(mockSponsors)
 
@@ -1463,8 +1475,8 @@ const fetchCampaigns = async () => {
                         Link to Blog Post
                       </Label>
                       <Select
-                        value={newCampaign.linkedBlog}
-                        onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, linkedBlog: value }))}
+                        value={newCampaign.linked_blog}
+                        onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, linked_blog: value }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a blog post" />
@@ -3426,7 +3438,7 @@ const fetchCampaigns = async () => {
                           <Upload className="mr-2 h-4 w-4" />
                           Upload Featured Image
                         </Button>
-                        {newCampaign.featureImage && (
+                        {newCampaign.feature_image && (
                           <Image
                             src={newCampaign.feature_image || "/placeholder.svg"}
                             alt="Featured"
@@ -3576,7 +3588,7 @@ const fetchCampaigns = async () => {
                           <Upload className="mr-2 h-4 w-4" />
                           Upload Featured Image
                         </Button>
-                        {newProject.featureImage && (
+                        {newProject.featured_image && (
                           <Image
                             src={newProject.featured_image || "/placeholder.svg"}
                             alt="Featured"
