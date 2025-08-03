@@ -1,3 +1,15 @@
+export interface Campaign {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  urgency: string;
+  beneficiaries: number;
+  linked_blog?: number | null;
+  feature_image?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+}
 // Database model types
 
 export interface Project {

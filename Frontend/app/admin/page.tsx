@@ -1,8 +1,21 @@
+interface Campaign {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  urgency: string;
+  beneficiaries: number;
+  linked_blog?: number | null;
+  feature_image?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+}
 "use client"
 
 import type React from "react"
 
 import { useState, useEffect } from "react"
+
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -104,28 +117,6 @@ function DatabaseError({ message }: DatabaseErrorProps) {
 }
 
 // Mock data for features not yet implemented (will be replaced gradually)
-const mockCampaigns = [
-  {
-    id: 1,
-    title: "Emergency Period Kits for Kibera",
-    description: "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
-    location: "Kibera, Nairobi",
-    urgency: "Urgent",
-    beneficiaries: 200,
-    linkedBlog: 1 as number | null,
-    featureImage: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: 2,
-    title: "School Toilet Renovation Project",
-    description: "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
-    location: "Mathare, Nairobi",
-    urgency: "Active",
-    beneficiaries: 500,
-    linkedBlog: 2 as number | null,
-    featureImage: "/placeholder.svg?height=300&width=400",
-  },
-]
 
 const mockStories = [
   {
@@ -184,7 +175,19 @@ export default function AdminPage() {
   const [partnershipApplications, setPartnershipApplications] = useState<any[]>([])
   const [volunteerApplications, setVolunteerApplications] = useState<any[]>([])
   const [categories, setCategories] = useState(mockCategories)
-  const [campaigns, setCampaigns] = useState(mockCampaigns)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  // Fetch campaigns from database
+  const fetchCampaigns = async () => {
+    try {
+      const response = await fetch('/api/campaigns');
+      if (!response.ok) throw new Error('Failed to fetch campaigns');
+      const data = await response.json();
+      setCampaigns(data);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+      setError('Failed to load campaigns from database');
+    }
+  };
   const [stories, setStories] = useState(mockStories)
   const [sponsors, setSponsors] = useState(mockSponsors)
 
@@ -207,8 +210,8 @@ export default function AdminPage() {
     location: "",
     beneficiaries: "",
     status: "completed",
-    featureImage: "",
-    linkedBlog: "",
+    featured_image: "",
+    linked_blog: "",
     progress: "",
     budget: "",
     raised: "",
@@ -222,8 +225,10 @@ export default function AdminPage() {
     location: "",
     beneficiaries: "",
     urgency: "active",
-    featureImage: "",
-    linkedBlog: "",
+    feature_image: "",
+    linked_blog: "",
+    start_date: "",
+    end_date: "",
   })
 
   const [newStory, setNewStory] = useState({
@@ -353,6 +358,7 @@ export default function AdminPage() {
     setError(null);
     try {
       await Promise.all([
+        fetchCampaigns(),
         fetchProjects(),
         fetchBlogPosts(),
         fetchStories(),
@@ -432,10 +438,12 @@ export default function AdminPage() {
           title: item.title,
           description: item.description,
           location: item.location,
-          beneficiaries: item.beneficiaries.toString(),
-          urgency: item.urgency.toLowerCase(),
-          featureImage: item.featureImage,
-          linkedBlog: item.linkedBlog?.toString() || "",
+          beneficiaries: item.beneficiaries?.toString() || "",
+          urgency: item.urgency,
+          feature_image: item.feature_image || "",
+          linked_blog: item.linked_blog?.toString() || "",
+          start_date: item.start_date || "",
+          end_date: item.end_date || "",
         })
         break
       case "project":
@@ -443,10 +451,10 @@ export default function AdminPage() {
           title: item.title,
           description: item.description,
           location: item.location,
-          beneficiaries: item.beneficiaries.toString(),
-          status: item.status.toLowerCase(),
-          featureImage: item.featureImage,
-          linkedBlog: item.linkedBlog?.toString() || "",
+          beneficiaries: item.beneficiaries?.toString() || "",
+          status: item.status?.toLowerCase() || "",
+          featured_image: item.featured_image || "",
+          linked_blog: item.linked_blog?.toString() || "",
           progress: item.progress?.toString() || "",
           budget: item.budget?.toString() || "",
           raised: item.raised?.toString() || "",
@@ -532,15 +540,23 @@ export default function AdminPage() {
             setCategories(categories.filter((cat) => cat.id !== id))
             break
           case "campaign":
+            // Delete from database
+            const campaignResponse = await fetch(`/api/campaigns?id=${id}`, {
+              method: 'DELETE',
+            });
+            if (!campaignResponse.ok) {
+              throw new Error('Failed to delete campaign');
+            }
+            // Update local state
             setCampaigns(campaigns.filter((item) => item.id !== id))
             break
           case "project":
             // Delete from database
-            const response = await fetch(`/api/projects?id=${id}`, {
+            const projectResponse = await fetch(`/api/projects?id=${id}`, {
               method: 'DELETE',
             });
 
-            if (!response.ok) {
+            if (!projectResponse.ok) {
               throw new Error('Failed to delete project');
             }
 
@@ -605,31 +621,77 @@ export default function AdminPage() {
     const newId = editingItem?.id || Date.now()
 
     switch (type) {
-      case "Campaign":
-        const campaignData = {
-          id: newId,
-          title: newCampaign.title,
-          description: newCampaign.description,
-          location: newCampaign.location,
-          urgency: newCampaign.urgency,
-          beneficiaries: Number.parseInt(newCampaign.beneficiaries),
-          linkedBlog: newCampaign.linkedBlog ? Number.parseInt(newCampaign.linkedBlog) : null,
-          featureImage: newCampaign.featureImage,
+      case "campaign":
+        try {
+          const campaignData = {
+            title: newCampaign.title,
+            description: newCampaign.description,
+            location: newCampaign.location,
+            urgency: newCampaign.urgency,
+            beneficiaries: newCampaign.beneficiaries !== "" ? Number(newCampaign.beneficiaries) : 0,
+            linked_blog: newCampaign.linked_blog !== "" ? Number(newCampaign.linked_blog) : null,
+            feature_image: newCampaign.feature_image !== "" ? newCampaign.feature_image : null,
+            start_date: newCampaign.start_date !== "" ? newCampaign.start_date.slice(0, 10) : null,
+            end_date: newCampaign.end_date !== "" ? newCampaign.end_date.slice(0, 10) : null,
+          };
+          // Validate required fields
+          if (!campaignData.title || !campaignData.description || !campaignData.location || !campaignData.urgency) {
+            toast({
+              title: "Error",
+              description: "Please fill in all required fields.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (editingItem) {
+            // Update existing campaign
+            const response = await fetch('/api/campaigns', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ id: editingItem.id, ...campaignData }),
+            });
+            if (!response.ok) {
+              throw new Error('Failed to update campaign');
+            }
+            const updatedCampaign = await response.json();
+            setCampaigns(campaigns.map((item) => (item.id === editingItem.id ? updatedCampaign : item)));
+          } else {
+            // Create new campaign
+            const response = await fetch('/api/campaigns', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(campaignData),
+            });
+            if (!response.ok) {
+              throw new Error('Failed to create campaign');
+            }
+            const newCampaignData = await response.json();
+            setCampaigns([...campaigns, newCampaignData]);
+          }
+          setNewCampaign({
+            title: "",
+            description: "",
+            location: "",
+            beneficiaries: "",
+            urgency: "active",
+            feature_image: "",
+            linked_blog: "",
+            start_date: "",
+            end_date: "",
+          });
+        } catch (error) {
+          console.error('Error saving campaign:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save campaign. Please try again.",
+            variant: "destructive",
+          });
+          return;
         }
-        if (editingItem) {
-          setCampaigns(campaigns.map((item) => (item.id === editingItem.id ? campaignData : item)))
-        } else {
-          setCampaigns([...campaigns, campaignData])
-        }
-        setNewCampaign({
-          title: "",
-          description: "",
-          location: "",
-          beneficiaries: "",
-          urgency: "active",
-          featureImage: "",
-          linkedBlog: "",
-        })
         break
 
       case "Project":
@@ -640,11 +702,13 @@ export default function AdminPage() {
             location: newProject.location,
             status: newProject.status,
             beneficiaries: newProject.beneficiaries ? Number.parseInt(newProject.beneficiaries) : null,
-            featureImage: newProject.featureImage,
+            featured_image: newProject.featured_image,
+            linked_blog: newProject.linked_blog ? Number.parseInt(newProject.linked_blog) : null,
             progress: Number.parseInt(newProject.progress) || 0,
             budget: newProject.budget ? Number.parseInt(newProject.budget) : null,
             raised: Number.parseInt(newProject.raised) || 0,
             start_date: newProject.start_date || null,
+            end_date: newProject.end_date || null,
           }
 
           if (editingItem) {
@@ -690,8 +754,8 @@ export default function AdminPage() {
             location: "",
             beneficiaries: "",
             status: "completed",
-            featureImage: "",
-            linkedBlog: "",
+            featured_image: "",
+            linked_blog: "",
             progress: "",
             budget: "",
             raised: "",
@@ -980,8 +1044,10 @@ export default function AdminPage() {
       location: "",
       beneficiaries: "",
       urgency: "active",
-      featureImage: "",
-      linkedBlog: "",
+      feature_image: "",
+      linked_blog: "",
+      start_date: "",
+      end_date: "",
     })
     setNewProject({
       title: "",
@@ -989,8 +1055,8 @@ export default function AdminPage() {
       location: "",
       beneficiaries: "",
       status: "completed",
-      featureImage: "",
-      linkedBlog: "",
+      featured_image: "",
+      linked_blog: "",
       progress: "",
       budget: "",
       raised: "",
@@ -1213,7 +1279,7 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Campaign</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Campaign")} className="space-y-4">
+                  <form onSubmit={(e) => handleSubmit(e, "campaign")} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="campaign-title">Campaign Title</Label>
@@ -1268,8 +1334,8 @@ export default function AdminPage() {
                     <div className="space-y-2">
                       <Label htmlFor="campaign-linked-blog">Link to Blog Post</Label>
                       <Select
-                        value={newCampaign.linkedBlog}
-                        onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, linkedBlog: value }))}
+                        value={newCampaign.linked_blog}
+                        onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, linked_blog: value }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a blog post" />
@@ -1301,15 +1367,15 @@ export default function AdminPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewCampaign, "featureImage")}
+                          onClick={() => handleImageUpload(setNewCampaign, "feature_image")}
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
                           Upload Featured Image
                         </Button>
-                        {newCampaign.featureImage && (
+                        {newCampaign.feature_image && (
                           <Image
-                            src={newCampaign.featureImage || "/placeholder.svg"}
+                            src={newCampaign.feature_image || "/placeholder.svg"}
                             alt="Featured"
                             width={100}
                             height={60}
@@ -1332,7 +1398,7 @@ export default function AdminPage() {
                 <Card key={campaign.id} className="overflow-hidden">
                   <div className="relative">
                     <Image
-                      src={campaign.featureImage || "/placeholder.svg"}
+                      src={campaign.feature_image || "/placeholder.svg"}
                       alt={campaign.title}
                       width={400}
                       height={200}
@@ -1483,7 +1549,7 @@ export default function AdminPage() {
                     <div className="space-y-2">
                       <Label htmlFor="project-linked-blog">Link to Blog Post</Label>
                       <Select
-                        value={newProject.linkedBlog}
+                        value={newProject.linked_blog}
                         onValueChange={(value) => setNewProject((prev) => ({ ...prev, linkedBlog: value }))}
                       >
                         <SelectTrigger>
@@ -1522,9 +1588,9 @@ export default function AdminPage() {
                           <Upload className="mr-2 h-4 w-4" />
                           Upload Featured Image
                         </Button>
-                        {newProject.featureImage && (
+                        {newProject.featured_image && (
                           <Image
-                            src={newProject.featureImage || "/placeholder.svg"}
+                            src={newProject.featured_image || "/placeholder.svg"}
                             alt="Featured"
                             width={100}
                             height={60}
@@ -2748,20 +2814,20 @@ export default function AdminPage() {
                   handleSubmit(
                     e,
                     editType === "campaign"
-                      ? "Campaign"
+                      ? "campaign"
                       : editType === "project"
-                        ? "Project"
+                        ? "project"
                         : editType === "story"
-                          ? "Story"
+                          ? "story"
                           : editType === "blog"
-                            ? "Blog"
+                            ? "blog"
                             : editType === "team"
-                              ? "Team Member"
+                              ? "team"
                               : editType === "sponsor"
-                                ? "Sponsor"
+                                ? "sponsor"
                                 : editType === "gallery"
-                                  ? "Gallery Image"
-                                  : "Category",
+                                  ? "gallery"
+                                  : "category",
                   )
                 }
                 className="space-y-4"

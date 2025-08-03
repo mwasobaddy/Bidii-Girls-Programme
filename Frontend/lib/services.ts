@@ -1,6 +1,8 @@
 import { executeQuery, executeQuerySingle, executeInsert } from './database';
 import { Project, BlogPost, TeamMember, GalleryImage } from './types';
 
+import { Campaign } from './types';
+
 // Project Services
 export async function getAllProjects(): Promise<Project[]> {
   const query = `
@@ -12,6 +14,85 @@ export async function getAllProjects(): Promise<Project[]> {
     ORDER BY created_at DESC
   `;
   return executeQuery<Project>(query);
+}
+
+// Campaign Services
+export async function getAllCampaigns(): Promise<Campaign[]> {
+  const query = `
+    SELECT id, title, description, location, urgency, beneficiaries, linked_blog, feature_image, start_date, end_date, created_at, updated_at
+    FROM campaigns
+    ORDER BY created_at DESC
+  `;
+  return executeQuery<Campaign>(query);
+}
+
+export async function getCampaignById(id: number): Promise<Campaign | null> {
+  const query = `
+    SELECT id, title, description, location, urgency, beneficiaries, linked_blog, feature_image, start_date, end_date, created_at, updated_at
+    FROM campaigns
+    WHERE id = ?
+  `;
+  return executeQuerySingle<Campaign>(query, [id]);
+}
+
+export async function createCampaign(campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'>): Promise<Campaign> {
+  const query = `
+    INSERT INTO campaigns (title, description, location, urgency, beneficiaries, linked_blog, feature_image, start_date, end_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const params = [
+    campaign.title,
+    campaign.description,
+    campaign.location,
+    campaign.urgency,
+    campaign.beneficiaries,
+    campaign.linked_blog,
+    campaign.feature_image,
+    campaign.start_date,
+    campaign.end_date
+  ];
+  try {
+    const result = await executeInsert(query, params);
+    if (!result.insertId) throw new Error('Failed to get insert ID');
+    const createdCampaign = await getCampaignById(result.insertId);
+    if (!createdCampaign) throw new Error('Failed to retrieve created campaign');
+    return createdCampaign;
+  } catch (error) {
+    console.error('Error creating campaign:', error);
+    throw error;
+  }
+}
+
+export async function updateCampaign(id: number, campaign: Partial<Omit<Campaign, 'id' | 'created_at' | 'updated_at'>>): Promise<Campaign> {
+  const fields = [];
+  const params = [];
+  if (campaign.title !== undefined) { fields.push('title = ?'); params.push(campaign.title); }
+  if (campaign.description !== undefined) { fields.push('description = ?'); params.push(campaign.description); }
+  if (campaign.location !== undefined) { fields.push('location = ?'); params.push(campaign.location); }
+  if (campaign.urgency !== undefined) { fields.push('urgency = ?'); params.push(campaign.urgency); }
+  if (campaign.beneficiaries !== undefined) { fields.push('beneficiaries = ?'); params.push(campaign.beneficiaries); }
+  if (campaign.linked_blog !== undefined) { fields.push('linked_blog = ?'); params.push(campaign.linked_blog); }
+  if (campaign.feature_image !== undefined) { fields.push('feature_image = ?'); params.push(campaign.feature_image); }
+  if (campaign.start_date !== undefined) { fields.push('start_date = ?'); params.push(campaign.start_date); }
+  if (campaign.end_date !== undefined) { fields.push('end_date = ?'); params.push(campaign.end_date); }
+  fields.push('updated_at = NOW()');
+  params.push(id);
+  if (fields.length === 0) throw new Error('No fields to update');
+  const query = `UPDATE campaigns SET ${fields.join(', ')} WHERE id = ?`;
+  try {
+    await executeQuery(query, params);
+    const updatedCampaign = await getCampaignById(id);
+    if (!updatedCampaign) throw new Error('Campaign not found after update');
+    return updatedCampaign;
+  } catch (error) {
+    console.error('Error updating campaign in DB:', error);
+    throw error;
+  }
+}
+
+export async function deleteCampaign(id: number): Promise<void> {
+  const query = 'DELETE FROM campaigns WHERE id = ?';
+  await executeQuery(query, [id]);
 }
 
 export async function getProjectById(id: number): Promise<Project | null> {

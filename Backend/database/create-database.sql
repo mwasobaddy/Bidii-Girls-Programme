@@ -101,3 +101,18 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
     status VARCHAR(50) DEFAULT 'active',
     subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Campaigns table
+CREATE TABLE IF NOT EXISTS campaigns (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(255),
+    urgency VARCHAR(50) DEFAULT 'active',
+    beneficiaries INTEGER,
+    linked_blog INTEGER,
+    feature_image VARCHAR(500),
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

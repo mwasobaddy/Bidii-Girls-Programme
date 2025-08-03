@@ -31,3 +31,9 @@ INSERT INTO gallery_images (title, description, category, image_url, alt_text, o
 ('Sanitary Pad Distribution', 'Monthly distribution of hygiene products to girls in need', 'Distribution', '/placeholder.svg?height=400&width=600', 'Distribution of sanitary pads', 2),
 ('Leadership Workshop', 'Building confidence and leadership skills among young girls', 'Empowerment', '/placeholder.svg?height=400&width=600', 'Girls in empowerment workshop', 3),
 ('School Toilet Renovation', 'Improving school facilities for better hygiene and privacy', 'Infrastructure', '/placeholder.svg?height=400&width=600', 'School infrastructure improvement', 4);
+
+-- Insert campaigns
+INSERT INTO campaigns (title, description, location, urgency, beneficiaries, linked_blog, feature_image, start_date, end_date)
+VALUES
+('Emergency Period Kits for Kibera', 'Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.', 'Kibera, Nairobi', 'Urgent', 200, 1, '/placeholder.svg?height=300&width=400', '2024-07-01', '2024-08-01'),
+('School Toilet Renovation Project', 'Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.', 'Mathare, Nairobi', 'Active', 500, 2, '/placeholder.svg?height=300&width=400', '2024-09-01', '2024-12-01');
