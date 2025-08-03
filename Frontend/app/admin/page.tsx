@@ -107,28 +107,6 @@ function DatabaseError({ message }: DatabaseErrorProps) {
 }
 
 // Mock data for features not yet implemented (will be replaced gradually)
-const mockCampaigns = [
-  {
-    id: 1,
-    title: "Emergency Period Kits for Kibera",
-    description: "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
-    location: "Kibera, Nairobi",
-    urgency: "Urgent",
-    beneficiaries: 200,
-    linkedBlog: 1 as number | null,
-    featureImage: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: 2,
-    title: "School Toilet Renovation Project",
-    description: "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
-    location: "Mathare, Nairobi",
-    urgency: "Active",
-    beneficiaries: 500,
-    linkedBlog: 2 as number | null,
-    featureImage: "/placeholder.svg?height=300&width=400",
-  },
-]
 
 const mockStories = [
   {
@@ -208,7 +186,7 @@ export default function AdminPage() {
   const [partnershipApplications, setPartnershipApplications] = useState<any[]>([])
   const [volunteerApplications, setVolunteerApplications] = useState<any[]>([])
   const [categories, setCategories] = useState(mockCategories)
-  const [campaigns, setCampaigns] = useState(mockCampaigns)
+const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [stories, setStories] = useState(mockStories)
   const [sponsors, setSponsors] = useState(mockSponsors)
 
@@ -238,15 +216,15 @@ export default function AdminPage() {
     end_date: "",
   });
 
-  const [newCampaign, setNewCampaign] = useState({
-    title: "",
-    description: "",
-    location: "",
-    beneficiaries: "",
-    urgency: "active",
-    featureImage: "",
-    linkedBlog: "",
-  })
+const [newCampaign, setNewCampaign] = useState({
+  title: "",
+  description: "",
+  location: "",
+  beneficiaries: "",
+  urgency: "active",
+  feature_image: "",
+  linked_blog: "",
+})
 
   const [newStory, setNewStory] = useState({
     title: "",
@@ -291,6 +269,17 @@ export default function AdminPage() {
   const router = useRouter();
 
   // Database fetching functions
+const fetchCampaigns = async () => {
+  try {
+    const response = await fetch("/api/campaigns");
+    if (!response.ok) throw new Error("Failed to fetch campaigns");
+    const data = await response.json();
+    setCampaigns(data);
+  } catch (error) {
+    console.error("Error fetching campaigns:", error);
+    setError("Failed to load campaigns from database");
+  }
+};
   const fetchProjects = async () => {
     try {
       const response = await fetch("/api/projects");
@@ -525,10 +514,10 @@ export default function AdminPage() {
           title: item.title,
           description: item.description,
           location: item.location,
-          beneficiaries: item.beneficiaries.toString(),
-          urgency: item.urgency.toLowerCase(),
-          featureImage: item.featureImage,
-          linkedBlog: item.linkedBlog?.toString() || "",
+          beneficiaries: item.beneficiaries?.toString() || "",
+          urgency: item.urgency?.toLowerCase() || "",
+          feature_image: item.feature_image || "",
+          linked_blog: item.linked_blog?.toString() || "",
         })
         break
       case "project":
@@ -589,9 +578,7 @@ export default function AdminPage() {
         break;
       case "gallery":
         setNewGalleryImage({
-          title: item.title,
           category: item.category,
-          description: item.description,
           image: item.image,
         });
         break;
@@ -707,30 +694,57 @@ export default function AdminPage() {
 
     switch (type) {
       case "Campaign":
-        const campaignData = {
-          id: newId,
-          title: newCampaign.title,
-          description: newCampaign.description,
-          location: newCampaign.location,
-          urgency: newCampaign.urgency,
-          beneficiaries: Number.parseInt(newCampaign.beneficiaries),
-          linkedBlog: newCampaign.linkedBlog ? Number.parseInt(newCampaign.linkedBlog) : null,
-          featureImage: newCampaign.featureImage,
+        try {
+          const campaignData = {
+            title: newCampaign.title,
+            description: newCampaign.description,
+            location: newCampaign.location,
+            urgency: newCampaign.urgency,
+            beneficiaries: newCampaign.beneficiaries !== "" ? Number(newCampaign.beneficiaries) : 0,
+            linked_blog: newCampaign.linked_blog !== "" ? Number(newCampaign.linked_blog) : null,
+            feature_image: newCampaign.feature_image !== "" ? newCampaign.feature_image : null,
+          };
+          let response;
+          if (editingItem) {
+            response = await fetch('/api/campaigns', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: editingItem.id, ...campaignData }),
+            });
+          } else {
+            response = await fetch('/api/campaigns', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(campaignData),
+            });
+          }
+          if (!response.ok) {
+            throw new Error('Failed to save campaign');
+          }
+          const savedCampaign = await response.json();
+          if (editingItem) {
+            setCampaigns(campaigns.map((item) => (item.id === editingItem.id ? savedCampaign : item)));
+          } else {
+            setCampaigns([...campaigns, savedCampaign]);
+          }
+          setNewCampaign({
+            title: "",
+            description: "",
+            location: "",
+            beneficiaries: "",
+            urgency: "active",
+            feature_image: "",
+            linked_blog: "",
+          });
+        } catch (error) {
+          console.error('Error saving campaign:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save campaign. Please try again.",
+            variant: "destructive",
+          });
+          return;
         }
-        if (editingItem) {
-          setCampaigns(campaigns.map((item) => (item.id === editingItem.id ? campaignData : item)))
-        } else {
-          setCampaigns([...campaigns, campaignData])
-        }
-        setNewCampaign({
-          title: "",
-          description: "",
-          location: "",
-          beneficiaries: "",
-          urgency: "active",
-          featureImage: "",
-          linkedBlog: "",
-        })
         break
 
       case "Project":
@@ -741,7 +755,7 @@ export default function AdminPage() {
             location: newProject.location,
             status: newProject.status,
             beneficiaries: newProject.beneficiaries ? Number.parseInt(newProject.beneficiaries) : null,
-            featureImage: newProject.featureImage,
+            featured_image: newProject.featured_image,
             progress: Number.parseInt(newProject.progress) || 0,
             start_date: newProject.start_date || null,
           }
@@ -1111,8 +1125,8 @@ export default function AdminPage() {
       location: "",
       beneficiaries: "",
       urgency: "active",
-      featureImage: "",
-      linkedBlog: "",
+      feature_image: "",
+      linked_blog: "",
     })
     setNewProject({
       title: "",
@@ -1724,8 +1738,8 @@ export default function AdminPage() {
                         Link to Blog Post
                       </Label>
                       <Select
-                        value={newProject.linkedBlog}
-                        onValueChange={(value) => setNewProject((prev) => ({ ...prev, linkedBlog: value }))}
+                        value={newProject.linked_blog}
+                        onValueChange={(value) => setNewProject((prev) => ({ ...prev, linked_blog: value }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a blog post" />
@@ -3361,11 +3375,11 @@ export default function AdminPage() {
                     <div className="space-y-2">
                       <Label>Link to Blog Post</Label>
                       <Select
-                        value={newCampaign.linkedBlog}
+                        value={newCampaign.linked_blog}
                         onValueChange={(value) =>
                           setNewCampaign((prev) => ({
                             ...prev,
-                            linkedBlog: value,
+                            linked_blog: value,
                           }))
                         }
                       >
@@ -3405,7 +3419,7 @@ export default function AdminPage() {
                           type="button"
                           variant="outline"
                           onClick={() =>
-                            handleImageUpload(setNewCampaign, "featureImage")
+                            handleImageUpload(setNewCampaign, "feature_image")
                           }
                           className="bg-transparent"
                         >
@@ -3414,7 +3428,7 @@ export default function AdminPage() {
                         </Button>
                         {newCampaign.featureImage && (
                           <Image
-                            src={newCampaign.featureImage || "/placeholder.svg"}
+                            src={newCampaign.feature_image || "/placeholder.svg"}
                             alt="Featured"
                             width={100}
                             height={60}
@@ -3511,11 +3525,11 @@ export default function AdminPage() {
                     <div className="space-y-2">
                       <Label>Link to Blog Post</Label>
                       <Select
-                        value={newProject.linkedBlog}
+                        value={newProject.linked_blog}
                         onValueChange={(value) =>
                           setNewProject((prev) => ({
                             ...prev,
-                            linkedBlog: value,
+                            linked_blog: value,
                           }))
                         }
                       >
@@ -3555,7 +3569,7 @@ export default function AdminPage() {
                           type="button"
                           variant="outline"
                           onClick={() =>
-                            handleImageUpload(setNewProject, "featureImage")
+                            handleImageUpload(setNewProject, "featured_image")
                           }
                           className="bg-transparent"
                         >
@@ -3564,7 +3578,7 @@ export default function AdminPage() {
                         </Button>
                         {newProject.featureImage && (
                           <Image
-                            src={newProject.featureImage || "/placeholder.svg"}
+                            src={newProject.featured_image || "/placeholder.svg"}
                             alt="Featured"
                             width={100}
                             height={60}
@@ -4018,20 +4032,6 @@ export default function AdminPage() {
                 {editType === "gallery" && (
                   <>
                     <div className="space-y-2">
-                      <Label>Title</Label>
-                      <Input
-                        value={newGalleryImage.title}
-                        onChange={(e) =>
-                          setNewGalleryImage((prev) => ({
-                            ...prev,
-                            title: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label>Category</Label>
                       <Select
                         value={newGalleryImage.category}
@@ -4047,36 +4047,15 @@ export default function AdminPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Education">Education</SelectItem>
-                          <SelectItem value="Distribution">
-                            Distribution
-                          </SelectItem>
-                          <SelectItem value="Empowerment">
-                            Empowerment
-                          </SelectItem>
-                          <SelectItem value="Infrastructure">
-                            Infrastructure
-                          </SelectItem>
+                          <SelectItem value="Distribution">Distribution</SelectItem>
+                          <SelectItem value="Empowerment">Empowerment</SelectItem>
+                          <SelectItem value="Infrastructure">Infrastructure</SelectItem>
                           <SelectItem value="Community">Community</SelectItem>
                           <SelectItem value="Success">Success</SelectItem>
                           <SelectItem value="Team">Team</SelectItem>
                           <SelectItem value="Training">Training</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea
-                        rows={3}
-                        value={newGalleryImage.description}
-                        onChange={(e) =>
-                          setNewGalleryImage((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                        required
-                      />
                     </div>
 
                     <div className="space-y-2">
