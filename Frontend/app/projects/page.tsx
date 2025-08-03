@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import Link from "next/link"
-import { Calendar, MapPin, Users, ArrowRight, AlertCircle } from "lucide-react"
-import { DonateButton } from "@/components/donate-button"
-import { getAllProjects } from "@/lib/services"
-import { Project } from "@/lib/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { Calendar, MapPin, Users, ArrowRight, AlertCircle } from "lucide-react";
+import { DonateButton } from "@/components/donate-button";
+import { getAllProjects } from "@/lib/services";
+import { Project } from "@/lib/types";
 
 // Transform database project to component format
 function transformProject(project: Project) {
@@ -18,10 +18,12 @@ function transformProject(project: Project) {
     status: project.status.charAt(0).toUpperCase() + project.status.slice(1),
     location: project.location || "Location TBD",
     beneficiaries: project.beneficiaries || 0,
-    startDate: project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
-    }) : 'TBD',
+    startDate: project.start_date
+      ? new Date(project.start_date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+        })
+      : "TBD",
     progress: project.progress,
     budget: project.budget,
     raised: project.raised,
@@ -39,9 +41,7 @@ function DatabaseError({ message }: { message: string }) {
           <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
             Database Connection Error
           </h2>
-          <p className="text-red-600 dark:text-red-300 mb-6">
-            {message}
-          </p>
+          <p className="text-red-600 dark:text-red-300 mb-6">{message}</p>
           <div className="space-y-4">
             <p className="text-sm text-red-500 dark:text-red-400">
               Please ensure:
@@ -61,28 +61,33 @@ function DatabaseError({ message }: { message: string }) {
 
 export default async function ProjectsPage() {
   let projects: ReturnType<typeof transformProject>[] = [];
-  let errorMessage = '';
+  let errorMessage = "";
 
   try {
     const dbProjects = await getAllProjects();
     projects = dbProjects.map(transformProject);
-    
+
     // If no projects found in database
     if (projects.length === 0) {
-      errorMessage = 'No projects found in the database. Please add some projects or check if the seed data was imported correctly.';
+      errorMessage =
+        "No projects found in the database. Please add some projects or check if the seed data was imported correctly.";
     }
   } catch (error) {
-    console.error('Failed to fetch projects:', error);
-    errorMessage = 'Failed to connect to the database. Please check your XAMPP MySQL connection and database configuration.';
-    
+    console.error("Failed to fetch projects:", error);
+    errorMessage =
+      "Failed to connect to the database. Please check your XAMPP MySQL connection and database configuration.";
+
     // Return error component instead of dummy data
     return (
       <div className="pt-16">
         <section className="py-20 bg-gradient-to-r from-[#e51083] to-pink-600 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Our Projects</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Our Projects
+            </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-              Transforming lives through targeted initiatives that address period poverty and empower girls
+              Transforming lives through targeted initiatives that address
+              period poverty and empower girls
             </p>
           </div>
         </section>
@@ -97,7 +102,8 @@ export default async function ProjectsPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Our Projects</h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-            Transforming lives through targeted initiatives that address period poverty and empower girls
+            Transforming lives through targeted initiatives that address period
+            poverty and empower girls
           </p>
           {errorMessage && (
             <div className="mt-4 p-4 bg-yellow-500/20 border border-yellow-400 rounded-lg text-yellow-100">
@@ -113,7 +119,8 @@ export default async function ProjectsPage() {
           <div className="container mx-auto px-4">
             <div className="mb-8 text-center">
               <p className="text-lg text-gray-600 dark:text-gray-400">
-                Showing {projects.length} project{projects.length !== 1 ? 's' : ''} from our database
+                Showing {projects.length} project
+                {projects.length !== 1 ? "s" : ""} from our database
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -132,10 +139,10 @@ export default async function ProjectsPage() {
                         project.status === "Active"
                           ? "bg-green-500"
                           : project.status === "Planning"
-                            ? "bg-yellow-500"
-                            : project.status === "Completed"
-                              ? "bg-blue-500"
-                              : "bg-gray-500"
+                          ? "bg-yellow-500"
+                          : project.status === "Completed"
+                          ? "bg-blue-500"
+                          : "bg-gray-500"
                       }`}
                     >
                       {project.status}
@@ -147,7 +154,9 @@ export default async function ProjectsPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <p className="text-gray-600 dark:text-gray-400">{project.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {project.description}
+                    </p>
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
@@ -164,32 +173,12 @@ export default async function ProjectsPage() {
                       </div>
                     </div>
 
-                    {/* Progress and funding info */}
-                    {(project.budget || project.raised) && (
-                      <div className="border-t pt-4">
-                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          <span>Progress: {project.progress}%</span>
-                          {project.budget && (
-                            <span>
-                              ${project.raised?.toLocaleString() || 0} / ${project.budget.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-[#e51083] h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${Math.min(project.progress, 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                      <DonateButton />
-                      <Link href={`/blog/${project.blogId}`}>
+                    <div className="flex gap-2 pt-4">
+                      <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                      <Link href={`/blog/${project.blogId}`} className="flex-1">
                         <Button
                           variant="outline"
-                          className="w-full sm:w-auto border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
+                          className="w-full h-11 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-[#e51083]/20"
                         >
                           Read More <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
@@ -208,7 +197,8 @@ export default async function ProjectsPage() {
               <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">No Projects Found</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                No projects are currently available. Please check back later or contact the administrator.
+                No projects are currently available. Please check back later or
+                contact the administrator.
               </p>
             </div>
           </div>
@@ -220,20 +210,23 @@ export default async function ProjectsPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Help Us Make a Difference</h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Your support can help us expand our reach and impact more lives. Every donation brings us closer to our goal
-            of eradicating period poverty.
+            Your support can help us expand our reach and impact more lives.
+            Every donation brings us closer to our goal of eradicating period
+            poverty.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <DonateButton />
-            <Button
-              variant="outline"
-              className="border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
-            >
-              Become a Volunteer
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+            <Link href="/contact" className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full h-11 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-[#e51083]/20"
+              >
+                Volunteer with Us
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 }

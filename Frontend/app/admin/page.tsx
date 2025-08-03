@@ -1,18 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Plus,
   Edit,
@@ -29,9 +41,10 @@ import {
   Tag,
   ImageIcon,
   AlertCircle,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import Image from "next/image"
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 // Database Types
 interface Project {
@@ -93,7 +106,9 @@ function DatabaseError({ message }: DatabaseErrorProps) {
     <div className="flex items-center justify-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
       <div className="text-center">
         <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Database Error</h3>
+        <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">
+          Database Error
+        </h3>
         <p className="text-red-600 dark:text-red-300 mb-4">{message}</p>
         <p className="text-sm text-red-500 dark:text-red-400">
           Please check your database connection or contact the administrator.
@@ -108,7 +123,8 @@ const mockCampaigns = [
   {
     id: 1,
     title: "Emergency Period Kits for Kibera",
-    description: "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
+    description:
+      "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
     location: "Kibera, Nairobi",
     urgency: "Urgent",
     beneficiaries: 200,
@@ -118,26 +134,28 @@ const mockCampaigns = [
   {
     id: 2,
     title: "School Toilet Renovation Project",
-    description: "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
+    description:
+      "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
     location: "Mathare, Nairobi",
     urgency: "Active",
     beneficiaries: 500,
     linkedBlog: 2 as number | null,
     featureImage: "/placeholder.svg?height=300&width=400",
   },
-]
+];
 
 const mockStories = [
   {
     id: 1,
     title: "Maria's Journey to Confidence",
-    content: "How our program helped Maria overcome period poverty and excel in school.",
+    content:
+      "How our program helped Maria overcome period poverty and excel in school.",
     beneficiaryName: "Maria Wanjiku",
     beneficiaryAge: "16",
     location: "Kibera, Nairobi",
     featureImage: "/placeholder.svg?height=300&width=400",
   },
-]
+];
 
 const mockSponsors = [
   {
@@ -152,41 +170,63 @@ const mockSponsors = [
     logo: "/placeholder.svg?height=80&width=120",
     website: "https://worldvision.org",
   },
-]
+];
 
 const mockCategories = [
-  { id: 1, name: "Education", description: "Educational content and resources" },
-  { id: 2, name: "Success Stories", description: "Inspiring success stories from beneficiaries" },
+  {
+    id: 1,
+    name: "Education",
+    description: "Educational content and resources",
+  },
+  {
+    id: 2,
+    name: "Success Stories",
+    description: "Inspiring success stories from beneficiaries",
+  },
   { id: 3, name: "Research", description: "Research and data-driven content" },
-  { id: 4, name: "Community", description: "Community engagement and outreach" },
-  { id: 5, name: "Empowerment", description: "Women and girls empowerment content" },
-  { id: 6, name: "Distribution", description: "Product distribution activities" },
-]
+  {
+    id: 4,
+    name: "Community",
+    description: "Community engagement and outreach",
+  },
+  {
+    id: 5,
+    name: "Empowerment",
+    description: "Women and girls empowerment content",
+  },
+  {
+    id: 6,
+    name: "Distribution",
+    description: "Product distribution activities",
+  },
+];
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [editingItem, setEditingItem] = useState<any>(null)
-  const [editType, setEditType] = useState<string>("")
-  const [viewingItem, setViewingItem] = useState<any>(null)
-  const [viewType, setViewType] = useState<string>("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editType, setEditType] = useState<string>("");
+  const [viewingItem, setViewingItem] = useState<any>(null);
+  const [viewType, setViewType] = useState<string>("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   // Database-driven state
-  const [projects, setProjects] = useState<Project[]>([])
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
-  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
   // Mock state for features not yet implemented
-  const [partnershipApplications, setPartnershipApplications] = useState<any[]>([])
-  const [volunteerApplications, setVolunteerApplications] = useState<any[]>([])
-  const [categories, setCategories] = useState(mockCategories)
-  const [campaigns, setCampaigns] = useState(mockCampaigns)
-  const [stories, setStories] = useState(mockStories)
-  const [sponsors, setSponsors] = useState(mockSponsors)
+  const [partnershipApplications, setPartnershipApplications] = useState<any[]>(
+    []
+  );
+  const [volunteerApplications, setVolunteerApplications] = useState<any[]>([]);
+  const [categories, setCategories] = useState(mockCategories);
+  const [campaigns, setCampaigns] = useState(mockCampaigns);
+  const [stories, setStories] = useState(mockStories);
+  const [sponsors, setSponsors] = useState(mockSponsors);
 
   // Form states for all content types
   const [newBlog, setNewBlog] = useState({
@@ -199,7 +239,7 @@ export default function AdminPage() {
     images: [] as string[],
     slug: "",
     published: false,
-  })
+  });
 
   const [newProject, setNewProject] = useState({
     title: "",
@@ -210,11 +250,9 @@ export default function AdminPage() {
     featureImage: "",
     linkedBlog: "",
     progress: "",
-    budget: "",
-    raised: "",
     start_date: "",
     end_date: "",
-  })
+  });
 
   const [newCampaign, setNewCampaign] = useState({
     title: "",
@@ -224,7 +262,7 @@ export default function AdminPage() {
     urgency: "active",
     featureImage: "",
     linkedBlog: "",
-  })
+  });
 
   const [newStory, setNewStory] = useState({
     title: "",
@@ -233,7 +271,7 @@ export default function AdminPage() {
     beneficiaryAge: "",
     location: "",
     featureImage: "",
-  })
+  });
 
   const [newTeamMember, setNewTeamMember] = useState({
     name: "",
@@ -244,107 +282,120 @@ export default function AdminPage() {
     facebook: "",
     instagram: "",
     tiktok: "",
-  })
+  });
 
   const [newSponsor, setNewSponsor] = useState({
     name: "",
     logo: "",
     website: "",
-  })
+  });
 
-  const [newGalleryImage, setNewGalleryImage] = useState({
-    title: "",
+  const [newGalleryImage, setNewGalleryImage] = useState<{
+    category: string;
+    image: string;
+  }>({
     category: "",
-    description: "",
     image: "",
-  })
+  });
 
   const [newCategory, setNewCategory] = useState({
     name: "",
     description: "",
-  })
+  });
 
-  const { toast } = useToast()
-  const router = useRouter()
+  const { toast } = useToast();
+  const router = useRouter();
 
   // Database fetching functions
   const fetchProjects = async () => {
     try {
-      const response = await fetch('/api/projects');
-      if (!response.ok) throw new Error('Failed to fetch projects');
+      const response = await fetch("/api/projects");
+      if (!response.ok) throw new Error("Failed to fetch projects");
       const data = await response.json();
       setProjects(data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
-      setError('Failed to load projects from database');
+      console.error("Error fetching projects:", error);
+      setError("Failed to load projects from database");
     }
   };
 
   const fetchBlogPosts = async () => {
     try {
-      const response = await fetch('/api/blog?admin=true');
-      if (!response.ok) throw new Error('Failed to fetch blog posts');
+      const response = await fetch("/api/blog?admin=true");
+      if (!response.ok) throw new Error("Failed to fetch blog posts");
       const data = await response.json();
       setBlogPosts(data);
     } catch (error) {
-      console.error('Error fetching blog posts:', error);
-      setError('Failed to load blog posts from database');
+      console.error("Error fetching blog posts:", error);
+      setError("Failed to load blog posts from database");
     }
   };
 
   const fetchStories = async () => {
     try {
-      const response = await fetch('/api/blog?admin=true');
-      if (!response.ok) throw new Error('Failed to fetch stories');
+      const response = await fetch("/api/blog?admin=true");
+      if (!response.ok) throw new Error("Failed to fetch stories");
       const data = await response.json();
       // Filter blog posts that are success stories
       const storiesData = data
-        .filter((post: any) => post.category === 'Success Stories')
+        .filter((post: any) => post.category === "Success Stories")
         .map((post: any) => {
           // Try to extract beneficiary info from content
-          const lines = post.content.split('\n');
-          const beneficiaryLine = lines.find((line: string) => line.includes('**Beneficiary:**'));
-          const ageLine = lines.find((line: string) => line.includes('**Age:**'));
-          const locationLine = lines.find((line: string) => line.includes('**Location:**'));
-          
+          const lines = post.content.split("\n");
+          const beneficiaryLine = lines.find((line: string) =>
+            line.includes("**Beneficiary:**")
+          );
+          const ageLine = lines.find((line: string) =>
+            line.includes("**Age:**")
+          );
+          const locationLine = lines.find((line: string) =>
+            line.includes("**Location:**")
+          );
+
           return {
             id: post.id,
             title: post.title,
-            content: lines[0] || post.excerpt || '', // First line as main content
-            beneficiaryName: beneficiaryLine ? beneficiaryLine.replace('**Beneficiary:**', '').trim() : '',
-            beneficiaryAge: ageLine ? ageLine.replace('**Age:**', '').trim() : '',
-            location: locationLine ? locationLine.replace('**Location:**', '').trim() : '',
-            featureImage: post.featured_image || '',
+            content: lines[0] || post.excerpt || "", // First line as main content
+            beneficiaryName: beneficiaryLine
+              ? beneficiaryLine.replace("**Beneficiary:**", "").trim()
+              : "",
+            beneficiaryAge: ageLine
+              ? ageLine.replace("**Age:**", "").trim()
+              : "",
+            location: locationLine
+              ? locationLine.replace("**Location:**", "").trim()
+              : "",
+            featureImage: post.featured_image || "",
           };
         });
       setStories(storiesData);
     } catch (error) {
-      console.error('Error fetching stories:', error);
-      setError('Failed to load stories from database');
+      console.error("Error fetching stories:", error);
+      setError("Failed to load stories from database");
     }
   };
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch('/api/team');
-      if (!response.ok) throw new Error('Failed to fetch team members');
+      const response = await fetch("/api/team");
+      if (!response.ok) throw new Error("Failed to fetch team members");
       const data = await response.json();
       setTeamMembers(data);
     } catch (error) {
-      console.error('Error fetching team members:', error);
-      setError('Failed to load team members from database');
+      console.error("Error fetching team members:", error);
+      setError("Failed to load team members from database");
     }
   };
 
   const fetchGalleryImages = async () => {
     try {
-      const response = await fetch('/api/gallery');
-      if (!response.ok) throw new Error('Failed to fetch gallery images');
+      const response = await fetch("/api/gallery");
+      if (!response.ok) throw new Error("Failed to fetch gallery images");
       const data = await response.json();
       setGalleryImages(data);
     } catch (error) {
-      console.error('Error fetching gallery images:', error);
-      setError('Failed to load gallery images from database');
+      console.error("Error fetching gallery images:", error);
+      setError("Failed to load gallery images from database");
     }
   };
 
@@ -357,73 +408,130 @@ export default function AdminPage() {
         fetchBlogPosts(),
         fetchStories(),
         fetchTeamMembers(),
-        fetchGalleryImages()
+        fetchGalleryImages(),
       ]);
     } catch (error) {
-      console.error('Error loading database data:', error);
-      setError('Failed to connect to database');
+      console.error("Error loading database data:", error);
+      setError("Failed to connect to database");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const authStatus = localStorage.getItem("adminAuth")
+    const authStatus = localStorage.getItem("adminAuth");
     if (authStatus === "true") {
-      setIsAuthenticated(true)
-      loadDatabaseData()
+      setIsAuthenticated(true);
+      loadDatabaseData();
       // Load applications from localStorage
-      const partners = JSON.parse(localStorage.getItem("partnershipApplications") || "[]")
-      const volunteers = JSON.parse(localStorage.getItem("volunteerApplications") || "[]")
-      setPartnershipApplications(partners)
-      setVolunteerApplications(volunteers)
+      const partners = JSON.parse(
+        localStorage.getItem("partnershipApplications") || "[]"
+      );
+      const volunteers = JSON.parse(
+        localStorage.getItem("volunteerApplications") || "[]"
+      );
+      setPartnershipApplications(partners);
+      setVolunteerApplications(volunteers);
     } else {
-      router.push("/admin/login")
+      router.push("/admin/login");
     }
-  }, [router])
+  }, [router]);
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      localStorage.removeItem("adminAuth")
-      localStorage.removeItem("adminUser")
+      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem("adminAuth");
+      localStorage.removeItem("adminUser");
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out from the database.",
-      })
-      router.push("/admin/login")
+      });
+      router.push("/admin/login");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       toast({
         title: "Logout Error",
-        description: "There was an error logging out, but local session cleared.",
-      })
-      router.push("/admin/login")
+        description:
+          "There was an error logging out, but local session cleared.",
+      });
+      router.push("/admin/login");
     }
-  }
+  };
 
   const handleImageUpload = (setter: Function, field?: string) => {
-    const mockImageUrl = "/placeholder.svg?height=400&width=600"
-    if (field) {
-      setter((prev: any) => ({ ...prev, [field]: mockImageUrl }))
-    } else {
-      setter((prev: any) => ({ ...prev, images: [...prev.images, mockImageUrl] }))
-    }
-    toast({
-      title: "Image Uploaded",
-      description: "Image has been uploaded successfully.",
-    })
-  }
+    // Create a file input element
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = !field; // Allow multiple files only when adding to images array
+
+    input.onchange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const files = target.files;
+
+      if (!files || files.length === 0) return;
+
+      // Process each selected file
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageDataUrl = event.target?.result as string;
+
+          // Store in localStorage with a unique key
+          const imageKey = `admin_image_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
+          try {
+            localStorage.setItem(imageKey, imageDataUrl);
+
+            if (field) {
+              setter((prev: any) => ({ ...prev, [field]: imageDataUrl }));
+            } else {
+              setter((prev: any) => ({
+                ...prev,
+                images: [...prev.images, imageDataUrl],
+              }));
+            }
+
+            toast({
+              title: "Image Uploaded",
+              description: `Image "${file.name}" has been uploaded and stored locally.`,
+            });
+          } catch (error) {
+            console.error("Error storing image in localStorage:", error);
+            toast({
+              title: "Upload Error",
+              description: "Failed to store image. File may be too large.",
+              variant: "destructive",
+            });
+          }
+        };
+
+        reader.onerror = () => {
+          toast({
+            title: "Upload Error",
+            description: "Failed to read the selected file.",
+            variant: "destructive",
+          });
+        };
+
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // Trigger the file picker
+    input.click();
+  };
 
   const handleView = (item: any, type: string) => {
-    setViewingItem(item)
-    setViewType(type)
-    setIsViewDialogOpen(true)
-  }
+    setViewingItem(item);
+    setViewType(type);
+    setIsViewDialogOpen(true);
+  };
 
   const handleEdit = (item: any, type: string) => {
-    setEditingItem(item)
-    setEditType(type)
+    setEditingItem(item);
+    setEditType(type);
 
     // Populate form based on type
     switch (type) {
@@ -436,8 +544,8 @@ export default function AdminPage() {
           urgency: item.urgency.toLowerCase(),
           featureImage: item.featureImage,
           linkedBlog: item.linkedBlog?.toString() || "",
-        })
-        break
+        });
+        break;
       case "project":
         setNewProject({
           title: item.title,
@@ -448,12 +556,10 @@ export default function AdminPage() {
           featureImage: item.featureImage,
           linkedBlog: item.linkedBlog?.toString() || "",
           progress: item.progress?.toString() || "",
-          budget: item.budget?.toString() || "",
-          raised: item.raised?.toString() || "",
           start_date: item.start_date || "",
           end_date: item.end_date || "",
-        })
-        break
+        });
+        break;
       case "story":
         setNewStory({
           title: item.title,
@@ -462,8 +568,8 @@ export default function AdminPage() {
           beneficiaryAge: item.beneficiaryAge,
           location: item.location,
           featureImage: item.featureImage,
-        })
-        break
+        });
+        break;
       case "blog":
         setNewBlog({
           title: item.title,
@@ -475,8 +581,8 @@ export default function AdminPage() {
           images: item.images || [],
           slug: item.slug || "",
           published: item.published || false,
-        })
-        break
+        });
+        break;
       case "team":
         setNewTeamMember({
           name: item.name,
@@ -487,109 +593,119 @@ export default function AdminPage() {
           instagram: item.instagram || "",
           tiktok: item.tiktok || "",
           image: item.image,
-        })
-        break
+        });
+        break;
       case "sponsor":
         setNewSponsor({
           name: item.name,
           logo: item.logo,
           website: item.website,
-        })
-        break
+        });
+        break;
       case "gallery":
         setNewGalleryImage({
           title: item.title,
           category: item.category,
           description: item.description,
           image: item.image,
-        })
-        break
+        });
+        break;
       case "category":
         setNewCategory({
           name: item.name,
           description: item.description,
-        })
-        break
+        });
+        break;
     }
-    setIsDialogOpen(true)
-  }
+    setIsDialogOpen(true);
+  };
 
   const handleDelete = async (id: number, type: string) => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
         switch (type) {
           case "partnership":
-            const updatedPartners = partnershipApplications.filter((app) => app.id !== id)
-            setPartnershipApplications(updatedPartners)
-            localStorage.setItem("partnershipApplications", JSON.stringify(updatedPartners))
-            break
+            const updatedPartners = partnershipApplications.filter(
+              (app) => app.id !== id
+            );
+            setPartnershipApplications(updatedPartners);
+            localStorage.setItem(
+              "partnershipApplications",
+              JSON.stringify(updatedPartners)
+            );
+            break;
           case "volunteer":
-            const updatedVolunteers = volunteerApplications.filter((app) => app.id !== id)
-            setVolunteerApplications(updatedVolunteers)
-            localStorage.setItem("volunteerApplications", JSON.stringify(updatedVolunteers))
-            break
+            const updatedVolunteers = volunteerApplications.filter(
+              (app) => app.id !== id
+            );
+            setVolunteerApplications(updatedVolunteers);
+            localStorage.setItem(
+              "volunteerApplications",
+              JSON.stringify(updatedVolunteers)
+            );
+            break;
           case "category":
-            setCategories(categories.filter((cat) => cat.id !== id))
-            break
+            setCategories(categories.filter((cat) => cat.id !== id));
+            break;
           case "campaign":
-            setCampaigns(campaigns.filter((item) => item.id !== id))
-            break
+            setCampaigns(campaigns.filter((item) => item.id !== id));
+            break;
           case "project":
             // Delete from database
             const response = await fetch(`/api/projects?id=${id}`, {
-              method: 'DELETE',
+              method: "DELETE",
             });
 
             if (!response.ok) {
-              throw new Error('Failed to delete project');
+              throw new Error("Failed to delete project");
             }
 
             // Update local state
-            setProjects(projects.filter((item) => item.id !== id))
-            break
+            setProjects(projects.filter((item) => item.id !== id));
+            break;
           case "story":
             // Delete story from database (as blog post)
             const storyResponse = await fetch(`/api/blog?id=${id}`, {
-              method: 'DELETE',
+              method: "DELETE",
             });
 
             if (!storyResponse.ok) {
-              throw new Error('Failed to delete story');
+              throw new Error("Failed to delete story");
             }
 
             // Update local state
-            setStories(stories.filter((item) => item.id !== id))
-            break
+            setStories(stories.filter((item) => item.id !== id));
+            break;
           case "blog":
             // Delete blog post from database
             const blogResponse = await fetch(`/api/blog?id=${id}`, {
-              method: 'DELETE',
+              method: "DELETE",
             });
 
             if (!blogResponse.ok) {
-              throw new Error('Failed to delete blog post');
+              throw new Error("Failed to delete blog post");
             }
 
             // Update local state
-            setBlogPosts(blogPosts.filter((item) => item.id !== id))
-            break
+            setBlogPosts(blogPosts.filter((item) => item.id !== id));
+            break;
           case "team":
-            setTeamMembers(teamMembers.filter((item) => item.id !== id))
-            break
+            setTeamMembers(teamMembers.filter((item) => item.id !== id));
+            break;
           case "sponsor":
-            setSponsors(sponsors.filter((item) => item.id !== id))
-            break
+            setSponsors(sponsors.filter((item) => item.id !== id));
+            break;
           case "gallery":
-            setGalleryImages(galleryImages.filter((item) => item.id !== id))
-            break
+            setGalleryImages(galleryImages.filter((item) => item.id !== id));
+            break;
         }
 
         toast({
           title: "Item Deleted",
           description: `${type} has been deleted successfully.`,
-        })
+        });
       } catch (error) {
-        console.error('Error deleting item:', error);
+        console.error("Error deleting item:", error);
         toast({
           title: "Error",
           description: `Failed to delete ${type}. Please try again.`,
@@ -597,12 +713,12 @@ export default function AdminPage() {
         });
       }
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent, type: string) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const newId = editingItem?.id || Date.now()
+    const newId = editingItem?.id || Date.now();
 
     switch (type) {
       case "Campaign":
@@ -613,13 +729,19 @@ export default function AdminPage() {
           location: newCampaign.location,
           urgency: newCampaign.urgency,
           beneficiaries: Number.parseInt(newCampaign.beneficiaries),
-          linkedBlog: newCampaign.linkedBlog ? Number.parseInt(newCampaign.linkedBlog) : null,
+          linkedBlog: newCampaign.linkedBlog
+            ? Number.parseInt(newCampaign.linkedBlog)
+            : null,
           featureImage: newCampaign.featureImage,
-        }
+        };
         if (editingItem) {
-          setCampaigns(campaigns.map((item) => (item.id === editingItem.id ? campaignData : item)))
+          setCampaigns(
+            campaigns.map((item) =>
+              item.id === editingItem.id ? campaignData : item
+            )
+          );
         } else {
-          setCampaigns([...campaigns, campaignData])
+          setCampaigns([...campaigns, campaignData]);
         }
         setNewCampaign({
           title: "",
@@ -629,8 +751,8 @@ export default function AdminPage() {
           urgency: "active",
           featureImage: "",
           linkedBlog: "",
-        })
-        break
+        });
+        break;
 
       case "Project":
         try {
@@ -639,20 +761,20 @@ export default function AdminPage() {
             description: newProject.description,
             location: newProject.location,
             status: newProject.status,
-            beneficiaries: newProject.beneficiaries ? Number.parseInt(newProject.beneficiaries) : null,
+            beneficiaries: newProject.beneficiaries
+              ? Number.parseInt(newProject.beneficiaries)
+              : null,
             featureImage: newProject.featureImage,
             progress: Number.parseInt(newProject.progress) || 0,
-            budget: newProject.budget ? Number.parseInt(newProject.budget) : null,
-            raised: Number.parseInt(newProject.raised) || 0,
             start_date: newProject.start_date || null,
-          }
+          };
 
           if (editingItem) {
             // Update existing project
-            const response = await fetch('/api/projects', {
-              method: 'PUT',
+            const response = await fetch("/api/projects", {
+              method: "PUT",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 id: editingItem.id,
@@ -661,23 +783,27 @@ export default function AdminPage() {
             });
 
             if (!response.ok) {
-              throw new Error('Failed to update project');
+              throw new Error("Failed to update project");
             }
 
             const updatedProject = await response.json();
-            setProjects(projects.map((item) => (item.id === editingItem.id ? updatedProject : item)));
+            setProjects(
+              projects.map((item) =>
+                item.id === editingItem.id ? updatedProject : item
+              )
+            );
           } else {
             // Create new project
-            const response = await fetch('/api/projects', {
-              method: 'POST',
+            const response = await fetch("/api/projects", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(projectData),
             });
 
             if (!response.ok) {
-              throw new Error('Failed to create project');
+              throw new Error("Failed to create project");
             }
 
             const newProjectData = await response.json();
@@ -693,13 +819,11 @@ export default function AdminPage() {
             featureImage: "",
             linkedBlog: "",
             progress: "",
-            budget: "",
-            raised: "",
             start_date: "",
             end_date: "",
           });
         } catch (error) {
-          console.error('Error saving project:', error);
+          console.error("Error saving project:", error);
           toast({
             title: "Error",
             description: "Failed to save project. Please try again.",
@@ -707,7 +831,7 @@ export default function AdminPage() {
           });
           return; // Don't close dialog or show success message
         }
-        break
+        break;
 
       case "Story":
         try {
@@ -724,17 +848,17 @@ export default function AdminPage() {
             category: "Success Stories",
             excerpt: newStory.content.substring(0, 150) + "...",
             author: "Bidii Team",
-            slug: newStory.title.toLowerCase().replace(/\s+/g, '-'),
+            slug: newStory.title.toLowerCase().replace(/\s+/g, "-"),
             published: true,
             featured_image: newStory.featureImage,
-          }
+          };
 
           if (editingItem) {
             // Update existing story (as blog post)
-            const response = await fetch('/api/blog', {
-              method: 'PUT',
+            const response = await fetch("/api/blog", {
+              method: "PUT",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 id: editingItem.id,
@@ -743,45 +867,54 @@ export default function AdminPage() {
             });
 
             if (!response.ok) {
-              throw new Error('Failed to update story');
+              throw new Error("Failed to update story");
             }
 
             const updatedStory = await response.json();
             // Update local stories state
-            setStories(stories.map((item) => (item.id === editingItem.id ? {
-              id: updatedStory.id,
-              title: newStory.title,
-              content: newStory.content,
-              beneficiaryName: newStory.beneficiaryName,
-              beneficiaryAge: newStory.beneficiaryAge,
-              location: newStory.location,
-              featureImage: newStory.featureImage,
-            } : item)));
+            setStories(
+              stories.map((item) =>
+                item.id === editingItem.id
+                  ? {
+                      id: updatedStory.id,
+                      title: newStory.title,
+                      content: newStory.content,
+                      beneficiaryName: newStory.beneficiaryName,
+                      beneficiaryAge: newStory.beneficiaryAge,
+                      location: newStory.location,
+                      featureImage: newStory.featureImage,
+                    }
+                  : item
+              )
+            );
           } else {
             // Create new story (as blog post)
-            const response = await fetch('/api/blog', {
-              method: 'POST',
+            const response = await fetch("/api/blog", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(storyData),
             });
 
             if (!response.ok) {
-              throw new Error('Failed to create story');
+              throw new Error("Failed to create story");
             }
 
             const newStoryData = await response.json();
             // Add to local stories state
-            setStories([...stories, {
-              id: newStoryData.id,
-              title: newStory.title,
-              content: newStory.content,
-              beneficiaryName: newStory.beneficiaryName,
-              beneficiaryAge: newStory.beneficiaryAge,
-              location: newStory.location,
-              featureImage: newStory.featureImage,
-            }]);
+            setStories([
+              ...stories,
+              {
+                id: newStoryData.id,
+                title: newStory.title,
+                content: newStory.content,
+                beneficiaryName: newStory.beneficiaryName,
+                beneficiaryAge: newStory.beneficiaryAge,
+                location: newStory.location,
+                featureImage: newStory.featureImage,
+              },
+            ]);
           }
 
           setNewStory({
@@ -793,7 +926,7 @@ export default function AdminPage() {
             featureImage: "",
           });
         } catch (error) {
-          console.error('Error saving story:', error);
+          console.error("Error saving story:", error);
           toast({
             title: "Error",
             description: "Failed to save story. Please try again.",
@@ -801,7 +934,7 @@ export default function AdminPage() {
           });
           return; // Don't close dialog or show success message
         }
-        break
+        break;
 
       case "Blog":
         try {
@@ -811,17 +944,18 @@ export default function AdminPage() {
             category: newBlog.category,
             excerpt: newBlog.excerpt,
             author: newBlog.author,
-            slug: newBlog.slug || newBlog.title.toLowerCase().replace(/\s+/g, '-'),
+            slug:
+              newBlog.slug || newBlog.title.toLowerCase().replace(/\s+/g, "-"),
             published: newBlog.published,
             featured_image: newBlog.featured_image,
-          }
+          };
 
           if (editingItem) {
             // Update existing blog post
-            const response = await fetch('/api/blog', {
-              method: 'PUT',
+            const response = await fetch("/api/blog", {
+              method: "PUT",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 id: editingItem.id,
@@ -830,23 +964,27 @@ export default function AdminPage() {
             });
 
             if (!response.ok) {
-              throw new Error('Failed to update blog post');
+              throw new Error("Failed to update blog post");
             }
 
             const updatedBlogPost = await response.json();
-            setBlogPosts(blogPosts.map((item) => (item.id === editingItem.id ? updatedBlogPost : item)));
+            setBlogPosts(
+              blogPosts.map((item) =>
+                item.id === editingItem.id ? updatedBlogPost : item
+              )
+            );
           } else {
             // Create new blog post
-            const response = await fetch('/api/blog', {
-              method: 'POST',
+            const response = await fetch("/api/blog", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(blogData),
             });
 
             if (!response.ok) {
-              throw new Error('Failed to create blog post');
+              throw new Error("Failed to create blog post");
             }
 
             const newBlogPost = await response.json();
@@ -865,7 +1003,7 @@ export default function AdminPage() {
             published: false,
           });
         } catch (error) {
-          console.error('Error saving blog post:', error);
+          console.error("Error saving blog post:", error);
           toast({
             title: "Error",
             description: "Failed to save blog post. Please try again.",
@@ -873,7 +1011,7 @@ export default function AdminPage() {
           });
           return; // Don't close dialog or show success message
         }
-        break
+        break;
 
       case "Team Member":
         const teamData = {
@@ -887,11 +1025,15 @@ export default function AdminPage() {
           tiktok: newTeamMember.tiktok,
           image: newTeamMember.image,
           order_index: teamMembers.length + 1,
-        }
+        };
         if (editingItem) {
-          setTeamMembers(teamMembers.map((item) => (item.id === editingItem.id ? teamData : item)))
+          setTeamMembers(
+            teamMembers.map((item) =>
+              item.id === editingItem.id ? teamData : item
+            )
+          );
         } else {
-          setTeamMembers([...teamMembers, teamData])
+          setTeamMembers([...teamMembers, teamData]);
         }
         setNewTeamMember({
           name: "",
@@ -902,8 +1044,8 @@ export default function AdminPage() {
           instagram: "",
           tiktok: "",
           image: "",
-        })
-        break
+        });
+        break;
 
       case "Sponsor":
         const sponsorData = {
@@ -911,67 +1053,79 @@ export default function AdminPage() {
           name: newSponsor.name,
           logo: newSponsor.logo,
           website: newSponsor.website,
-        }
+        };
         if (editingItem) {
-          setSponsors(sponsors.map((item) => (item.id === editingItem.id ? sponsorData : item)))
+          setSponsors(
+            sponsors.map((item) =>
+              item.id === editingItem.id ? sponsorData : item
+            )
+          );
         } else {
-          setSponsors([...sponsors, sponsorData])
+          setSponsors([...sponsors, sponsorData]);
         }
         setNewSponsor({
           name: "",
           logo: "",
           website: "",
-        })
-        break
+        });
+        break;
 
       case "Gallery Image":
         const galleryData = {
           id: newId,
-          title: newGalleryImage.title,
+          title: `${newGalleryImage.category} Image`,
           category: newGalleryImage.category,
-          description: newGalleryImage.description,
+          description: `${newGalleryImage.category} category image`,
           image: newGalleryImage.image,
           image_url: newGalleryImage.image,
-          alt_text: newGalleryImage.title,
+          alt_text: `${newGalleryImage.category} Image`,
           order_index: galleryImages.length + 1,
-        }
+        };
         if (editingItem) {
-          setGalleryImages(galleryImages.map((item) => (item.id === editingItem.id ? galleryData : item)))
+          setGalleryImages(
+            galleryImages.map((item) =>
+              item.id === editingItem.id ? galleryData : item
+            )
+          );
         } else {
-          setGalleryImages([...galleryImages, galleryData])
+          setGalleryImages([...galleryImages, galleryData]);
         }
         setNewGalleryImage({
-          title: "",
           category: "",
-          description: "",
           image: "",
-        })
-        break
+        });
+        break;
 
       case "Category":
         const categoryData = {
           id: newId,
           name: newCategory.name,
           description: newCategory.description,
-        }
+        };
         if (editingItem) {
-          setCategories(categories.map((cat) => (cat.id === editingItem.id ? categoryData : cat)))
+          setCategories(
+            categories.map((cat) =>
+              cat.id === editingItem.id ? categoryData : cat
+            )
+          );
         } else {
-          setCategories([...categories, categoryData])
+          setCategories([...categories, categoryData]);
         }
-        setNewCategory({ name: "", description: "" })
-        break
+        setNewCategory({ name: "", description: "" });
+        break;
     }
 
     toast({
       title: `${type} ${editingItem ? "Updated" : "Created"}`,
-      description: `${type} has been ${editingItem ? "updated" : "created"} successfully.`,
-    })
+      description: `${type} has been ${
+        editingItem ? "updated" : "created"
+      } successfully.`,
+    });
 
-    setEditingItem(null)
-    setEditType("")
-    setIsDialogOpen(false)
-  }
+    setEditingItem(null);
+    setEditType("");
+    setIsDialogOpen(false);
+  };
 
   const resetForms = () => {
     setNewCampaign({
@@ -982,7 +1136,7 @@ export default function AdminPage() {
       urgency: "active",
       featureImage: "",
       linkedBlog: "",
-    })
+    });
     setNewProject({
       title: "",
       description: "",
@@ -992,11 +1146,9 @@ export default function AdminPage() {
       featureImage: "",
       linkedBlog: "",
       progress: "",
-      budget: "",
-      raised: "",
       start_date: "",
       end_date: "",
-    })
+    });
     setNewStory({
       title: "",
       content: "",
@@ -1004,7 +1156,7 @@ export default function AdminPage() {
       beneficiaryAge: "",
       location: "",
       featureImage: "",
-    })
+    });
     setNewBlog({
       title: "",
       content: "",
@@ -1015,7 +1167,7 @@ export default function AdminPage() {
       images: [],
       slug: "",
       published: false,
-    })
+    });
     setNewTeamMember({
       name: "",
       role: "",
@@ -1025,30 +1177,28 @@ export default function AdminPage() {
       instagram: "",
       tiktok: "",
       image: "",
-    })
+    });
     setNewSponsor({
       name: "",
       logo: "",
       website: "",
-    })
+    });
     setNewGalleryImage({
-      title: "",
       category: "",
-      description: "",
       image: "",
-    })
-    setNewCategory({ name: "", description: "" })
-    setEditingItem(null)
-    setEditType("")
-    setIsDialogOpen(false)
-  }
+    });
+    setNewCategory({ name: "", description: "" });
+    setEditingItem(null);
+    setEditType("");
+    setIsDialogOpen(false);
+  };
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#e51083]"></div>
       </div>
-    )
+    );
   }
 
   if (loading) {
@@ -1058,20 +1208,28 @@ export default function AdminPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-400">Loading database content...</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Loading database content...
+              </p>
             </div>
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-transparent">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2 bg-transparent"
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
           </div>
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e51083]"></div>
-            <p className="ml-4 text-gray-600 dark:text-gray-400">Loading database content...</p>
+            <p className="ml-4 text-gray-600 dark:text-gray-400">
+              Loading database content...
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -1080,9 +1238,15 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your database-driven content, projects, and team</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage your database-driven content, projects, and team
+            </p>
           </div>
-          <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-transparent">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="flex items-center gap-2 bg-transparent"
+          >
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
@@ -1100,7 +1264,9 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Mock Campaigns</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Mock Campaigns
+                  </p>
                   <p className="text-2xl font-bold">{campaigns.length}</p>
                 </div>
                 <Target className="h-8 w-8 text-[#e51083]" />
@@ -1112,7 +1278,9 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Database Projects</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Database Projects
+                  </p>
                   <p className="text-2xl font-bold">{projects.length}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-[#e51083]" />
@@ -1124,7 +1292,9 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Mock Stories</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Mock Stories
+                  </p>
                   <p className="text-2xl font-bold">{stories.length}</p>
                 </div>
                 <Heart className="h-8 w-8 text-[#e51083]" />
@@ -1136,7 +1306,9 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Database Blogs</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Database Blogs
+                  </p>
                   <p className="text-2xl font-bold">{blogPosts.length}</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-[#e51083]" />
@@ -1148,8 +1320,12 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Partnership Apps</p>
-                  <p className="text-2xl font-bold">{partnershipApplications.length}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Partnership Apps
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {partnershipApplications.length}
+                  </p>
                 </div>
                 <Building className="h-8 w-8 text-[#e51083]" />
               </div>
@@ -1160,8 +1336,12 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Volunteer Apps</p>
-                  <p className="text-2xl font-bold">{volunteerApplications.length}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Volunteer Apps
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {volunteerApplications.length}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-[#e51083]" />
               </div>
@@ -1190,19 +1370,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -1213,14 +1393,22 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Campaign</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Campaign")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Campaign")}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="campaign-title">Campaign Title</Label>
                         <Input
                           id="campaign-title"
                           value={newCampaign.title}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1229,7 +1417,12 @@ export default function AdminPage() {
                         <Input
                           id="campaign-location"
                           value={newCampaign.location}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1237,12 +1430,19 @@ export default function AdminPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="campaign-beneficiaries">Beneficiaries</Label>
+                        <Label htmlFor="campaign-beneficiaries">
+                          Beneficiaries
+                        </Label>
                         <Input
                           id="campaign-beneficiaries"
                           type="number"
                           value={newCampaign.beneficiaries}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, beneficiaries: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              beneficiaries: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1250,7 +1450,12 @@ export default function AdminPage() {
                         <Label htmlFor="campaign-urgency">Urgency Level</Label>
                         <Select
                           value={newCampaign.urgency}
-                          onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, urgency: value }))}
+                          onValueChange={(value) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              urgency: value,
+                            }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -1266,17 +1471,27 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="campaign-linked-blog">Link to Blog Post</Label>
+                      <Label htmlFor="campaign-linked-blog">
+                        Link to Blog Post
+                      </Label>
                       <Select
                         value={newCampaign.linkedBlog}
-                        onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, linkedBlog: value }))}
+                        onValueChange={(value) =>
+                          setNewCampaign((prev) => ({
+                            ...prev,
+                            linkedBlog: value,
+                          }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a blog post" />
                         </SelectTrigger>
                         <SelectContent>
                           {blogPosts.map((blog) => (
-                            <SelectItem key={blog.id} value={blog.id.toString()}>
+                            <SelectItem
+                              key={blog.id}
+                              value={blog.id.toString()}
+                            >
                               {blog.title}
                             </SelectItem>
                           ))}
@@ -1290,18 +1505,28 @@ export default function AdminPage() {
                         id="campaign-description"
                         rows={4}
                         value={newCampaign.description}
-                        onChange={(e) => setNewCampaign((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCampaign((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Featured Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewCampaign, "featureImage")}
+                          onClick={() =>
+                            handleImageUpload(setNewCampaign, "featureImage")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -1319,7 +1544,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Campaign
                     </Button>
                   </form>
@@ -1343,10 +1571,10 @@ export default function AdminPage() {
                         campaign.urgency === "urgent"
                           ? "bg-red-500"
                           : campaign.urgency === "active"
-                            ? "bg-green-500"
-                            : campaign.urgency === "completed"
-                              ? "bg-gray-500"
-                              : "bg-blue-500"
+                          ? "bg-green-500"
+                          : campaign.urgency === "completed"
+                          ? "bg-gray-500"
+                          : "bg-blue-500"
                       }`}
                     >
                       {campaign.urgency}
@@ -1356,7 +1584,9 @@ export default function AdminPage() {
                     <CardTitle className="text-lg">{campaign.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{campaign.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                      {campaign.description}
+                    </p>
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                       <span className="flex items-center">
                         <Users className="h-4 w-4 mr-1" />
@@ -1369,7 +1599,7 @@ export default function AdminPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleView(campaign, "campaign")}
-                        className="flex-1 bg-transparent"
+                        className="flex-1 h-9 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98]"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View
@@ -1378,7 +1608,7 @@ export default function AdminPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(campaign, "campaign")}
-                        className="flex-1 bg-transparent"
+                        className="flex-1 h-9 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800/20 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98]"
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
@@ -1387,7 +1617,7 @@ export default function AdminPage() {
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDelete(campaign.id, "campaign")}
-                        className="flex-1"
+                        className="flex-1 h-9 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-red-500/20"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         Delete
@@ -1406,19 +1636,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -1429,14 +1659,22 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Project</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Project")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Project")}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="project-title">Project Title</Label>
                         <Input
                           id="project-title"
                           value={newProject.title}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1445,7 +1683,12 @@ export default function AdminPage() {
                         <Input
                           id="project-location"
                           value={newProject.location}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1453,12 +1696,19 @@ export default function AdminPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="project-beneficiaries">Beneficiaries</Label>
+                        <Label htmlFor="project-beneficiaries">
+                          Beneficiaries
+                        </Label>
                         <Input
                           id="project-beneficiaries"
                           type="number"
                           value={newProject.beneficiaries}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, beneficiaries: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              beneficiaries: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1466,14 +1716,21 @@ export default function AdminPage() {
                         <Label htmlFor="project-status">Status</Label>
                         <Select
                           value={newProject.status}
-                          onValueChange={(value) => setNewProject((prev) => ({ ...prev, status: value }))}
+                          onValueChange={(value) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              status: value,
+                            }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="in-progress">In Progress</SelectItem>
+                            <SelectItem value="in-progress">
+                              In Progress
+                            </SelectItem>
                             <SelectItem value="planned">Planned</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1481,17 +1738,42 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="project-linked-blog">Link to Blog Post</Label>
+                      <Label htmlFor="project-start-date">Start Date</Label>
+                      <Input
+                        id="project-start-date"
+                        type="date"
+                        value={newProject.start_date}
+                        onChange={(e) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            start_date: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="project-linked-blog">
+                        Link to Blog Post
+                      </Label>
                       <Select
                         value={newProject.linkedBlog}
-                        onValueChange={(value) => setNewProject((prev) => ({ ...prev, linkedBlog: value }))}
+                        onValueChange={(value) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            linkedBlog: value,
+                          }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a blog post" />
                         </SelectTrigger>
                         <SelectContent>
                           {blogPosts.map((blog) => (
-                            <SelectItem key={blog.id} value={blog.id.toString()}>
+                            <SelectItem
+                              key={blog.id}
+                              value={blog.id.toString()}
+                            >
                               {blog.title}
                             </SelectItem>
                           ))}
@@ -1505,18 +1787,28 @@ export default function AdminPage() {
                         id="project-description"
                         rows={4}
                         value={newProject.description}
-                        onChange={(e) => setNewProject((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Featured Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewProject, "featureImage")}
+                          onClick={() =>
+                            handleImageUpload(setNewProject, "featureImage")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -1534,7 +1826,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Project
                     </Button>
                   </form>
@@ -1554,14 +1849,20 @@ export default function AdminPage() {
                         height={200}
                         className="w-full h-48 object-cover"
                       />
-                      <Badge className="absolute top-2 right-2 bg-green-500">{project.status}</Badge>
-                      <Badge className="absolute top-2 left-2 bg-blue-500">{project.progress}%</Badge>
+                      <Badge className="absolute top-2 right-2 bg-green-500">
+                        {project.status}
+                      </Badge>
+                      <Badge className="absolute top-2 left-2 bg-blue-500">
+                        {project.progress}%
+                      </Badge>
                     </div>
                     <CardHeader>
                       <CardTitle className="text-lg">{project.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                        {project.description}
+                      </p>
                       <div className="space-y-2 text-sm text-gray-500 mb-4">
                         <span className="flex items-center">
                           <Users className="h-4 w-4 mr-1" />
@@ -1571,17 +1872,13 @@ export default function AdminPage() {
                           <Target className="h-4 w-4 mr-1" />
                           Location: {project.location}
                         </span>
-                        <div className="flex justify-between">
-                          <span>Budget: ${project.budget?.toLocaleString()}</span>
-                          <span>Raised: ${project.raised?.toLocaleString()}</span>
-                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleView(project, "project")}
-                          className="flex-1 bg-transparent"
+                          className="flex-1 h-9 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98]"
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           View
@@ -1590,7 +1887,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleEdit(project, "project")}
-                          className="flex-1 bg-transparent"
+                          className="flex-1 h-9 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800/20 bg-transparent rounded-md font-medium transition-all duration-200 hover:scale-[0.98]"
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -1599,14 +1896,15 @@ export default function AdminPage() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleDelete(project.id, "project")}
-                          className="flex-1"
+                          className="flex-1 h-9 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-red-500/20"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Delete
                         </Button>
                       </div>
                       <div className="mt-2 text-xs text-gray-400">
-                        Database ID: {project.id} • Created: {new Date(project.created_at).toLocaleDateString()}
+                        Database ID: {project.id} • Created:{" "}
+                        {new Date(project.created_at).toLocaleDateString()}
                       </div>
                     </CardContent>
                   </Card>
@@ -1614,9 +1912,12 @@ export default function AdminPage() {
               ) : (
                 <div className="col-span-full text-center py-20">
                   <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Projects Found</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    No Projects Found
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    No projects are currently available in the database. Create your first project to get started.
+                    No projects are currently available in the database. Create
+                    your first project to get started.
                   </p>
                 </div>
               )}
@@ -1630,19 +1931,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -1653,24 +1954,39 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Success Story</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Story")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Story")}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="story-title">Story Title</Label>
                       <Input
                         id="story-title"
                         value={newStory.title}
-                        onChange={(e) => setNewStory((prev) => ({ ...prev, title: e.target.value }))}
+                        onChange={(e) =>
+                          setNewStory((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="story-beneficiary-name">Beneficiary Name</Label>
+                        <Label htmlFor="story-beneficiary-name">
+                          Beneficiary Name
+                        </Label>
                         <Input
                           id="story-beneficiary-name"
                           value={newStory.beneficiaryName}
-                          onChange={(e) => setNewStory((prev) => ({ ...prev, beneficiaryName: e.target.value }))}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              beneficiaryName: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1679,7 +1995,12 @@ export default function AdminPage() {
                         <Input
                           id="story-beneficiary-age"
                           value={newStory.beneficiaryAge}
-                          onChange={(e) => setNewStory((prev) => ({ ...prev, beneficiaryAge: e.target.value }))}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              beneficiaryAge: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1688,7 +2009,12 @@ export default function AdminPage() {
                         <Input
                           id="story-location"
                           value={newStory.location}
-                          onChange={(e) => setNewStory((prev) => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1696,22 +2022,31 @@ export default function AdminPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="story-content">Story Content</Label>
-                      <Textarea
-                        id="story-content"
-                        rows={6}
+                      <RichTextEditor
                         value={newStory.content}
-                        onChange={(e) => setNewStory((prev) => ({ ...prev, content: e.target.value }))}
-                        required
+                        onChange={(content) =>
+                          setNewStory((prev) => ({
+                            ...prev,
+                            content: content,
+                          }))
+                        }
+                        placeholder="Tell the beneficiary's story. Use formatting to make it engaging and impactful..."
+                        minHeight="250px"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Featured Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewStory, "featureImage")}
+                          onClick={() =>
+                            handleImageUpload(setNewStory, "featureImage")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -1729,7 +2064,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Story
                     </Button>
                   </form>
@@ -1755,13 +2093,16 @@ export default function AdminPage() {
                   <CardContent>
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                       <p>
-                        <strong>Beneficiary:</strong> {story.beneficiaryName}, {story.beneficiaryAge} years old
+                        <strong>Beneficiary:</strong> {story.beneficiaryName},{" "}
+                        {story.beneficiaryAge} years old
                       </p>
                       <p>
                         <strong>Location:</strong> {story.location}
                       </p>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{story.content}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                      {story.content}
+                    </p>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -1804,19 +2145,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -1827,14 +2168,22 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Blog Post</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Blog")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Blog")}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="blog-title">Blog Title</Label>
                         <Input
                           id="blog-title"
                           value={newBlog.title}
-                          onChange={(e) => setNewBlog((prev) => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewBlog((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1843,7 +2192,12 @@ export default function AdminPage() {
                         <Input
                           id="blog-author"
                           value={newBlog.author}
-                          onChange={(e) => setNewBlog((prev) => ({ ...prev, author: e.target.value }))}
+                          onChange={(e) =>
+                            setNewBlog((prev) => ({
+                              ...prev,
+                              author: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -1853,7 +2207,9 @@ export default function AdminPage() {
                       <Label htmlFor="blog-category">Category</Label>
                       <Select
                         value={newBlog.category}
-                        onValueChange={(value) => setNewBlog((prev) => ({ ...prev, category: value }))}
+                        onValueChange={(value) =>
+                          setNewBlog((prev) => ({ ...prev, category: value }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -1874,24 +2230,66 @@ export default function AdminPage() {
                         id="blog-excerpt"
                         rows={3}
                         value={newBlog.excerpt}
-                        onChange={(e) => setNewBlog((prev) => ({ ...prev, excerpt: e.target.value }))}
+                        onChange={(e) =>
+                          setNewBlog((prev) => ({
+                            ...prev,
+                            excerpt: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="blog-content">Content</Label>
-                      <Textarea
-                        id="blog-content"
-                        rows={8}
+                      <RichTextEditor
                         value={newBlog.content}
-                        onChange={(e) => setNewBlog((prev) => ({ ...prev, content: e.target.value }))}
-                        required
+                        onChange={(content) =>
+                          setNewBlog((prev) => ({
+                            ...prev,
+                            content: content,
+                          }))
+                        }
+                        placeholder="Write your blog content here. Use the toolbar to format text, add lists, change colors, and more..."
+                        minHeight="300px"
                       />
                     </div>
 
                     <div className="space-y-2">
+                      <Label>Featured Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewBlog, "featured_image")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Featured Image
+                        </Button>
+                        {newBlog.featured_image && (
+                          <Image
+                            src={newBlog.featured_image || "/placeholder.svg"}
+                            alt="Featured"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label>Blog Images</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio) • First image
+                        becomes cover if no featured image selected
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
@@ -1902,25 +2300,68 @@ export default function AdminPage() {
                           <Upload className="mr-2 h-4 w-4" />
                           Add Image
                         </Button>
-                        <span className="text-sm text-gray-500">{newBlog.images.length} images added</span>
+                        <span className="text-sm text-gray-500">
+                          {newBlog.images.length} images added
+                        </span>
                       </div>
                       {newBlog.images.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {newBlog.images.map((img, index) => (
-                            <Image
-                              key={index}
-                              src={img || "/placeholder.svg"}
-                              alt={`Blog image ${index + 1}`}
-                              width={60}
-                              height={40}
-                              className="rounded border"
-                            />
-                          ))}
+                        <div className="space-y-2">
+                          <p className="text-xs text-gray-600">
+                            Click on an image to set as cover (remaining images
+                            will appear as carousel)
+                          </p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {newBlog.images.map((img, index) => (
+                              <div key={index} className="relative group">
+                                <Image
+                                  src={img || "/placeholder.svg"}
+                                  alt={`Blog image ${index + 1}`}
+                                  width={80}
+                                  height={60}
+                                  className={`rounded border cursor-pointer hover:opacity-80 transition-opacity ${
+                                    newBlog.featured_image === img
+                                      ? "ring-2 ring-[#e51083]"
+                                      : ""
+                                  }`}
+                                  onClick={() =>
+                                    setNewBlog((prev) => ({
+                                      ...prev,
+                                      featured_image: img,
+                                    }))
+                                  }
+                                />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() =>
+                                      setNewBlog((prev) => ({
+                                        ...prev,
+                                        featured_image: img,
+                                      }))
+                                    }
+                                    className="text-xs h-auto py-1 px-2"
+                                  >
+                                    Set Cover
+                                  </Button>
+                                </div>
+                                {newBlog.featured_image === img && (
+                                  <div className="absolute -top-2 -right-2 bg-[#e51083] text-white text-xs px-2 py-1 rounded-full">
+                                    Cover
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Blog Post
                     </Button>
                   </form>
@@ -1940,13 +2381,17 @@ export default function AdminPage() {
                         height={200}
                         className="w-full h-48 object-cover"
                       />
-                      <Badge className="absolute top-2 left-2 bg-[#e51083]">{blog.category}</Badge>
+                      <Badge className="absolute top-2 left-2 bg-[#e51083]">
+                        {blog.category}
+                      </Badge>
                       <Badge className="absolute top-2 right-2 bg-green-500">
-                        {blog.published ? 'Published' : 'Draft'}
+                        {blog.published ? "Published" : "Draft"}
                       </Badge>
                     </div>
                     <CardHeader>
-                      <CardTitle className="text-lg line-clamp-2">{blog.title}</CardTitle>
+                      <CardTitle className="text-lg line-clamp-2">
+                        {blog.title}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -1954,13 +2399,16 @@ export default function AdminPage() {
                           <strong>Author:</strong> {blog.author}
                         </p>
                         <p>
-                          <strong>Created:</strong> {new Date(blog.created_at).toLocaleDateString()}
+                          <strong>Created:</strong>{" "}
+                          {new Date(blog.created_at).toLocaleDateString()}
                         </p>
                         <p>
                           <strong>Slug:</strong> {blog.slug}
                         </p>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{blog.excerpt}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                        {blog.excerpt}
+                      </p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -1991,7 +2439,8 @@ export default function AdminPage() {
                         </Button>
                       </div>
                       <div className="mt-2 text-xs text-gray-400">
-                        Database ID: {blog.id} • Updated: {new Date(blog.updated_at).toLocaleDateString()}
+                        Database ID: {blog.id} • Updated:{" "}
+                        {new Date(blog.updated_at).toLocaleDateString()}
                       </div>
                     </CardContent>
                   </Card>
@@ -1999,9 +2448,12 @@ export default function AdminPage() {
               ) : (
                 <div className="col-span-full text-center py-20">
                   <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Blog Posts Found</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    No Blog Posts Found
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    No blog posts are currently available in the database. Create your first blog post to get started.
+                    No blog posts are currently available in the database.
+                    Create your first blog post to get started.
                   </p>
                 </div>
               )}
@@ -2015,19 +2467,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -2038,14 +2490,22 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Team Member</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Team Member")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Team Member")}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="member-name">Full Name</Label>
                         <Input
                           id="member-name"
                           value={newTeamMember.name}
-                          onChange={(e) => setNewTeamMember((prev) => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2054,7 +2514,12 @@ export default function AdminPage() {
                         <Input
                           id="member-role"
                           value={newTeamMember.role}
-                          onChange={(e) => setNewTeamMember((prev) => ({ ...prev, role: e.target.value }))}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              role: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2066,36 +2531,62 @@ export default function AdminPage() {
                         id="member-email"
                         type="email"
                         value={newTeamMember.email}
-                        onChange={(e) => setNewTeamMember((prev) => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) =>
+                          setNewTeamMember((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="member-facebook">Facebook URL (Optional)</Label>
+                        <Label htmlFor="member-facebook">
+                          Facebook URL (Optional)
+                        </Label>
                         <Input
                           id="member-facebook"
                           value={newTeamMember.facebook}
-                          onChange={(e) => setNewTeamMember((prev) => ({ ...prev, facebook: e.target.value }))}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              facebook: e.target.value,
+                            }))
+                          }
                           placeholder="https://facebook.com/username"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="member-instagram">Instagram URL (Optional)</Label>
+                        <Label htmlFor="member-instagram">
+                          Instagram URL (Optional)
+                        </Label>
                         <Input
                           id="member-instagram"
                           value={newTeamMember.instagram}
-                          onChange={(e) => setNewTeamMember((prev) => ({ ...prev, instagram: e.target.value }))}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              instagram: e.target.value,
+                            }))
+                          }
                           placeholder="https://instagram.com/username"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="member-tiktok">TikTok URL (Optional)</Label>
+                        <Label htmlFor="member-tiktok">
+                          TikTok URL (Optional)
+                        </Label>
                         <Input
                           id="member-tiktok"
                           value={newTeamMember.tiktok}
-                          onChange={(e) => setNewTeamMember((prev) => ({ ...prev, tiktok: e.target.value }))}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              tiktok: e.target.value,
+                            }))
+                          }
                           placeholder="https://tiktok.com/@username"
                         />
                       </div>
@@ -2107,18 +2598,28 @@ export default function AdminPage() {
                         id="member-bio"
                         rows={4}
                         value={newTeamMember.bio}
-                        onChange={(e) => setNewTeamMember((prev) => ({ ...prev, bio: e.target.value }))}
+                        onChange={(e) =>
+                          setNewTeamMember((prev) => ({
+                            ...prev,
+                            bio: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Profile Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 400x400px (1:1 aspect ratio, square)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewTeamMember, "image")}
+                          onClick={() =>
+                            handleImageUpload(setNewTeamMember, "image")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -2136,7 +2637,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Team Member
                     </Button>
                   </form>
@@ -2156,7 +2660,9 @@ export default function AdminPage() {
                         height={200}
                         className="w-full h-48 object-cover"
                       />
-                      <Badge className="absolute top-2 right-2 bg-blue-500">ID: {member.id}</Badge>
+                      <Badge className="absolute top-2 right-2 bg-blue-500">
+                        ID: {member.id}
+                      </Badge>
                     </div>
                     <CardHeader>
                       <CardTitle className="text-lg">{member.name}</CardTitle>
@@ -2173,7 +2679,9 @@ export default function AdminPage() {
                           <strong>Order:</strong> {member.order_index}
                         </p>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{member.bio}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                        {member.bio}
+                      </p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -2204,7 +2712,8 @@ export default function AdminPage() {
                         </Button>
                       </div>
                       <div className="mt-2 text-xs text-gray-400">
-                        Database Team Member • Order Position: {member.order_index}
+                        Database Team Member • Order Position:{" "}
+                        {member.order_index}
                       </div>
                     </CardContent>
                   </Card>
@@ -2212,9 +2721,12 @@ export default function AdminPage() {
               ) : (
                 <div className="col-span-full text-center py-20">
                   <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Team Members Found</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    No Team Members Found
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    No team members are currently available in the database. Add your first team member to get started.
+                    No team members are currently available in the database. Add
+                    your first team member to get started.
                   </p>
                 </div>
               )}
@@ -2228,19 +2740,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -2251,13 +2763,21 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Sponsor</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Sponsor")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Sponsor")}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="sponsor-name">Sponsor Name</Label>
                       <Input
                         id="sponsor-name"
                         value={newSponsor.name}
-                        onChange={(e) => setNewSponsor((prev) => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) =>
+                          setNewSponsor((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
@@ -2268,18 +2788,28 @@ export default function AdminPage() {
                         id="sponsor-website"
                         type="url"
                         value={newSponsor.website}
-                        onChange={(e) => setNewSponsor((prev) => ({ ...prev, website: e.target.value }))}
+                        onChange={(e) =>
+                          setNewSponsor((prev) => ({
+                            ...prev,
+                            website: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Logo</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 300x150px (2:1 aspect ratio, horizontal)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewSponsor, "logo")}
+                          onClick={() =>
+                            handleImageUpload(setNewSponsor, "logo")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -2297,7 +2827,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Sponsor
                     </Button>
                   </form>
@@ -2318,13 +2851,15 @@ export default function AdminPage() {
                         className="mx-auto mb-4 object-contain"
                       />
                       <h3 className="font-semibold mb-2">{sponsor.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{sponsor.website}</p>
-                      <div className="flex gap-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 break-all">
+                        {sponsor.website}
+                      </p>
+                      <div className="flex flex-col gap-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleView(sponsor, "sponsor")}
-                          className="flex-1 bg-transparent"
+                          className="w-full bg-transparent"
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           View
@@ -2333,7 +2868,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleEdit(sponsor, "sponsor")}
-                          className="flex-1 bg-transparent"
+                          className="w-full bg-transparent"
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -2342,7 +2877,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleDelete(sponsor.id, "sponsor")}
-                          className="flex-1"
+                          className="w-full"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Delete
@@ -2362,19 +2897,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -2385,31 +2920,36 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Gallery Image</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Gallery Image")} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="gallery-title">Image Title</Label>
-                      <Input
-                        id="gallery-title"
-                        value={newGalleryImage.title}
-                        onChange={(e) => setNewGalleryImage((prev) => ({ ...prev, title: e.target.value }))}
-                        required
-                      />
-                    </div>
-
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Gallery Image")}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="gallery-category">Category</Label>
                       <Select
                         value={newGalleryImage.category}
-                        onValueChange={(value) => setNewGalleryImage((prev) => ({ ...prev, category: value }))}
+                        onValueChange={(value) =>
+                          setNewGalleryImage((prev) => ({
+                            ...prev,
+                            category: value,
+                          }))
+                        }
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Education">Education</SelectItem>
-                          <SelectItem value="Distribution">Distribution</SelectItem>
-                          <SelectItem value="Empowerment">Empowerment</SelectItem>
-                          <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                          <SelectItem value="Distribution">
+                            Distribution
+                          </SelectItem>
+                          <SelectItem value="Empowerment">
+                            Empowerment
+                          </SelectItem>
+                          <SelectItem value="Infrastructure">
+                            Infrastructure
+                          </SelectItem>
                           <SelectItem value="Community">Community</SelectItem>
                           <SelectItem value="Success">Success</SelectItem>
                           <SelectItem value="Team">Team</SelectItem>
@@ -2419,22 +2959,17 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="gallery-description">Description</Label>
-                      <Textarea
-                        id="gallery-description"
-                        value={newGalleryImage.description}
-                        onChange={(e) => setNewGalleryImage((prev) => ({ ...prev, description: e.target.value }))}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label>Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
                       <div className="flex items-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleImageUpload(setNewGalleryImage, "image")}
+                          onClick={() =>
+                            handleImageUpload(setNewGalleryImage, "image")
+                          }
                           className="bg-transparent"
                         >
                           <Upload className="mr-2 h-4 w-4" />
@@ -2452,7 +2987,13 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73] text-white rounded-md font-medium transition-all duration-200 hover:scale-[0.98] focus:ring-2 focus:ring-[#e51083]/20 shadow-sm"
+                      disabled={
+                        !newGalleryImage.category || !newGalleryImage.image
+                      }
+                    >
                       Add Image
                     </Button>
                   </form>
@@ -2472,45 +3013,27 @@ export default function AdminPage() {
                         height={200}
                         className="w-full h-48 object-cover"
                       />
-                      <Badge className="absolute top-2 left-2 bg-black/70 text-white">{item.category}</Badge>
-                      <Badge className="absolute top-2 right-2 bg-blue-500">#{item.order_index}</Badge>
+                      <Badge className="absolute top-2 left-2 bg-black/70 text-white">
+                        {item.category}
+                      </Badge>
+                      <Badge className="absolute top-2 right-2 bg-blue-500">
+                        #{item.order_index}
+                      </Badge>
                     </div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">{item.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.description}</p>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleView(item, "gallery")}
-                          className="flex-1 bg-transparent"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(item, "gallery")}
-                          className="flex-1 bg-transparent"
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
+                    <CardContent className="p-4">
+                      <div className="flex justify-center">
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={() => handleDelete(item.id, "gallery")}
-                          className="flex-1"
+                          className="px-4"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Delete
                         </Button>
                       </div>
-                      <div className="mt-2 text-xs text-gray-400">
-                        Database ID: {item.id} • Alt Text: {item.alt_text}
+                      <div className="mt-2 text-xs text-gray-400 text-center">
+                        Database ID: {item.id}
                       </div>
                     </CardContent>
                   </Card>
@@ -2518,9 +3041,12 @@ export default function AdminPage() {
               ) : (
                 <div className="col-span-full text-center py-20">
                   <ImageIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Gallery Images Found</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    No Gallery Images Found
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    No gallery images are currently available in the database. Upload your first image to get started.
+                    No gallery images are currently available in the database.
+                    Upload your first image to get started.
                   </p>
                 </div>
               )}
@@ -2541,16 +3067,23 @@ export default function AdminPage() {
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {partnershipApplications.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">No partnership applications yet</p>
+                      <p className="text-gray-500 text-center py-4">
+                        No partnership applications yet
+                      </p>
                     ) : (
                       partnershipApplications.map((app) => (
-                        <div key={app.id} className="border rounded-lg p-4 hover:shadow-md transition-all duration-300">
+                        <div
+                          key={app.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-all duration-300"
+                        >
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold">{app.fullName}</h3>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDelete(app.id, "partnership")}
+                              onClick={() =>
+                                handleDelete(app.id, "partnership")
+                              }
                               className="hover:scale-105 transition-transform bg-transparent"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -2561,7 +3094,8 @@ export default function AdminPage() {
                               <strong>Role:</strong> {app.role}
                             </p>
                             <p>
-                              <strong>Organization:</strong> {app.organizationName}
+                              <strong>Organization:</strong>{" "}
+                              {app.organizationName}
                             </p>
                             <p>
                               <strong>Email:</strong> {app.email}
@@ -2572,7 +3106,8 @@ export default function AdminPage() {
                               </p>
                             )}
                             <p>
-                              <strong>Submitted:</strong> {new Date(app.submittedAt).toLocaleDateString()}
+                              <strong>Submitted:</strong>{" "}
+                              {new Date(app.submittedAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -2593,10 +3128,15 @@ export default function AdminPage() {
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {volunteerApplications.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">No volunteer applications yet</p>
+                      <p className="text-gray-500 text-center py-4">
+                        No volunteer applications yet
+                      </p>
                     ) : (
                       volunteerApplications.map((app) => (
-                        <div key={app.id} className="border rounded-lg p-4 hover:shadow-md transition-all duration-300">
+                        <div
+                          key={app.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-all duration-300"
+                        >
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold">{app.fullName}</h3>
                             <Button
@@ -2618,7 +3158,8 @@ export default function AdminPage() {
                               </p>
                             )}
                             <p>
-                              <strong>Submitted:</strong> {new Date(app.submittedAt).toLocaleDateString()}
+                              <strong>Submitted:</strong>{" "}
+                              {new Date(app.submittedAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -2637,19 +3178,19 @@ export default function AdminPage() {
               <Dialog
                 open={isDialogOpen && editType === ""}
                 onOpenChange={(open) => {
-                  setIsDialogOpen(open)
+                  setIsDialogOpen(open);
                   if (!open) {
-                    resetForms()
-                    setEditType("")
+                    resetForms();
+                    setEditType("");
                   }
                 }}
               >
                 <DialogTrigger asChild>
                   <Button
                     onClick={() => {
-                      resetForms()
-                      setEditType("")
-                      setIsDialogOpen(true)
+                      resetForms();
+                      setEditType("");
+                      setIsDialogOpen(true);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -2660,13 +3201,21 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>Add New Category</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => handleSubmit(e, "Category")} className="space-y-4">
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "Category")}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="category-name">Category Name</Label>
                       <Input
                         id="category-name"
                         value={newCategory.name}
-                        onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCategory((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
@@ -2675,11 +3224,19 @@ export default function AdminPage() {
                       <Textarea
                         id="category-description"
                         value={newCategory.description}
-                        onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCategory((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                    >
                       Add Category
                     </Button>
                   </form>
@@ -2689,7 +3246,10 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.map((category) => (
-                <div key={category.id} className="border rounded-lg p-4 hover:shadow-md transition-all duration-300">
+                <div
+                  key={category.id}
+                  className="border rounded-lg p-4 hover:shadow-md transition-all duration-300"
+                >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-[#e51083]" />
@@ -2722,7 +3282,9 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">{category.description}</p>
+                  <p className="text-sm text-gray-600">
+                    {category.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -2734,9 +3296,9 @@ export default function AdminPage() {
           <Dialog
             open={!!editingItem && editType !== ""}
             onOpenChange={() => {
-              setEditingItem(null)
-              setEditType("")
-              setIsDialogOpen(false)
+              setEditingItem(null);
+              setEditType("");
+              setIsDialogOpen(false);
             }}
           >
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -2750,18 +3312,18 @@ export default function AdminPage() {
                     editType === "campaign"
                       ? "Campaign"
                       : editType === "project"
-                        ? "Project"
-                        : editType === "story"
-                          ? "Story"
-                          : editType === "blog"
-                            ? "Blog"
-                            : editType === "team"
-                              ? "Team Member"
-                              : editType === "sponsor"
-                                ? "Sponsor"
-                                : editType === "gallery"
-                                  ? "Gallery Image"
-                                  : "Category",
+                      ? "Project"
+                      : editType === "story"
+                      ? "Story"
+                      : editType === "blog"
+                      ? "Blog"
+                      : editType === "team"
+                      ? "Team Member"
+                      : editType === "sponsor"
+                      ? "Sponsor"
+                      : editType === "gallery"
+                      ? "Gallery Image"
+                      : "Category"
                   )
                 }
                 className="space-y-4"
@@ -2773,7 +3335,12 @@ export default function AdminPage() {
                         <Label>Campaign Title</Label>
                         <Input
                           value={newCampaign.title}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2781,7 +3348,12 @@ export default function AdminPage() {
                         <Label>Location</Label>
                         <Input
                           value={newCampaign.location}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2792,7 +3364,12 @@ export default function AdminPage() {
                         <Input
                           type="number"
                           value={newCampaign.beneficiaries}
-                          onChange={(e) => setNewCampaign((prev) => ({ ...prev, beneficiaries: e.target.value }))}
+                          onChange={(e) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              beneficiaries: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2800,7 +3377,12 @@ export default function AdminPage() {
                         <Label>Urgency Level</Label>
                         <Select
                           value={newCampaign.urgency}
-                          onValueChange={(value) => setNewCampaign((prev) => ({ ...prev, urgency: value }))}
+                          onValueChange={(value) =>
+                            setNewCampaign((prev) => ({
+                              ...prev,
+                              urgency: value,
+                            }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -2815,13 +3397,69 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label>Link to Blog Post</Label>
+                      <Select
+                        value={newCampaign.linkedBlog}
+                        onValueChange={(value) =>
+                          setNewCampaign((prev) => ({
+                            ...prev,
+                            linkedBlog: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a blog post" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {blogPosts.map((blog) => (
+                            <SelectItem
+                              key={blog.id}
+                              value={blog.id.toString()}
+                            >
+                              {blog.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
                       <Label>Description</Label>
                       <Textarea
                         rows={4}
                         value={newCampaign.description}
-                        onChange={(e) => setNewCampaign((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCampaign((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Featured Image</Label>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewCampaign, "featureImage")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Featured Image
+                        </Button>
+                        {newCampaign.featureImage && (
+                          <Image
+                            src={newCampaign.featureImage || "/placeholder.svg"}
+                            alt="Featured"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -2833,7 +3471,12 @@ export default function AdminPage() {
                         <Label>Project Title</Label>
                         <Input
                           value={newProject.title}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2841,7 +3484,12 @@ export default function AdminPage() {
                         <Label>Location</Label>
                         <Input
                           value={newProject.location}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2852,7 +3500,12 @@ export default function AdminPage() {
                         <Input
                           type="number"
                           value={newProject.beneficiaries}
-                          onChange={(e) => setNewProject((prev) => ({ ...prev, beneficiaries: e.target.value }))}
+                          onChange={(e) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              beneficiaries: e.target.value,
+                            }))
+                          }
                           required
                         />
                       </div>
@@ -2860,27 +3513,637 @@ export default function AdminPage() {
                         <Label>Status</Label>
                         <Select
                           value={newProject.status}
-                          onValueChange={(value) => setNewProject((prev) => ({ ...prev, status: value }))}
+                          onValueChange={(value) =>
+                            setNewProject((prev) => ({
+                              ...prev,
+                              status: value,
+                            }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="in-progress">In Progress</SelectItem>
+                            <SelectItem value="in-progress">
+                              In Progress
+                            </SelectItem>
                             <SelectItem value="planned">Planned</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label>Start Date</Label>
+                      <Input
+                        type="date"
+                        value={newProject.start_date}
+                        onChange={(e) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            start_date: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Link to Blog Post</Label>
+                      <Select
+                        value={newProject.linkedBlog}
+                        onValueChange={(value) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            linkedBlog: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a blog post" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {blogPosts.map((blog) => (
+                            <SelectItem
+                              key={blog.id}
+                              value={blog.id.toString()}
+                            >
+                              {blog.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
                       <Label>Description</Label>
                       <Textarea
                         rows={4}
                         value={newProject.description}
-                        onChange={(e) => setNewProject((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewProject((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Featured Image</Label>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewProject, "featureImage")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Featured Image
+                        </Button>
+                        {newProject.featureImage && (
+                          <Image
+                            src={newProject.featureImage || "/placeholder.svg"}
+                            alt="Featured"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {editType === "story" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Story Title</Label>
+                      <Input
+                        value={newStory.title}
+                        onChange={(e) =>
+                          setNewStory((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Beneficiary Name</Label>
+                        <Input
+                          value={newStory.beneficiaryName}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              beneficiaryName: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Age</Label>
+                        <Input
+                          value={newStory.beneficiaryAge}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              beneficiaryAge: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Location</Label>
+                        <Input
+                          value={newStory.location}
+                          onChange={(e) =>
+                            setNewStory((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Story Content</Label>
+                      <RichTextEditor
+                        value={newStory.content}
+                        onChange={(content) =>
+                          setNewStory((prev) => ({
+                            ...prev,
+                            content: content,
+                          }))
+                        }
+                        placeholder="Tell the beneficiary's story. Use formatting to make it engaging and impactful..."
+                        minHeight="250px"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Featured Image</Label>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewStory, "featureImage")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Featured Image
+                        </Button>
+                        {newStory.featureImage && (
+                          <Image
+                            src={newStory.featureImage || "/placeholder.svg"}
+                            alt="Featured"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {editType === "blog" && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Blog Title</Label>
+                        <Input
+                          value={newBlog.title}
+                          onChange={(e) =>
+                            setNewBlog((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Author</Label>
+                        <Input
+                          value={newBlog.author}
+                          onChange={(e) =>
+                            setNewBlog((prev) => ({
+                              ...prev,
+                              author: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Category</Label>
+                      <Select
+                        value={newBlog.category}
+                        onValueChange={(value) =>
+                          setNewBlog((prev) => ({ ...prev, category: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Excerpt</Label>
+                      <Textarea
+                        rows={3}
+                        value={newBlog.excerpt}
+                        onChange={(e) =>
+                          setNewBlog((prev) => ({
+                            ...prev,
+                            excerpt: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Content</Label>
+                      <RichTextEditor
+                        value={newBlog.content}
+                        onChange={(content) =>
+                          setNewBlog((prev) => ({
+                            ...prev,
+                            content: content,
+                          }))
+                        }
+                        placeholder="Write your blog content here. Use the toolbar to format text, add lists, change colors, and more..."
+                        minHeight="300px"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Featured Image</Label>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewBlog, "featured_image")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Featured Image
+                        </Button>
+                        {newBlog.featured_image && (
+                          <Image
+                            src={newBlog.featured_image || "/placeholder.svg"}
+                            alt="Featured"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Blog Images</Label>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleImageUpload(setNewBlog)}
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Add Image
+                        </Button>
+                        <span className="text-sm text-gray-500">
+                          {newBlog.images.length} images added
+                        </span>
+                      </div>
+                      {newBlog.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {newBlog.images.map((img, index) => (
+                            <Image
+                              key={index}
+                              src={img || "/placeholder.svg"}
+                              alt={`Blog image ${index + 1}`}
+                              width={60}
+                              height={40}
+                              className="rounded border"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {editType === "team" && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Full Name</Label>
+                        <Input
+                          value={newTeamMember.name}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Role</Label>
+                        <Input
+                          value={newTeamMember.role}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              role: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Email Address</Label>
+                      <Input
+                        type="email"
+                        value={newTeamMember.email}
+                        onChange={(e) =>
+                          setNewTeamMember((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Facebook URL (Optional)</Label>
+                        <Input
+                          value={newTeamMember.facebook}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              facebook: e.target.value,
+                            }))
+                          }
+                          placeholder="https://facebook.com/username"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Instagram URL (Optional)</Label>
+                        <Input
+                          value={newTeamMember.instagram}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              instagram: e.target.value,
+                            }))
+                          }
+                          placeholder="https://instagram.com/username"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>TikTok URL (Optional)</Label>
+                        <Input
+                          value={newTeamMember.tiktok}
+                          onChange={(e) =>
+                            setNewTeamMember((prev) => ({
+                              ...prev,
+                              tiktok: e.target.value,
+                            }))
+                          }
+                          placeholder="https://tiktok.com/@username"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Bio</Label>
+                      <Textarea
+                        rows={4}
+                        value={newTeamMember.bio}
+                        onChange={(e) =>
+                          setNewTeamMember((prev) => ({
+                            ...prev,
+                            bio: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Profile Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 400x400px (1:1 aspect ratio, square)
+                      </p>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewTeamMember, "image")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Image
+                        </Button>
+                        {newTeamMember.image && (
+                          <Image
+                            src={newTeamMember.image || "/placeholder.svg"}
+                            alt="Profile"
+                            width={60}
+                            height={60}
+                            className="rounded-full border"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {editType === "sponsor" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Sponsor Name</Label>
+                      <Input
+                        value={newSponsor.name}
+                        onChange={(e) =>
+                          setNewSponsor((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Website URL</Label>
+                      <Input
+                        type="url"
+                        value={newSponsor.website}
+                        onChange={(e) =>
+                          setNewSponsor((prev) => ({
+                            ...prev,
+                            website: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Logo</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 300x150px (2:1 aspect ratio, horizontal)
+                      </p>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewSponsor, "logo")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Logo
+                        </Button>
+                        {newSponsor.logo && (
+                          <Image
+                            src={newSponsor.logo || "/placeholder.svg"}
+                            alt="Logo"
+                            width={80}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {editType === "gallery" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Title</Label>
+                      <Input
+                        value={newGalleryImage.title}
+                        onChange={(e) =>
+                          setNewGalleryImage((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Category</Label>
+                      <Select
+                        value={newGalleryImage.category}
+                        onValueChange={(value) =>
+                          setNewGalleryImage((prev) => ({
+                            ...prev,
+                            category: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Education">Education</SelectItem>
+                          <SelectItem value="Distribution">
+                            Distribution
+                          </SelectItem>
+                          <SelectItem value="Empowerment">
+                            Empowerment
+                          </SelectItem>
+                          <SelectItem value="Infrastructure">
+                            Infrastructure
+                          </SelectItem>
+                          <SelectItem value="Community">Community</SelectItem>
+                          <SelectItem value="Success">Success</SelectItem>
+                          <SelectItem value="Team">Team</SelectItem>
+                          <SelectItem value="Training">Training</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        rows={3}
+                        value={newGalleryImage.description}
+                        onChange={(e) =>
+                          setNewGalleryImage((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Image</Label>
+                      <p className="text-xs text-gray-500">
+                        Recommended: 1200x800px (3:2 aspect ratio)
+                      </p>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleImageUpload(setNewGalleryImage, "image")
+                          }
+                          className="bg-transparent"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Image
+                        </Button>
+                        {newGalleryImage.image && (
+                          <Image
+                            src={newGalleryImage.image || "/placeholder.svg"}
+                            alt="Preview"
+                            width={100}
+                            height={60}
+                            className="rounded border"
+                          />
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -2891,7 +4154,12 @@ export default function AdminPage() {
                       <Label>Category Name</Label>
                       <Input
                         value={newCategory.name}
-                        onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCategory((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
@@ -2899,14 +4167,22 @@ export default function AdminPage() {
                       <Label>Description</Label>
                       <Textarea
                         value={newCategory.description}
-                        onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setNewCategory((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         required
                       />
                     </div>
                   </>
                 )}
 
-                <Button type="submit" className="w-full bg-[#e51083] hover:bg-[#c50e73]">
+                <Button
+                  type="submit"
+                  className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                >
                   Update {editType}
                 </Button>
               </form>
@@ -2919,9 +4195,9 @@ export default function AdminPage() {
           <Dialog
             open={isViewDialogOpen}
             onOpenChange={() => {
-              setViewingItem(null)
-              setViewType("")
-              setIsViewDialogOpen(false)
+              setViewingItem(null);
+              setViewType("");
+              setIsViewDialogOpen(false);
             }}
           >
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -2944,13 +4220,16 @@ export default function AdminPage() {
                           <strong>Urgency:</strong> {viewingItem.urgency}
                         </div>
                         <div>
-                          <strong>Beneficiaries:</strong> {viewingItem.beneficiaries} girls
+                          <strong>Beneficiaries:</strong>{" "}
+                          {viewingItem.beneficiaries} girls
                         </div>
                       </div>
                       <div>
                         <strong>Description:</strong>
                       </div>
-                      <p className="text-sm text-gray-600">{viewingItem.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {viewingItem.description}
+                      </p>
                       {viewingItem.featureImage && (
                         <div>
                           <strong>Featured Image:</strong>
@@ -2982,13 +4261,16 @@ export default function AdminPage() {
                           <strong>Status:</strong> {viewingItem.status}
                         </div>
                         <div>
-                          <strong>Beneficiaries:</strong> {viewingItem.beneficiaries} girls
+                          <strong>Beneficiaries:</strong>{" "}
+                          {viewingItem.beneficiaries} girls
                         </div>
                       </div>
                       <div>
                         <strong>Description:</strong>
                       </div>
-                      <p className="text-sm text-gray-600">{viewingItem.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {viewingItem.description}
+                      </p>
                       {viewingItem.featureImage && (
                         <div>
                           <strong>Featured Image:</strong>
@@ -3014,10 +4296,12 @@ export default function AdminPage() {
                           <strong>Title:</strong> {viewingItem.title}
                         </div>
                         <div>
-                          <strong>Beneficiary:</strong> {viewingItem.beneficiaryName}
+                          <strong>Beneficiary:</strong>{" "}
+                          {viewingItem.beneficiaryName}
                         </div>
                         <div>
-                          <strong>Age:</strong> {viewingItem.beneficiaryAge} years old
+                          <strong>Age:</strong> {viewingItem.beneficiaryAge}{" "}
+                          years old
                         </div>
                         <div>
                           <strong>Location:</strong> {viewingItem.location}
@@ -3026,7 +4310,9 @@ export default function AdminPage() {
                       <div>
                         <strong>Story:</strong>
                       </div>
-                      <p className="text-sm text-gray-600">{viewingItem.content}</p>
+                      <p className="text-sm text-gray-600">
+                        {viewingItem.content}
+                      </p>
                       {viewingItem.featureImage && (
                         <div>
                           <strong>Featured Image:</strong>
@@ -3064,25 +4350,31 @@ export default function AdminPage() {
                       <div>
                         <strong>Excerpt:</strong>
                       </div>
-                      <p className="text-sm text-gray-600">{viewingItem.excerpt}</p>
+                      <p className="text-sm text-gray-600">
+                        {viewingItem.excerpt}
+                      </p>
                       <div>
                         <strong>Content:</strong>
                       </div>
-                      <p className="text-sm text-gray-600">{viewingItem.content}</p>
+                      <p className="text-sm text-gray-600">
+                        {viewingItem.content}
+                      </p>
                       {viewingItem.images && viewingItem.images.length > 0 && (
                         <div>
                           <strong>Images ({viewingItem.images.length}):</strong>
                           <div className="flex flex-wrap gap-2 mt-2">
-                            {viewingItem.images.map((img: string, index: number) => (
-                              <Image
-                                key={index}
-                                src={img || "/placeholder.svg"}
-                                alt={`Blog image ${index + 1}`}
-                                width={100}
-                                height={60}
-                                className="rounded border"
-                              />
-                            ))}
+                            {viewingItem.images.map(
+                              (img: string, index: number) => (
+                                <Image
+                                  key={index}
+                                  src={img || "/placeholder.svg"}
+                                  alt={`Blog image ${index + 1}`}
+                                  width={100}
+                                  height={60}
+                                  className="rounded border"
+                                />
+                              )
+                            )}
                           </div>
                         </div>
                       )}
@@ -3185,7 +4477,8 @@ export default function AdminPage() {
                           <strong>Category:</strong> {viewingItem.category}
                         </div>
                         <div>
-                          <strong>Description:</strong> {viewingItem.description}
+                          <strong>Description:</strong>{" "}
+                          {viewingItem.description}
                         </div>
                       </div>
                       {viewingItem.image && (
@@ -3213,7 +4506,8 @@ export default function AdminPage() {
                           <strong>Name:</strong> {viewingItem.name}
                         </div>
                         <div>
-                          <strong>Description:</strong> {viewingItem.description}
+                          <strong>Description:</strong>{" "}
+                          {viewingItem.description}
                         </div>
                       </div>
                     </div>
@@ -3225,5 +4519,5 @@ export default function AdminPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
