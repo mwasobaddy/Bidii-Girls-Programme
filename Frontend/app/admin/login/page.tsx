@@ -64,16 +64,16 @@ export default function AdminLoginPage() {
       const data: LoginResponse = await response.json();
 
       if (data.success && data.user) {
-        // Store user info in localStorage for client-side checks
-        localStorage.setItem("adminAuth", "true")
-        localStorage.setItem("adminUser", JSON.stringify(data.user))
-        
+        // Set a session cookie for authentication (expires on browser close)
+        document.cookie = `adminAuth=true; path=/; samesite=strict`;
+        document.cookie = `adminUser=${encodeURIComponent(JSON.stringify(data.user))}; path=/; samesite=strict`;
+
         toast({
           title: "Login Successful",
           description: `Welcome back, ${data.user.email}! Authenticated via database.`,
-        })
-        
-        router.push("/admin")
+        });
+
+        router.push("/admin/dashboard");
       } else {
         setError(data.error || "Authentication failed")
         toast({

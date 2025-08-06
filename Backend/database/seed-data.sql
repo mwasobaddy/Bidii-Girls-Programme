@@ -1,3 +1,7 @@
+-- Insert sponsors
+INSERT INTO sponsors (name, logo, website) VALUES
+('UNICEF', '/placeholder.svg?height=80&width=120', 'https://unicef.org'),
+('World Vision', '/placeholder.svg?height=80&width=120', 'https://worldvision.org');
 -- Seed data for Bidii Girls Program
 
 -- Insert admin users (password is hashed for 'admin123')

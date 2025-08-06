@@ -200,7 +200,7 @@ export default function AdminPage() {
   const [categories, setCategories] = useState(mockCategories)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [stories, setStories] = useState(mockStories)
-  const [sponsors, setSponsors] = useState(mockSponsors)
+  const [sponsors, setSponsors] = useState<any[]>([])
 
   // Form states for all content types
   const [newBlog, setNewBlog] = useState({
@@ -236,6 +236,8 @@ const [newCampaign, setNewCampaign] = useState({
   urgency: "active",
   feature_image: "",
   linked_blog: "",
+  start_date: "",
+  end_date: "",
 })
 
   const [newStory, setNewStory] = useState({
@@ -384,6 +386,18 @@ const fetchCampaigns = async () => {
     }
   };
 
+  const fetchSponsors = async () => {
+    try {
+      const response = await fetch("/api/sponsors");
+      if (!response.ok) throw new Error("Failed to fetch sponsors");
+      const data = await response.json();
+      setSponsors(data);
+    } catch (error) {
+      console.error("Error fetching sponsors:", error);
+      setError("Failed to fetch sponsors");
+    }
+  };
+
   const loadDatabaseData = async () => {
     setLoading(true);
     setError(null);
@@ -395,6 +409,7 @@ const fetchCampaigns = async () => {
         fetchStories(),
         fetchTeamMembers(),
         fetchGalleryImages(),
+        fetchSponsors(),
       ]);
     } catch (error) {
       console.error("Error loading database data:", error);
@@ -516,22 +531,23 @@ const fetchCampaigns = async () => {
   };
 
   const handleEdit = (item: any, type: string) => {
-    setEditingItem(item);
-    setEditType(type);
-
     // Populate form based on type
     switch (type) {
       case "campaign":
         setNewCampaign({
-          title: item.title,
-          description: item.description,
-          location: item.location,
+          title: item.title || "",
+          description: item.description || "",
+          location: item.location || "",
           beneficiaries: item.beneficiaries?.toString() || "",
-          urgency: item.urgency?.toLowerCase() || "",
+          urgency: item.urgency?.toLowerCase() || "active",
           feature_image: item.feature_image || "",
           linked_blog: item.linked_blog?.toString() || "",
-        })
-        break
+          start_date: item.start_date || "",
+          end_date: item.end_date || "",
+        });
+        setEditType("campaign");
+        setEditingItem(item);
+        break;
       case "project":
         setNewProject({
           title: item.title,
@@ -580,13 +596,17 @@ const fetchCampaigns = async () => {
           tiktok: item.tiktok || "",
           image: item.image,
         });
+        setEditType("team");
+        setEditingItem(item);
         break;
       case "sponsor":
         setNewSponsor({
           name: item.name,
-          logo: item.logo,
-          website: item.website,
+          logo: item.logo || "",
+          website: item.website || "",
         });
+        setEditType("sponsor");
+        setEditingItem(item);
         break;
       case "gallery":
         setNewGalleryImage({
@@ -608,82 +628,29 @@ const fetchCampaigns = async () => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
         switch (type) {
-          case "partnership":
-            const updatedPartners = partnershipApplications.filter(
-              (app) => app.id !== id
-            );
-            setPartnershipApplications(updatedPartners);
-            localStorage.setItem(
-              "partnershipApplications",
-              JSON.stringify(updatedPartners)
-            );
-            break;
-          case "volunteer":
-            const updatedVolunteers = volunteerApplications.filter(
-              (app) => app.id !== id
-            );
-            setVolunteerApplications(updatedVolunteers);
-            localStorage.setItem(
-              "volunteerApplications",
-              JSON.stringify(updatedVolunteers)
-            );
-            break;
-          case "category":
-            setCategories(categories.filter((cat) => cat.id !== id));
-            break;
-          case "campaign":
-            setCampaigns(campaigns.filter((item) => item.id !== id))
-            break
-          case "project":
+          // ...existing code...
+          case "team":
             // Delete from database
-            const response = await fetch(`/api/projects?id=${id}`, {
+            const response = await fetch(`/api/team?id=${id}`, {
               method: 'DELETE',
             });
-
             if (!response.ok) {
-              throw new Error('Failed to delete project');
+              throw new Error('Failed to delete team member');
             }
-
-            // Update local state
-            setProjects(projects.filter((item) => item.id !== id));
-            break;
-          case "story":
-            // Delete story from database (as blog post)
-            const storyResponse = await fetch(`/api/blog?id=${id}`, {
-              method: "DELETE",
-            });
-
-            if (!storyResponse.ok) {
-              throw new Error("Failed to delete story");
-            }
-
-            // Update local state
-            setStories(stories.filter((item) => item.id !== id));
-            break;
-          case "blog":
-            // Delete blog post from database
-            const blogResponse = await fetch(`/api/blog?id=${id}`, {
-              method: "DELETE",
-            });
-
-            if (!blogResponse.ok) {
-              throw new Error("Failed to delete blog post");
-            }
-
-            // Update local state
-            setBlogPosts(blogPosts.filter((item) => item.id !== id));
-            break;
-          case "team":
             setTeamMembers(teamMembers.filter((item) => item.id !== id));
             break;
           case "sponsor":
+            // Delete from database
+            const sponsorResponse = await fetch(`/api/sponsors?id=${id}`, {
+              method: 'DELETE',
+            });
+            if (!sponsorResponse.ok) {
+              throw new Error('Failed to delete sponsor');
+            }
             setSponsors(sponsors.filter((item) => item.id !== id));
             break;
-          case "gallery":
-            setGalleryImages(galleryImages.filter((item) => item.id !== id));
-            break;
+          // ...existing code...
         }
-
         toast({
           title: "Item Deleted",
           description: `${type} has been deleted successfully.`,
@@ -706,15 +673,27 @@ const fetchCampaigns = async () => {
 
     switch (type) {
       case "Campaign":
+        // Validation: require non-empty title and description
+        if (!newCampaign.title || !newCampaign.description) {
+          toast({
+            title: "Missing Required Fields",
+            description: "Title and Description are required for a campaign.",
+            variant: "destructive",
+          });
+          return;
+        }
         try {
+          // Always send all 9 fields, never undefined
           const campaignData = {
-            title: newCampaign.title,
-            description: newCampaign.description,
-            location: newCampaign.location,
-            urgency: newCampaign.urgency,
-            beneficiaries: newCampaign.beneficiaries !== "" ? Number(newCampaign.beneficiaries) : 0,
-            linked_blog: newCampaign.linked_blog !== "" ? Number(newCampaign.linked_blog) : null,
-            feature_image: newCampaign.feature_image !== "" ? newCampaign.feature_image : null,
+            title: newCampaign.title ?? "",
+            description: newCampaign.description ?? "",
+            location: newCampaign.location !== undefined && newCampaign.location !== "" ? newCampaign.location : null,
+            urgency: newCampaign.urgency !== undefined && newCampaign.urgency !== "" ? newCampaign.urgency : "active",
+            beneficiaries: newCampaign.beneficiaries !== undefined && newCampaign.beneficiaries !== "" ? Number(newCampaign.beneficiaries) : 0,
+            linked_blog: newCampaign.linked_blog !== undefined && newCampaign.linked_blog !== "" ? Number(newCampaign.linked_blog) : null,
+            feature_image: newCampaign.feature_image !== undefined && newCampaign.feature_image !== "" ? newCampaign.feature_image : null,
+            start_date: newCampaign.start_date !== undefined && newCampaign.start_date !== "" ? newCampaign.start_date : null,
+            end_date: newCampaign.end_date !== undefined && newCampaign.end_date !== "" ? newCampaign.end_date : null,
           };
           let response;
           if (editingItem) {
@@ -747,6 +726,8 @@ const fetchCampaigns = async () => {
             urgency: "active",
             feature_image: "",
             linked_blog: "",
+            start_date: "",
+            end_date: "",
           });
         } catch (error) {
           console.error('Error saving campaign:', error);
@@ -1017,55 +998,117 @@ const fetchCampaigns = async () => {
         break;
 
       case "Team Member":
-        const teamData = {
-          id: newId,
-          name: newTeamMember.name,
-          role: newTeamMember.role,
-          bio: newTeamMember.bio,
-          email: newTeamMember.email,
-          facebook: newTeamMember.facebook,
-          instagram: newTeamMember.instagram,
-          tiktok: newTeamMember.tiktok,
-          image: newTeamMember.image,
-          order_index: teamMembers.length + 1,
-        };
-        if (editingItem) {
-          setTeamMembers(
-            teamMembers.map((item) =>
-              item.id === editingItem.id ? teamData : item
-            )
-          );
-        } else {
-          setTeamMembers([...teamMembers, teamData]);
+        try {
+          // Validation
+          if (!newTeamMember.name || !newTeamMember.role) {
+            toast({
+              title: "Missing Required Fields",
+              description: "Name and Role are required for a team member.",
+              variant: "destructive",
+            });
+            return;
+          }
+          const teamData = {
+            name: newTeamMember.name,
+            role: newTeamMember.role,
+            bio: newTeamMember.bio,
+            email: newTeamMember.email,
+            image: newTeamMember.image,
+            linkedin: newTeamMember.instagram, // Map as needed
+            twitter: newTeamMember.tiktok,     // Map as needed
+            order_index: teamMembers.length + 1,
+            active: true,
+          };
+          let response;
+          if (editingItem) {
+            response = await fetch('/api/team', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: editingItem.id, ...teamData }),
+            });
+          } else {
+            response = await fetch('/api/team', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(teamData),
+            });
+          }
+          if (!response.ok) {
+            throw new Error('Failed to save team member');
+          }
+          const savedMember = await response.json();
+          if (editingItem) {
+            setTeamMembers(teamMembers.map((item) => (item.id === editingItem.id ? savedMember : item)));
+          } else {
+            setTeamMembers([...teamMembers, savedMember]);
+          }
+          setNewTeamMember({
+            name: "",
+            role: "",
+            bio: "",
+            email: "",
+            facebook: "",
+            instagram: "",
+            tiktok: "",
+            image: "",
+          });
+        } catch (error) {
+          console.error('Error saving team member:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save team member. Please try again.",
+            variant: "destructive",
+          });
+          return;
         }
-        setNewTeamMember({
-          name: "",
-          role: "",
-          bio: "",
-          email: "",
-          facebook: "",
-          instagram: "",
-          tiktok: "",
-          image: "",
-        });
         break;
 
       case "Sponsor":
-        const sponsorData = {
-          id: newId,
-          name: newSponsor.name,
-          logo: newSponsor.logo,
-          website: newSponsor.website,
-        };
-        if (editingItem) {
-          setSponsors(
-            sponsors.map((item) =>
-              item.id === editingItem.id ? sponsorData : item
-            )
-          );
-        } else {
-          setSponsors([...sponsors, sponsorData]);
+        try {
+          const sponsorData = {
+            name: newSponsor.name,
+            logo: newSponsor.logo || null,
+            website: newSponsor.website || null,
+          };
+          
+          let response;
+          
+          if (editingItem) {
+            // Update existing sponsor
+            response = await fetch(`/api/sponsors?id=${editingItem.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(sponsorData),
+            });
+          } else {
+            // Create new sponsor
+            response = await fetch('/api/sponsors', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(sponsorData),
+            });
+          }
+          
+          if (!response.ok) {
+            throw new Error(`Failed to ${editingItem ? 'update' : 'create'} sponsor`);
+          }
+          
+          // Refresh the sponsors list
+          fetchSponsors();
+          
+        } catch (error) {
+          console.error("Error saving sponsor:", error);
+          toast({
+            title: "Error",
+            description: `Failed to ${editingItem ? 'update' : 'create'} sponsor. Please try again.`,
+            variant: "destructive",
+          });
         }
+        
         setNewSponsor({
           name: "",
           logo: "",
@@ -1139,6 +1182,8 @@ const fetchCampaigns = async () => {
       urgency: "active",
       feature_image: "",
       linked_blog: "",
+      start_date: "",
+      end_date: "",
     })
     setNewProject({
       title: "",
@@ -1394,7 +1439,7 @@ const fetchCampaigns = async () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Add New Campaign</DialogTitle>
+                    <DialogTitle>{editingItem && editType === "campaign" ? "Edit Campaign" : "Add New Campaign"}</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={(e) => handleSubmit(e, "Campaign")} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1539,9 +1584,9 @@ const fetchCampaigns = async () => {
 
                     <Button
                       type="submit"
-                      className="w-full bg-[#e51083] hover:bg-[#c50e73]"
+                      className={editingItem && editType === "campaign" ? "w-full bg-blue-600 hover:bg-blue-700" : "w-full bg-[#e51083] hover:bg-[#c50e73]"}
                     >
-                      Add Campaign
+                      {editingItem && editType === "campaign" ? "Update Campaign" : "Add Campaign"}
                     </Button>
                   </form>
                 </DialogContent>

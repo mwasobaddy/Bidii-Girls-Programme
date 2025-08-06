@@ -1,3 +1,44 @@
+// Sponsor Services
+import { Sponsor } from './types';
+
+export async function getAllSponsors(): Promise<Sponsor[]> {
+  const query = `SELECT id, name, logo, website, created_at FROM sponsors ORDER BY created_at DESC`;
+  return executeQuery<Sponsor>(query);
+}
+
+export async function getSponsorById(id: number): Promise<Sponsor | null> {
+  const query = `SELECT id, name, logo, website, created_at FROM sponsors WHERE id = ?`;
+  return executeQuerySingle<Sponsor>(query, [id]);
+}
+
+export async function createSponsor(sponsor: Omit<Sponsor, 'id' | 'created_at'>): Promise<Sponsor> {
+  const query = `INSERT INTO sponsors (name, logo, website) VALUES (?, ?, ?)`;
+  const params = [sponsor.name, sponsor.logo, sponsor.website];
+  const result = await executeInsert(query, params);
+  const created = await getSponsorById(result.insertId);
+  if (!created) throw new Error('Failed to create sponsor');
+  return created;
+}
+
+export async function updateSponsor(id: number, sponsor: Partial<Omit<Sponsor, 'id' | 'created_at'>>): Promise<Sponsor> {
+  const fields = [];
+  const params = [];
+  if (sponsor.name !== undefined) { fields.push('name = ?'); params.push(sponsor.name); }
+  if (sponsor.logo !== undefined) { fields.push('logo = ?'); params.push(sponsor.logo); }
+  if (sponsor.website !== undefined) { fields.push('website = ?'); params.push(sponsor.website); }
+  if (fields.length === 0) throw new Error('No fields to update');
+  const query = `UPDATE sponsors SET ${fields.join(', ')} WHERE id = ?`;
+  params.push(id);
+  await executeQuery(query, params);
+  const updated = await getSponsorById(id);
+  if (!updated) throw new Error('Failed to update sponsor');
+  return updated;
+}
+
+export async function deleteSponsor(id: number): Promise<void> {
+  const query = 'DELETE FROM sponsors WHERE id = ?';
+  await executeQuery(query, [id]);
+}
 import { executeQuery, executeQuerySingle, executeInsert } from './database';
 import { Project, BlogPost, TeamMember, GalleryImage } from './types';
 
@@ -66,19 +107,45 @@ export async function createCampaign(campaign: Omit<Campaign, 'id' | 'created_at
 export async function updateCampaign(id: number, campaign: Partial<Omit<Campaign, 'id' | 'created_at' | 'updated_at'>>): Promise<Campaign> {
   const fields = [];
   const params = [];
-  if (campaign.title !== undefined) { fields.push('title = ?'); params.push(campaign.title); }
-  if (campaign.description !== undefined) { fields.push('description = ?'); params.push(campaign.description); }
-  if (campaign.location !== undefined) { fields.push('location = ?'); params.push(campaign.location); }
-  if (campaign.urgency !== undefined) { fields.push('urgency = ?'); params.push(campaign.urgency); }
-  if (campaign.beneficiaries !== undefined) { fields.push('beneficiaries = ?'); params.push(campaign.beneficiaries); }
-  if (campaign.linked_blog !== undefined) { fields.push('linked_blog = ?'); params.push(campaign.linked_blog); }
-  if (campaign.feature_image !== undefined) { fields.push('feature_image = ?'); params.push(campaign.feature_image); }
-  if (campaign.start_date !== undefined) { fields.push('start_date = ?'); params.push(campaign.start_date); }
-  if (campaign.end_date !== undefined) { fields.push('end_date = ?'); params.push(campaign.end_date); }
+  if (campaign.title !== undefined && campaign.title !== "") {
+    fields.push('title = ?');
+    params.push(campaign.title);
+  }
+  if (campaign.description !== undefined && campaign.description !== "") {
+    fields.push('description = ?');
+    params.push(campaign.description);
+  }
+  if (campaign.location !== undefined && campaign.location !== "") {
+    fields.push('location = ?');
+    params.push(campaign.location);
+  }
+  if (campaign.urgency !== undefined && campaign.urgency !== "") {
+    fields.push('urgency = ?');
+    params.push(campaign.urgency);
+  }
+  if (campaign.beneficiaries !== undefined && campaign.beneficiaries !== null) {
+    fields.push('beneficiaries = ?');
+    params.push(campaign.beneficiaries);
+  }
+  if (campaign.linked_blog !== undefined && campaign.linked_blog !== null) {
+    fields.push('linked_blog = ?');
+    params.push(campaign.linked_blog);
+  }
+  if (campaign.feature_image !== undefined && campaign.feature_image !== "") {
+    fields.push('feature_image = ?');
+    params.push(campaign.feature_image);
+  }
+  if (campaign.start_date !== undefined && campaign.start_date !== "") {
+    fields.push('start_date = ?');
+    params.push(campaign.start_date);
+  }
+  if (campaign.end_date !== undefined && campaign.end_date !== "") {
+    fields.push('end_date = ?');
+    params.push(campaign.end_date);
+  }
   fields.push('updated_at = NOW()');
-  params.push(id);
-  if (fields.length === 0) throw new Error('No fields to update');
   const query = `UPDATE campaigns SET ${fields.join(', ')} WHERE id = ?`;
+  params.push(id);
   try {
     await executeQuery(query, params);
     const updatedCampaign = await getCampaignById(id);
@@ -384,6 +451,54 @@ export async function getAllTeamMembers(): Promise<TeamMember[]> {
     ORDER BY order_index ASC
   `;
   return executeQuery<TeamMember>(query);
+}
+
+export async function createTeamMember(member: Omit<TeamMember, 'id' | 'created_at'>): Promise<TeamMember> {
+  const query = `
+    INSERT INTO team_members (name, role, bio, image, email, linkedin, twitter, order_index, active)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const params = [
+    member.name,
+    member.role,
+    member.bio,
+    member.image,
+    member.email,
+    member.linkedin,
+    member.twitter,
+    member.order_index,
+    member.active
+  ];
+  const result = await executeInsert(query, params);
+  const created = await executeQuerySingle<TeamMember>('SELECT * FROM team_members WHERE id = ?', [result.insertId]);
+  if (!created) throw new Error('Failed to create team member');
+  return created;
+}
+
+export async function updateTeamMember(id: number, member: Partial<Omit<TeamMember, 'id' | 'created_at'>>): Promise<TeamMember> {
+  const fields = [];
+  const params = [];
+  if (member.name !== undefined) { fields.push('name = ?'); params.push(member.name); }
+  if (member.role !== undefined) { fields.push('role = ?'); params.push(member.role); }
+  if (member.bio !== undefined) { fields.push('bio = ?'); params.push(member.bio); }
+  if (member.image !== undefined) { fields.push('image = ?'); params.push(member.image); }
+  if (member.email !== undefined) { fields.push('email = ?'); params.push(member.email); }
+  if (member.linkedin !== undefined) { fields.push('linkedin = ?'); params.push(member.linkedin); }
+  if (member.twitter !== undefined) { fields.push('twitter = ?'); params.push(member.twitter); }
+  if (member.order_index !== undefined) { fields.push('order_index = ?'); params.push(member.order_index); }
+  if (member.active !== undefined) { fields.push('active = ?'); params.push(member.active); }
+  if (fields.length === 0) throw new Error('No fields to update');
+  const query = `UPDATE team_members SET ${fields.join(', ')} WHERE id = ?`;
+  params.push(id);
+  await executeQuery(query, params);
+  const updated = await executeQuerySingle<TeamMember>('SELECT * FROM team_members WHERE id = ?', [id]);
+  if (!updated) throw new Error('Failed to update team member');
+  return updated;
+}
+
+export async function deleteTeamMember(id: number): Promise<void> {
+  const query = 'DELETE FROM team_members WHERE id = ?';
+  await executeQuery(query, [id]);
 }
 
 // Gallery Services

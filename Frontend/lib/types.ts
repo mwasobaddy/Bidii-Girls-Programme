@@ -1,3 +1,10 @@
+export interface Sponsor {
+  id: number;
+  name: string;
+  logo: string | null;
+  website: string | null;
+  created_at: Date;
+}
 export interface Campaign {
   id: number;
   title: string;

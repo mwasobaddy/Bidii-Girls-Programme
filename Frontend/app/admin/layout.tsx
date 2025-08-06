@@ -1,0 +1,180 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { 
+  LogOut, 
+  Home, 
+  Target, 
+  CheckCircle, 
+  Users, 
+  BookOpen, 
+  Heart, 
+  Building,
+  Image as ImageIcon,
+  List,
+  Database
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    const authStatus = localStorage.getItem("adminAuth");
+    if (authStatus === "true") {
+      setIsAuthenticated(true);
+      setLoading(false);
+    } else {
+      router.push("/admin/login");
+    }
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem("adminAuth");
+      localStorage.removeItem("adminUser");
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out from the database.",
+      });
+      router.push("/admin/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout Error",
+        description:
+          "There was an error logging out, but local session cleared.",
+      });
+      router.push("/admin/login");
+    }
+  };
+
+  if (!isAuthenticated || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#e51083]"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-16 min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white dark:bg-gray-800 p-4 shadow-md">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Admin Dashboard</h2>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="flex items-center gap-2 w-full bg-transparent"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+        
+        <nav className="space-y-2">
+            {/* <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin')}
+            >
+                <Home className="h-4 w-4 mr-2" />
+                Dashboard
+            </Button> */}
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/dashboard')}
+            >
+                <Database className="h-4 w-4 mr-2" />
+                New Dashboard
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/sponsors')}
+            >
+                <Building className="h-4 w-4 mr-2" />
+                Sponsors
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/projects')}
+            >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Projects
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/campaigns')}
+            >
+                <Target className="h-4 w-4 mr-2" />
+                Campaigns
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/stories')}
+            >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Stories
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/blog')}
+            >
+                <List className="h-4 w-4 mr-2" />
+                Blog
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/gallery')}
+            >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Gallery
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/team')}
+            >
+                <Users className="h-4 w-4 mr-2" />
+                Team
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/categories')}
+            >
+                <Database className="h-4 w-4 mr-2" />
+                Categories
+            </Button>
+            <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
+                onClick={() => router.push('/admin/applications')}
+            >
+                <List className="h-4 w-4 mr-2" />
+                Applications
+            </Button>
+        </nav>
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        {children}
+      </div>
+    </div>
+  );
+}

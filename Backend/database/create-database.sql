@@ -1,3 +1,11 @@
+-- Sponsors table
+CREATE TABLE IF NOT EXISTS sponsors (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    logo LONGTEXT,
+    website VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 -- Create database tables for Bidii Girls Program
 
 -- Users table for admin authentication
@@ -47,7 +55,7 @@ CREATE TABLE IF NOT EXISTS team_members (
     name VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     bio TEXT,
-    image VARCHAR(500),
+    image LONGTEXT,
     email VARCHAR(255),
     linkedin VARCHAR(500),
     twitter VARCHAR(500),
