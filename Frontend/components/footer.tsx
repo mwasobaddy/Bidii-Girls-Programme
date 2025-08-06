@@ -168,7 +168,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/admin"
+                  href="/admin/dashboard"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   {t("admin")}
