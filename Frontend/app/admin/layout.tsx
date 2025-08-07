@@ -145,14 +145,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
-                onClick={() => router.push('/admin/stories')}
-            >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Stories
-            </Button>
-            <Button 
-                variant="ghost" 
-                className="w-full justify-start" 
                 onClick={() => router.push('/admin/blog')}
             >
                 <List className="h-4 w-4 mr-2" />

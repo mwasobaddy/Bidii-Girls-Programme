@@ -44,6 +44,36 @@ import { Project, BlogPost, TeamMember, GalleryImage } from './types';
 
 import { Campaign } from './types';
 
+// Helper function to format dates for MySQL
+function formatDateForDatabase(dateInput: string | Date | null | undefined): string | null {
+  if (!dateInput) return null;
+  
+  // If it's already a string in YYYY-MM-DD format, return as is
+  if (typeof dateInput === 'string') {
+    if (dateInput === "") return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      return dateInput;
+    }
+    
+    // If it's an ISO string or other date format, convert to YYYY-MM-DD
+    try {
+      const date = new Date(dateInput);
+      if (isNaN(date.getTime())) return null;
+      return date.toISOString().split('T')[0];
+    } catch {
+      return null;
+    }
+  }
+  
+  // If it's a Date object, convert to YYYY-MM-DD
+  if (dateInput instanceof Date) {
+    if (isNaN(dateInput.getTime())) return null;
+    return dateInput.toISOString().split('T')[0];
+  }
+  
+  return null;
+}
+
 // Project Services
 export async function getAllProjects(): Promise<Project[]> {
   const query = `
@@ -89,8 +119,8 @@ export async function createCampaign(campaign: Omit<Campaign, 'id' | 'created_at
     campaign.beneficiaries,
     campaign.linked_blog,
     campaign.feature_image,
-    campaign.start_date,
-    campaign.end_date
+    formatDateForDatabase(campaign.start_date),
+    formatDateForDatabase(campaign.end_date)
   ];
   try {
     const result = await executeInsert(query, params);
@@ -137,11 +167,11 @@ export async function updateCampaign(id: number, campaign: Partial<Omit<Campaign
   }
   if (campaign.start_date !== undefined && campaign.start_date !== "") {
     fields.push('start_date = ?');
-    params.push(campaign.start_date);
+    params.push(formatDateForDatabase(campaign.start_date));
   }
   if (campaign.end_date !== undefined && campaign.end_date !== "") {
     fields.push('end_date = ?');
-    params.push(campaign.end_date);
+    params.push(formatDateForDatabase(campaign.end_date));
   }
   fields.push('updated_at = NOW()');
   const query = `UPDATE campaigns SET ${fields.join(', ')} WHERE id = ?`;
@@ -204,7 +234,7 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
     project.budget,
     project.raised,
     project.beneficiaries,
-    project.start_date,
+    formatDateForDatabase(project.start_date),
     project.featured_image
   ];
   
@@ -265,7 +295,7 @@ export async function updateProject(id: number, project: Partial<Omit<Project, '
   }
   if (project.start_date !== undefined) {
     fields.push('start_date = ?');
-    params.push(project.start_date);
+    params.push(formatDateForDatabase(project.start_date));
   }
   if (project.featured_image !== undefined) {
     fields.push('featured_image = ?');
@@ -286,6 +316,14 @@ export async function updateProject(id: number, project: Partial<Omit<Project, '
 }
 
 export async function deleteProject(id: number): Promise<void> {
+  // First, check if there are any donations associated with this project
+  const donationsQuery = 'SELECT COUNT(*) as count FROM donations WHERE project_id = ?';
+  const donationsResult = await executeQuery<{ count: number }>(donationsQuery, [id]);
+  
+  if (donationsResult.length > 0 && donationsResult[0].count > 0) {
+    throw new Error(`Cannot delete project: ${donationsResult[0].count} donation(s) are associated with this project. Please remove or reassign donations first.`);
+  }
+  
   const query = 'DELETE FROM projects WHERE id = ?';
   await executeQuery(query, [id]);
 }

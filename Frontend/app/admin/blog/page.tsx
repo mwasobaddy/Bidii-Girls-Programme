@@ -14,13 +14,6 @@ import Image from "next/image"
 import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
-import dynamic from "next/dynamic"
-
-// Dynamically import rich text editor to avoid SSR issues
-const RichTextEditor = dynamic(() => import("@/components/rich-text-editor"), {
-  ssr: false,
-  loading: () => <p className="text-center py-4">Loading editor...</p>
-})
 
 interface BlogPost {
   id: number;
@@ -30,20 +23,15 @@ interface BlogPost {
   author_image?: string | null;
   published_date: string;
   featured_image?: string | null;
-  category_id?: number | null;
+  category?: string | null;
   tags?: string;
   excerpt?: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
 }
 
 export default function BlogPage() {
   // State
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -61,7 +49,7 @@ export default function BlogPage() {
     author_image: "",
     published_date: new Date().toISOString().split('T')[0],
     featured_image: "",
-    category_id: "",
+    category: "none",
     tags: "",
     excerpt: "",
   })
@@ -77,6 +65,22 @@ export default function BlogPage() {
       if (!response.ok) throw new Error("Failed to fetch blog posts")
       const data = await response.json()
       setBlogPosts(data)
+      
+      // Extract unique categories from blog posts
+      const uniqueCategories = Array.from(
+        new Set(
+          data
+            .map((post: any) => post.category)
+            .filter((category: any): category is string => 
+              typeof category === 'string' && 
+              category !== null && 
+              category !== undefined && 
+              category.trim() !== ""
+            )
+        )
+      ).sort();
+      
+      setCategories(uniqueCategories as string[]);
     } catch (error) {
       console.error("Error fetching blog posts:", error)
       setError("Failed to fetch blog posts from database")
@@ -85,21 +89,8 @@ export default function BlogPage() {
     }
   }
   
-  // Fetch categories for linking
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/categories")
-      if (!response.ok) throw new Error("Failed to fetch categories")
-      const data = await response.json()
-      setCategories(data)
-    } catch (error) {
-      console.error("Error fetching categories:", error)
-      // Not setting error state as this is secondary data
-    }
-  }
-  
   useEffect(() => {
-    Promise.all([fetchBlogPosts(), fetchCategories()])
+    fetchBlogPosts()
   }, [])
   
   // Handle form input change
@@ -160,7 +151,7 @@ export default function BlogPage() {
         author_image: formData.author_image || null,
         published_date: formData.published_date || new Date().toISOString().split('T')[0],
         featured_image: formData.featured_image || null,
-        category_id: formData.category_id !== "" ? Number(formData.category_id) : null,
+        category: formData.category === "none" ? null : formData.category,
         tags: formData.tags || "",
         excerpt: excerpt,
       }
@@ -258,7 +249,7 @@ export default function BlogPage() {
       author_image: post.author_image || "",
       published_date: post.published_date || new Date().toISOString().split('T')[0],
       featured_image: post.featured_image || "",
-      category_id: post.category_id?.toString() || "",
+      category: post.category || "none",
       tags: post.tags || "",
       excerpt: post.excerpt || "",
     })
@@ -274,7 +265,7 @@ export default function BlogPage() {
       author_image: "",
       published_date: new Date().toISOString().split('T')[0],
       featured_image: "",
-      category_id: "",
+      category: "none",
       tags: "",
       excerpt: "",
     })
@@ -282,10 +273,8 @@ export default function BlogPage() {
   }
   
   // Get category name
-  const getCategoryName = (categoryId: number | null | undefined) => {
-    if (!categoryId) return "Uncategorized"
-    const category = categories.find(cat => cat.id === categoryId)
-    return category ? category.name : "Unknown Category"
+  const getCategoryName = (category: string | null | undefined) => {
+    return category || "Uncategorized"
   }
   
   // Format date
@@ -374,19 +363,19 @@ export default function BlogPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="category_id">Category</Label>
+                  <Label htmlFor="category">Category</Label>
                   <Select 
-                    value={formData.category_id} 
-                    onValueChange={(value) => handleSelectChange("category_id", value)}
+                    value={formData.category || "none"} 
+                    onValueChange={(value) => handleSelectChange("category", value === "none" ? "" : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Uncategorized</SelectItem>
+                      <SelectItem value="none">Uncategorized</SelectItem>
                       {categories.map(category => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
+                        <SelectItem key={category} value={category}>
+                          {category}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -439,10 +428,13 @@ export default function BlogPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="content">Content</Label>
-                <RichTextEditor
+                <Textarea
+                  id="content"
+                  name="content"
                   value={formData.content}
-                  onChange={handleContentChange}
+                  onChange={handleChange}
                   className="min-h-[300px]"
+                  placeholder="Write your blog post content here..."
                 />
               </div>
               
@@ -508,7 +500,7 @@ export default function BlogPage() {
                   <div className="mb-4 text-sm">
                     <span className="font-medium">Category: </span>
                     <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full px-2.5 py-0.5 text-xs">
-                      {getCategoryName(post.category_id)}
+                      {getCategoryName(post.category)}
                     </span>
                     
                     {post.tags && (
@@ -637,7 +629,7 @@ export default function BlogPage() {
                 <div>
                   <span className="font-medium">Category: </span>
                   <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full px-2.5 py-0.5 text-sm">
-                    {getCategoryName(viewingPost.category_id)}
+                    {getCategoryName(viewingPost.category)}
                   </span>
                 </div>
                 

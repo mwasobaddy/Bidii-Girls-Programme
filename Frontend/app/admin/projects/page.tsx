@@ -170,21 +170,24 @@ export default function ProjectsPage() {
   const handleDelete = async () => {
     if (!deletingProjectId) return
     
-    const response = await fetch(`/api/projects`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id: deletingProjectId }),
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete project')
+    try {
+      const response = await fetch(`/api/projects?id=${deletingProjectId}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete project')
+      }
+      
+      // Update local state
+      setProjects(projects.filter((item) => item.id !== deletingProjectId))
+      setDeletingProjectId(null)
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete project');
+      setDeletingProjectId(null);
     }
-    
-    // Update local state
-    setProjects(projects.filter((item) => item.id !== deletingProjectId))
-    setDeletingProjectId(null)
   }
   
   // Handle view button click

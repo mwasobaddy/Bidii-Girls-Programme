@@ -53,7 +53,7 @@ export default function CampaignsPage() {
     location: "",
     urgency: "active",
     beneficiaries: "",
-    linked_blog: "",
+    linked_blog: "none",
     feature_image: "",
     start_date: "",
     end_date: "",
@@ -133,7 +133,7 @@ export default function CampaignsPage() {
         location: formData.location !== "" ? formData.location : null,
         urgency: formData.urgency !== "" ? formData.urgency : "active",
         beneficiaries: formData.beneficiaries !== "" ? Number(formData.beneficiaries) : 0,
-        linked_blog: formData.linked_blog !== "" ? Number(formData.linked_blog) : null,
+        linked_blog: formData.linked_blog !== "" && formData.linked_blog !== "none" ? Number(formData.linked_blog) : null,
         feature_image: formData.feature_image !== "" ? formData.feature_image : null,
         start_date: formData.start_date !== "" ? formData.start_date : null,
         end_date: formData.end_date !== "" ? formData.end_date : null,
@@ -185,21 +185,24 @@ export default function CampaignsPage() {
   const handleDelete = async () => {
     if (!deletingCampaignId) return
     
-    const response = await fetch(`/api/campaigns`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id: deletingCampaignId }),
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete campaign')
+    try {
+      const response = await fetch(`/api/campaigns?id=${deletingCampaignId}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete campaign')
+      }
+      
+      // Update local state
+      setCampaigns(campaigns.filter((item) => item.id !== deletingCampaignId))
+      setDeletingCampaignId(null)
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete campaign');
+      setDeletingCampaignId(null);
     }
-    
-    // Update local state
-    setCampaigns(campaigns.filter((item) => item.id !== deletingCampaignId))
-    setDeletingCampaignId(null)
   }
   
   // Handle view button click
@@ -217,7 +220,7 @@ export default function CampaignsPage() {
       location: campaign.location || "",
       urgency: campaign.urgency?.toLowerCase() || "active",
       beneficiaries: campaign.beneficiaries?.toString() || "",
-      linked_blog: campaign.linked_blog?.toString() || "",
+      linked_blog: campaign.linked_blog?.toString() || "none",
       feature_image: campaign.feature_image || "",
       start_date: campaign.start_date || "",
       end_date: campaign.end_date || "",
@@ -233,7 +236,7 @@ export default function CampaignsPage() {
       location: "",
       urgency: "active",
       beneficiaries: "",
-      linked_blog: "",
+      linked_blog: "none",
       feature_image: "",
       start_date: "",
       end_date: "",
@@ -364,7 +367,7 @@ export default function CampaignsPage() {
                       <SelectValue placeholder="Select blog post" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {blogPosts.map(blog => (
                         <SelectItem key={blog.id} value={blog.id.toString()}>
                           {blog.title}
