@@ -12,6 +12,7 @@ export interface Campaign {
   location: string;
   urgency: string;
   beneficiaries: number;
+  status?: string;
   linked_blog?: number | null;
   feature_image?: string;
   start_date?: string | null;

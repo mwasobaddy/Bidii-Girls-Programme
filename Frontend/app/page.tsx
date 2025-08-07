@@ -31,40 +31,7 @@ import Image from "next/image";
 import { DonateButton } from "@/components/donate-button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/use-language";
-import { Sponsor } from "@/lib/types";
-
-const featuredCampaigns = [
-  {
-    id: 1,
-    title: "Emergency Period Kits for Kibera",
-    description:
-      "Providing immediate relief with emergency menstrual hygiene kits for 200 girls in Kibera slum.",
-    image: "/placeholder.svg?height=300&width=400",
-    urgency: "Urgent",
-    beneficiaries: 200,
-    linkedBlog: 1,
-  },
-  {
-    id: 2,
-    title: "School Toilet Renovation Project",
-    description:
-      "Building private, clean toilet facilities in 5 schools to ensure girls have dignified spaces.",
-    image: "/placeholder.svg?height=300&width=400",
-    urgency: "Active",
-    beneficiaries: 500,
-    linkedBlog: 2,
-  },
-  {
-    id: 3,
-    title: "Girls Leadership Training Program",
-    description:
-      "Empowering 100 teenage girls with leadership skills and confidence-building workshops.",
-    image: "/placeholder.svg?height=300&width=400",
-    urgency: "Ongoing",
-    beneficiaries: 100,
-    linkedBlog: 3,
-  },
-];
+import { Sponsor, Campaign, Project } from "@/lib/types";
 
 const featuredPosts = [
   {
@@ -107,6 +74,10 @@ const featuredPosts = [
 export default function HomePage() {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [sponsorsLoading, setSponsorsLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
   const [currentSponsor, setCurrentSponsor] = useState(0);
   const [currentBlog, setCurrentBlog] = useState(0);
   const [partnerForm, setPartnerForm] = useState({
@@ -137,7 +108,6 @@ export default function HomePage() {
           setSponsors(sponsorsData);
         } else {
           console.error('Failed to fetch sponsors');
-          // Fallback to empty array if API fails
           setSponsors([]);
         }
       } catch (error) {
@@ -149,6 +119,54 @@ export default function HomePage() {
     };
 
     fetchSponsors();
+  }, []);
+
+  // Fetch campaigns from database
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setCampaignsLoading(true);
+        const response = await fetch('/api/campaigns');
+        if (response.ok) {
+          const campaignsData = await response.json();
+          setCampaigns(campaignsData);
+        } else {
+          console.error('Failed to fetch campaigns');
+          setCampaigns([]);
+        }
+      } catch (error) {
+        console.error('Error fetching campaigns:', error);
+        setCampaigns([]);
+      } finally {
+        setCampaignsLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
+
+  // Fetch projects from database
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setProjectsLoading(true);
+        const response = await fetch('/api/projects');
+        if (response.ok) {
+          const projectsData = await response.json();
+          setProjects(projectsData);
+        } else {
+          console.error('Failed to fetch projects');
+          setProjects([]);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setProjects([]);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+
+    fetchProjects();
   }, []);
 
   const nextSponsor = () => {
@@ -349,128 +367,150 @@ export default function HomePage() {
 
           {/* Mobile: Show only 2 campaigns */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-6">
-            {featuredCampaigns.slice(0, 2).map((campaign, index) => (
-              <Card
-                key={campaign.id}
-                className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="relative">
-                  <Image
-                    src={campaign.image || "/placeholder.svg"}
-                    alt={campaign.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-40 sm:h-48 object-cover"
-                  />
-                  <Badge
-                    className={`absolute top-3 right-3 text-xs ${
-                      campaign.urgency === "Urgent"
-                        ? "bg-red-500"
-                        : campaign.urgency === "Active"
-                        ? "bg-green-500"
-                        : "bg-blue-500"
-                    }`}
-                  >
-                    {campaign.urgency}
-                  </Badge>
-                </div>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base sm:text-lg">
-                    {campaign.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                    {campaign.description}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-[#e51083]" />
-                      {campaign.beneficiaries} girls
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                    <Link
-                      href={`/blog/${campaign.linkedBlog}`}
-                      className="flex-1"
+            {campaignsLoading ? (
+              <div className="col-span-full flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e51083]"></div>
+                <span className="ml-2 text-gray-600">Loading campaigns...</span>
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-600">
+                No campaigns available at the moment.
+              </div>
+            ) : (
+              campaigns.slice(0, 2).map((campaign: Campaign, index: number) => (
+                <Card
+                  key={campaign.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 200}ms` }}
+                >
+                  <div className="relative">
+                    <Image
+                      src={campaign.feature_image || "/placeholder.svg"}
+                      alt={campaign.title}
+                      width={400}
+                      height={300}
+                      className="w-full h-40 sm:h-48 object-cover"
+                    />
+                    <Badge
+                      className={`absolute top-3 right-3 text-xs ${
+                        campaign.urgency === "Urgent"
+                          ? "bg-red-500"
+                          : campaign.urgency === "Active"
+                          ? "bg-green-500"
+                          : "bg-blue-500"
+                      }`}
                     >
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
-                      >
-                        {t("readMore")}
-                      </Button>
-                    </Link>
+                      {campaign.urgency}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base sm:text-lg">
+                      {campaign.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                      {campaign.description}
+                    </p>
+
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-[#e51083]" />
+                        {campaign.beneficiaries} girls
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                      <Link
+                        href={`/campaigns/${campaign.id}`}
+                        className="flex-1"
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
+                        >
+                          {t("readMore")}
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Desktop: Show all 3 campaigns */}
           <div className="hidden md:grid grid-cols-3 gap-8">
-            {featuredCampaigns.map((campaign, index) => (
-              <Card
-                key={campaign.id}
-                className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="relative">
-                  <Image
-                    src={campaign.image || "/placeholder.svg"}
-                    alt={campaign.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                  <Badge
-                    className={`absolute top-4 right-4 ${
-                      campaign.urgency === "Urgent"
-                        ? "bg-red-500"
-                        : campaign.urgency === "Active"
-                        ? "bg-green-500"
-                        : "bg-blue-500"
-                    }`}
-                  >
-                    {campaign.urgency}
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-lg">{campaign.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    {campaign.description}
-                  </p>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <Users className="h-4 w-4 mr-1 text-[#e51083]" />
-                      {campaign.beneficiaries} girls
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                    <Link
-                      href={`/blog/${campaign.linkedBlog}`}
-                      className="flex-1"
+            {campaignsLoading ? (
+              <div className="col-span-full flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e51083]"></div>
+                <span className="ml-2 text-gray-600">Loading campaigns...</span>
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-600">
+                No campaigns available at the moment.
+              </div>
+            ) : (
+              campaigns.slice(0, 3).map((campaign: Campaign, index: number) => (
+                <Card
+                  key={campaign.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 200}ms` }}
+                >
+                  <div className="relative">
+                    <Image
+                      src={campaign.feature_image || "/placeholder.svg"}
+                      alt={campaign.title}
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
+                    <Badge
+                      className={`absolute top-4 right-4 ${
+                        campaign.urgency === "Urgent"
+                          ? "bg-red-500"
+                          : campaign.urgency === "Active"
+                          ? "bg-green-500"
+                          : "bg-blue-500"
+                      }`}
                     >
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
-                      >
-                        {t("readMore")}
-                      </Button>
-                    </Link>
+                      {campaign.urgency}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader>
+                    <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      {campaign.description}
+                    </p>
+
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <Users className="h-4 w-4 mr-1 text-[#e51083]" />
+                        {campaign.beneficiaries} girls
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                      <Link
+                        href={`/campaigns/${campaign.id}`}
+                        className="flex-1"
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
+                        >
+                          {t("readMore")}
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -871,90 +911,106 @@ export default function HomePage() {
 
           {/* Mobile: Show only 2 projects */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-6">
-            {featuredCampaigns.slice(0, 2).map((project, index) => (
-              <Card
-                key={project.id}
-                className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="relative">
-                  <Image
-                    src={project.image || "/placeholder.svg"}
-                    alt={project.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-40 sm:h-48 object-cover"
-                  />
-                </div>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base sm:text-lg">
-                    {project.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                    <Link
-                      href={`/blog/${project.linkedBlog}`}
-                      className="flex-1"
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
-                      >
-                        {t("readMore")}
-                      </Button>
-                    </Link>
+            {projectsLoading ? (
+              <div className="col-span-full flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e51083]"></div>
+                <span className="ml-2 text-gray-600">Loading projects...</span>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-600">
+                No projects available at the moment.
+              </div>
+            ) : (
+              projects.slice(0, 2).map((project: Project, index: number) => (
+                <Card
+                  key={project.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 200}ms` }}
+                >
+                  <div className="relative">
+                    <Image
+                      src={project.featured_image || "/placeholder.svg"}
+                      alt={project.title}
+                      width={400}
+                      height={300}
+                      className="w-full h-40 sm:h-48 object-cover"
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base sm:text-lg">
+                      {project.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                      <Link href={`/projects/${project.id}`} className="flex-1">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
+                        >
+                          {t("readMore")}
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Desktop: Show all 3 projects */}
           <div className="hidden md:grid grid-cols-3 gap-8">
-            {featuredCampaigns.map((project, index) => (
-              <Card
-                key={project.id}
-                className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="relative">
-                  <Image
-                    src={project.image || "/placeholder.svg"}
-                    alt={project.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-lg">{project.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                    <Link
-                      href={`/blog/${project.linkedBlog}`}
-                      className="flex-1"
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
-                      >
-                        {t("readMore")}
-                      </Button>
-                    </Link>
+            {projectsLoading ? (
+              <div className="col-span-full flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e51083]"></div>
+                <span className="ml-2 text-gray-600">Loading projects...</span>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-600">
+                No projects available at the moment.
+              </div>
+            ) : (
+              projects.slice(0, 3).map((project: Project, index: number) => (
+                <Card
+                  key={project.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 200}ms` }}
+                >
+                  <div className="relative">
+                    <Image
+                      src={project.featured_image || "/placeholder.svg"}
+                      alt={project.title}
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader>
+                    <CardTitle className="text-lg">{project.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
+                      <Link href={`/projects/${project.id}`} className="flex-1">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
+                        >
+                          {t("readMore")}
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-8 sm:mt-12 animate-fade-in-up">
