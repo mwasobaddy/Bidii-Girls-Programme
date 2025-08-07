@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -31,39 +31,7 @@ import Image from "next/image";
 import { DonateButton } from "@/components/donate-button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/use-language";
-
-const sponsors = [
-  {
-    name: "UNICEF",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://unicef.org",
-  },
-  {
-    name: "World Vision",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://worldvision.org",
-  },
-  {
-    name: "Save the Children",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://savethechildren.org",
-  },
-  {
-    name: "Plan International",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://plan-international.org",
-  },
-  {
-    name: "ActionAid",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://actionaid.org",
-  },
-  {
-    name: "Oxfam",
-    logo: "/placeholder.svg?height=80&width=120",
-    website: "https://oxfam.org",
-  },
-];
+import { Sponsor } from "@/lib/types";
 
 const featuredCampaigns = [
   {
@@ -137,6 +105,8 @@ const featuredPosts = [
 ];
 
 export default function HomePage() {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(true);
   const [currentSponsor, setCurrentSponsor] = useState(0);
   const [currentBlog, setCurrentBlog] = useState(0);
   const [partnerForm, setPartnerForm] = useState({
@@ -156,12 +126,41 @@ export default function HomePage() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  // Fetch sponsors from database
+  useEffect(() => {
+    const fetchSponsors = async () => {
+      try {
+        setSponsorsLoading(true);
+        const response = await fetch('/api/sponsors');
+        if (response.ok) {
+          const sponsorsData = await response.json();
+          setSponsors(sponsorsData);
+        } else {
+          console.error('Failed to fetch sponsors');
+          // Fallback to empty array if API fails
+          setSponsors([]);
+        }
+      } catch (error) {
+        console.error('Error fetching sponsors:', error);
+        setSponsors([]);
+      } finally {
+        setSponsorsLoading(false);
+      }
+    };
+
+    fetchSponsors();
+  }, []);
+
   const nextSponsor = () => {
-    setCurrentSponsor((prev) => (prev + 1) % sponsors.length);
+    if (sponsors.length > 0) {
+      setCurrentSponsor((prev) => (prev + 1) % sponsors.length);
+    }
   };
 
   const prevSponsor = () => {
-    setCurrentSponsor((prev) => (prev - 1 + sponsors.length) % sponsors.length);
+    if (sponsors.length > 0) {
+      setCurrentSponsor((prev) => (prev - 1 + sponsors.length) % sponsors.length);
+    }
   };
 
   const nextBlog = () => {
@@ -483,50 +482,67 @@ export default function HomePage() {
             {t("partnersSponsors")}
           </h2>
           <div className="relative max-w-4xl mx-auto">
-            <div className="flex items-center justify-center space-x-4 sm:space-x-8 overflow-hidden">
-              {sponsors
-                .slice(
-                  currentSponsor,
-                  currentSponsor +
-                    (typeof window !== "undefined" && window.innerWidth < 768
-                      ? 2
-                      : 4)
-                )
-                .map((sponsor, index) => (
-                  <div key={index} className="flex-shrink-0 animate-fade-in">
-                    <a
-                      href={sponsor.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block hover:scale-110 transition-all duration-300"
+            {sponsorsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e51083]"></div>
+                <span className="ml-2 text-gray-600">Loading sponsors...</span>
+              </div>
+            ) : sponsors.length === 0 ? (
+              <div className="text-center py-8 text-gray-600">
+                No sponsors available at the moment.
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-center space-x-4 sm:space-x-8 overflow-hidden">
+                  {sponsors
+                    .slice(
+                      currentSponsor,
+                      currentSponsor +
+                        (typeof window !== "undefined" && window.innerWidth < 768
+                          ? 2
+                          : 4)
+                    )
+                    .map((sponsor: Sponsor, index: number) => (
+                      <div key={sponsor.id} className="flex-shrink-0 animate-fade-in">
+                        <a
+                          href={sponsor.website || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block hover:scale-110 transition-all duration-300"
+                        >
+                          <Image
+                            src={sponsor.logo || "/placeholder.svg"}
+                            alt={sponsor.name}
+                            width={120}
+                            height={80}
+                            className="grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-20 object-contain"
+                          />
+                        </a>
+                      </div>
+                    ))}
+                </div>
+                {sponsors.length > 4 && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={prevSponsor}
+                      className="absolute left-0 top-1/2 transform -translate-y-1/2 hover:scale-110 transition-transform"
                     >
-                      <Image
-                        src={sponsor.logo || "/placeholder.svg"}
-                        alt={sponsor.name}
-                        width={120}
-                        height={80}
-                        className="grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100 w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-20 object-contain"
-                      />
-                    </a>
-                  </div>
-                ))}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={prevSponsor}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 hover:scale-110 transition-transform"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={nextSponsor}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 hover:scale-110 transition-transform"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
+                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={nextSponsor}
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 hover:scale-110 transition-transform"
+                    >
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>

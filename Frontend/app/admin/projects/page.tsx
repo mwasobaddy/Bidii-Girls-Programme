@@ -396,7 +396,7 @@ export default function ProjectsPage() {
                 <ImageUploader 
                   onImageSelected={handleImageSelected}
                   currentImage={formData.featured_image || undefined}
-                  label="Upload Featured Image"
+                  label="Upload Project Image"
                   aspectRatio="16:9"
                 />
               </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { 
   LogOut, 
@@ -23,16 +23,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Check if current page is the login page
+  const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
+    console.log('AdminLayout useEffect running, pathname:', pathname, 'isLoginPage:', isLoginPage);
+    
+    // Skip authentication check for login page
+    if (isLoginPage) {
+      console.log('Login page detected, skipping auth check');
+      setLoading(false);
+      return;
+    }
+
     const authStatus = localStorage.getItem("adminAuth");
+    console.log('Checking localStorage adminAuth:', authStatus);
+    
     if (authStatus === "true") {
+      console.log('User is authenticated, setting state');
       setIsAuthenticated(true);
       setLoading(false);
     } else {
+      console.log('User not authenticated, redirecting to login');
       router.push("/admin/login");
     }
-  }, [router]);
+  }, [router, isLoginPage]);
 
   const handleLogout = async () => {
     try {
@@ -54,6 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.push("/admin/login");
     }
   };
+
+  // If it's the login page, just render the children without authentication checks
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (!isAuthenticated || loading) {
     return (
@@ -94,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onClick={() => router.push('/admin/dashboard')}
             >
                 <Database className="h-4 w-4 mr-2" />
-                New Dashboard
+                Dashboard
             </Button>
             <Button 
                 variant="ghost" 

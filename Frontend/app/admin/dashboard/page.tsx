@@ -211,7 +211,7 @@ export default function AdminDashboard() {
       </div>
       
       {/* Recent Activity */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-xl">Recent Activity</CardTitle>
           <CardDescription>Latest actions performed in the admin panel</CardDescription>
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }

@@ -70,8 +70,9 @@ export default function SponsorsPage() {
   }
   
   // Handle image upload
-  const handleImageSelected = (imageDataUrl: string) => {
-    setFormData(prev => ({ ...prev, logo: imageDataUrl }))
+  const handleImageSelected = (imageData: string) => {
+    // imageData will be a data URL containing the image data
+    setFormData(prev => ({ ...prev, logo: imageData }))
   }
   
   // Handle form submission
@@ -88,16 +89,20 @@ export default function SponsorsPage() {
       let response;
       
       if (editingSponsor) {
-        // Update existing sponsor
-        response = await fetch(`/api/sponsors?id=${editingSponsor.id}`, {
+        // Update existing sponsor with ID in request body
+        response = await fetch(`/api/sponsors`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(sponsorData),
+          body: JSON.stringify({
+            id: editingSponsor.id,
+            ...sponsorData
+          }),
         })
       } else {
         // Create new sponsor
+        console.log("Creating new sponsor with data:", sponsorData)
         response = await fetch('/api/sponsors', {
           method: 'POST',
           headers: {
@@ -108,7 +113,11 @@ export default function SponsorsPage() {
       }
       
       if (!response.ok) {
-        throw new Error(`Failed to ${editingSponsor ? 'update' : 'create'} sponsor`)
+        // Get detailed error message from response
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to ${editingSponsor ? 'update' : 'create'} sponsor`;
+        console.error("API Error:", errorMessage, "Status:", response.status);
+        throw new Error(errorMessage);
       }
       
       // Refresh the sponsors list
@@ -127,7 +136,7 @@ export default function SponsorsPage() {
       console.error("Error saving sponsor:", error)
       toast({
         title: "Error",
-        description: `Failed to ${editingSponsor ? 'update' : 'create'} sponsor. Please try again.`,
+        description: error instanceof Error ? error.message : `Failed to ${editingSponsor ? 'update' : 'create'} sponsor. Please try again.`,
         variant: "destructive",
       })
     }
@@ -247,7 +256,7 @@ export default function SponsorsPage() {
                 <ImageUploader 
                   onImageSelected={handleImageSelected}
                   currentImage={formData.logo || undefined}
-                  label="Upload Logo"
+                  label="Upload Sponsor Logo"
                   aspectRatio="2:1"
                 />
               </div>
@@ -275,6 +284,7 @@ export default function SponsorsPage() {
                     width={120}
                     height={80}
                     className="mx-auto mb-4 object-contain"
+                    unoptimized={sponsor.logo?.startsWith('data:') || false}
                   />
                   <h3 className="font-semibold mb-2">{sponsor.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 break-all">
@@ -367,6 +377,7 @@ export default function SponsorsPage() {
                       width={200}
                       height={120}
                       className="mt-2 rounded border object-contain"
+                      unoptimized={viewingSponsor.logo?.startsWith('data:') || false}
                     />
                   </div>
                 )}

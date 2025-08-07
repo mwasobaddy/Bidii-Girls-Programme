@@ -335,7 +335,7 @@ export default function TeamMembersPage() {
                 <ImageUploader 
                   onImageSelected={handleImageSelected}
                   currentImage={formData.image || undefined}
-                  label="Upload Profile Image"
+                  label="Upload Team Photo"
                   aspectRatio="1:1"
                 />
               </div>

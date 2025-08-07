@@ -306,7 +306,7 @@ export default function GalleryPage() {
                 <ImageUploader 
                   onImageSelected={handleImageSelected}
                   currentImage={formData.image_url || undefined}
-                  label="Upload Image"
+                  label="Upload Gallery Image"
                   required
                 />
               </div>

@@ -402,7 +402,7 @@ export default function CampaignsPage() {
                 <ImageUploader 
                   onImageSelected={handleImageSelected}
                   currentImage={formData.feature_image || undefined}
-                  label="Upload Feature Image"
+                  label="Upload Campaign Image"
                   aspectRatio="16:9"
                 />
               </div>

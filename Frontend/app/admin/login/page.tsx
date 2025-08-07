@@ -62,17 +62,26 @@ export default function AdminLoginPage() {
       });
 
       const data: LoginResponse = await response.json();
+      console.log('Login response:', data);
 
       if (data.success && data.user) {
-        // Set a session cookie for authentication (expires on browser close)
-        document.cookie = `adminAuth=true; path=/; samesite=strict`;
-        document.cookie = `adminUser=${encodeURIComponent(JSON.stringify(data.user))}; path=/; samesite=strict`;
+        console.log('Login successful, setting localStorage and redirecting...');
+        
+        // Set localStorage for authentication
+        localStorage.setItem("adminAuth", "true");
+        localStorage.setItem("adminUser", JSON.stringify(data.user));
+
+        console.log('localStorage set, values:', {
+          adminAuth: localStorage.getItem("adminAuth"),
+          adminUser: localStorage.getItem("adminUser")
+        });
 
         toast({
           title: "Login Successful",
           description: `Welcome back, ${data.user.email}! Authenticated via database.`,
         });
 
+        console.log('About to redirect to /admin/dashboard');
         router.push("/admin/dashboard");
       } else {
         setError(data.error || "Authentication failed")

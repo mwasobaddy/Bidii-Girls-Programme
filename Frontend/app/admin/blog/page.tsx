@@ -410,7 +410,7 @@ export default function BlogPage() {
                 <ImageUploader 
                   onImageSelected={handleFeaturedImageSelected}
                   currentImage={formData.featured_image || undefined}
-                  label="Upload Featured Image"
+                  label="Upload Blog Image"
                   aspectRatio="16:9"
                 />
               </div>
