@@ -44,8 +44,11 @@ export interface BlogPost {
   content: string;
   category: string | null;
   author: string | null;
+  author_image: string | null;
   featured_image: string | null;
   published: boolean;
+  published_date: string | null;
+  tags: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -59,18 +62,6 @@ export interface TeamMember {
   email: string | null;
   linkedin: string | null;
   twitter: string | null;
-  order_index: number;
-  active: boolean;
-  created_at: Date;
-}
-
-export interface GalleryImage {
-  id: number;
-  title: string;
-  description: string | null;
-  category: string | null;
-  image_url: string;
-  alt_text: string | null;
   order_index: number;
   active: boolean;
   created_at: Date;

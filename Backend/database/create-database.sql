@@ -26,8 +26,11 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     content TEXT NOT NULL,
     category VARCHAR(100),
     author VARCHAR(255),
+    author_image VARCHAR(500),
     featured_image VARCHAR(500),
     published BOOLEAN DEFAULT false,
+    published_date DATE,
+    tags TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,19 +62,6 @@ CREATE TABLE IF NOT EXISTS team_members (
     email VARCHAR(255),
     linkedin VARCHAR(500),
     twitter VARCHAR(500),
-    order_index INTEGER DEFAULT 0,
-    active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Gallery images table
-CREATE TABLE IF NOT EXISTS gallery_images (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    category VARCHAR(100),
-    image_url VARCHAR(500) NOT NULL,
-    alt_text VARCHAR(255),
     order_index INTEGER DEFAULT 0,
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

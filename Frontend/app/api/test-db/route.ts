@@ -23,10 +23,9 @@ export async function GET() {
       executeQuery('SELECT COUNT(*) as count FROM projects'),
       executeQuery('SELECT COUNT(*) as count FROM blog_posts'),
       executeQuery('SELECT COUNT(*) as count FROM team_members'),
-      executeQuery('SELECT COUNT(*) as count FROM gallery_images'),
     ]);
 
-    const [projects, blogPosts, teamMembers, galleryImages] = tableTests;
+    const [projects, blogPosts, teamMembers] = tableTests;
 
     return NextResponse.json({
       status: 'success',
@@ -36,7 +35,6 @@ export async function GET() {
         projects: projects[0]?.count || 0,
         blogPosts: blogPosts[0]?.count || 0,
         teamMembers: teamMembers[0]?.count || 0,
-        galleryImages: galleryImages[0]?.count || 0,
       },
       timestamp: new Date().toISOString(),
     });

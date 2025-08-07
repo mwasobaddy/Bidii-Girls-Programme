@@ -29,13 +29,6 @@ INSERT INTO blog_posts (title, slug, excerpt, content, category, author, publish
 ('Success Story: How Maria Overcame Period Poverty', 'success-story-maria-overcame-period-poverty', 'Meet Maria, a 16-year-old from Kibera who transformed her life through our menstrual hygiene program.', 'Maria''s story is one of resilience and transformation...', 'Success Stories', 'Grace Muthoni', true),
 ('The Economic Impact of Period Poverty in Kenya', 'economic-impact-period-poverty-kenya', 'Understanding how period poverty affects girls'' education and economic opportunities in Kenyan communities.', 'Period poverty has far-reaching economic consequences...', 'Research', 'David Kimani', true);
 
--- Insert gallery images
-INSERT INTO gallery_images (title, description, category, image_url, alt_text, order_index) VALUES
-('Menstrual Health Workshop', 'Girls learning about menstrual health and hygiene practices', 'Education', '/placeholder.svg?height=400&width=600', 'Girls receiving menstrual hygiene education', 1),
-('Sanitary Pad Distribution', 'Monthly distribution of hygiene products to girls in need', 'Distribution', '/placeholder.svg?height=400&width=600', 'Distribution of sanitary pads', 2),
-('Leadership Workshop', 'Building confidence and leadership skills among young girls', 'Empowerment', '/placeholder.svg?height=400&width=600', 'Girls in empowerment workshop', 3),
-('School Toilet Renovation', 'Improving school facilities for better hygiene and privacy', 'Infrastructure', '/placeholder.svg?height=400&width=600', 'School infrastructure improvement', 4);
-
 -- Insert campaigns
 INSERT INTO campaigns (title, description, location, urgency, beneficiaries, linked_blog, feature_image, start_date, end_date)
 VALUES

@@ -9,15 +9,13 @@ import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { DonateButton } from "@/components/donate-button";
 
-// Database Types
+// File System Types
 interface GalleryImage {
-  id: number;
-  title: string;
-  description: string;
+  name: string;
+  url: string;
   category: string;
-  image_url: string;
-  alt_text: string;
-  order_index: number;
+  size?: number;
+  lastModified?: Date;
 }
 
 interface DatabaseErrorProps {
@@ -42,19 +40,27 @@ function DatabaseError({ message }: DatabaseErrorProps) {
 }
 
 export default function GalleryPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>(["All"]);
+  
+  // Only include blogs, projects, and campaigns categories
+  const categories = [
+    { name: "All", folder: "all" },
+    { name: "Blog Images", folder: "blog" },
+    { name: "Project Images", folder: "projects" },
+    { name: "Campaign Images", folder: "campaigns" },
+  ];
 
-  // Fetch gallery images from database
+  // Fetch gallery images from file system
   const fetchGalleryImages = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/gallery");
+      
+      const response = await fetch("/api/gallery-scan");
       if (!response.ok) {
         throw new Error(
           `Failed to fetch gallery images: ${response.status} ${response.statusText}`
@@ -62,24 +68,33 @@ export default function GalleryPage() {
       }
 
       const data: GalleryImage[] = await response.json();
-      setGalleryImages(data);
-
-      // Extract unique categories from the data
-      const uniqueCategories = [
-        "All",
-        ...Array.from(new Set(data.map((img) => img.category).filter(Boolean))),
-      ];
-      setCategories(uniqueCategories);
+      
+      // Filter to only include blogs, projects, and campaigns
+      const filteredData = data.filter(img => 
+        ['blog', 'projects', 'campaigns'].includes(img.category)
+      );
+      
+      setGalleryImages(filteredData);
     } catch (error) {
       console.error("Error fetching gallery images:", error);
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to load gallery images from database"
+          : "Failed to load gallery images"
       );
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchGalleryImages();
+  }, []);
+
+  // Get category display name
+  const getCategoryDisplayName = (folder: string) => {
+    const category = categories.find(cat => cat.folder === folder);
+    return category ? category.name : folder;
   };
 
   // Retry function for failed requests
@@ -87,12 +102,8 @@ export default function GalleryPage() {
     fetchGalleryImages();
   };
 
-  useEffect(() => {
-    fetchGalleryImages();
-  }, []);
-
   const filteredImages =
-    selectedCategory === "All"
+    selectedCategory === "all"
       ? galleryImages
       : galleryImages.filter((img) => img.category === selectedCategory);
 
@@ -115,16 +126,16 @@ export default function GalleryPage() {
           <div className="flex flex-wrap gap-2 justify-center mb-4">
             {categories.map((category) => (
               <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
+                key={category.folder}
+                variant={selectedCategory === category.folder ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category.folder)}
                 className={
-                  selectedCategory === category
+                  selectedCategory === category.folder
                     ? "bg-[#e51083] hover:bg-[#c50e73]"
                     : "hover:bg-[#e51083] hover:text-white"
                 }
               >
-                {category}
+                {category.name}
               </Button>
             ))}
           </div>
@@ -162,26 +173,32 @@ export default function GalleryPage() {
             <div className="text-center py-20">
               <h3 className="text-xl font-semibold mb-2">No Images Found</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {selectedCategory === "All"
-                  ? "No gallery images are currently available in the database."
-                  : `No images found in the "${selectedCategory}" category.`}
+                {selectedCategory === "all"
+                  ? "No gallery images are currently available."
+                  : `No images found in the "${getCategoryDisplayName(selectedCategory)}" category.`}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredImages.map((image) => (
+              {filteredImages.map((image, index) => (
                 <div
-                  key={image.id}
+                  key={`${image.category}-${image.name}-${index}`}
                   className="relative group cursor-pointer overflow-hidden rounded-lg"
                   onClick={() => setSelectedImage(image)}
                 >
                   <Image
-                    src={image.image_url || "/placeholder.svg"}
-                    alt={image.alt_text || image.title}
+                    src={image.url || "/placeholder.svg"}
+                    alt={image.name}
                     width={600}
                     height={400}
                     className="w-full h-64 object-cover transition-transform group-hover:scale-105"
                   />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                    <div className="text-white">
+                      <p className="text-sm font-medium">{image.name}</p>
+                      <p className="text-xs opacity-75">{getCategoryDisplayName(image.category)}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -196,13 +213,21 @@ export default function GalleryPage() {
       >
         <DialogContent className="max-w-4xl">
           {selectedImage && (
-            <Image
-              src={selectedImage.image_url || "/placeholder.svg"}
-              alt={selectedImage.alt_text || selectedImage.title}
-              width={800}
-              height={600}
-              className="w-full h-auto rounded-lg"
-            />
+            <div className="space-y-4">
+              <Image
+                src={selectedImage.url || "/placeholder.svg"}
+                alt={selectedImage.name}
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-lg"
+              />
+              <div className="text-center">
+                <h3 className="text-lg font-semibold">{selectedImage.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {getCategoryDisplayName(selectedImage.category)}
+                </p>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

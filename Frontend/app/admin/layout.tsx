@@ -169,14 +169,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
-                onClick={() => router.push('/admin/categories')}
-            >
-                <Database className="h-4 w-4 mr-2" />
-                Categories
-            </Button>
-            <Button 
-                variant="ghost" 
-                className="w-full justify-start" 
                 onClick={() => router.push('/admin/applications')}
             >
                 <List className="h-4 w-4 mr-2" />

@@ -53,6 +53,7 @@ export default function BlogPage() {
     tags: "",
     excerpt: "",
   })
+  const [customCategory, setCustomCategory] = useState("")
   
   const { toast } = useToast()
   
@@ -134,6 +135,16 @@ export default function BlogPage() {
         return
       }
       
+      // Validate custom category
+      if (formData.category === "other" && !customCategory.trim()) {
+        toast({
+          title: "Missing Custom Category",
+          description: "Please enter a custom category name when 'Other' is selected.",
+          variant: "destructive",
+        })
+        return
+      }
+      
       // Create excerpt if not provided
       let excerpt = formData.excerpt
       if (!excerpt && formData.content) {
@@ -143,17 +154,26 @@ export default function BlogPage() {
         excerpt = tempDiv.textContent?.slice(0, 150) + "..." || ""
       }
       
+      // Determine the final category value
+      let finalCategory: string | null = formData.category
+      if (formData.category === "other" && customCategory.trim()) {
+        finalCategory = customCategory.trim()
+      } else if (formData.category === "none") {
+        finalCategory = null
+      }
+      
       // Always send all fields, never undefined
       const postData = {
         title: formData.title,
         content: formData.content,
         author: formData.author || "Anonymous",
         author_image: formData.author_image || null,
-        published_date: formData.published_date || new Date().toISOString().split('T')[0],
+        published_date: formData.published_date || null,
         featured_image: formData.featured_image || null,
-        category: formData.category === "none" ? null : formData.category,
-        tags: formData.tags || "",
+        category: finalCategory === "other" ? null : finalCategory,
+        tags: formData.tags || null,
         excerpt: excerpt,
+        published: true, // Always publish by default, you can add a checkbox later if needed
       }
       
       let response
@@ -173,7 +193,8 @@ export default function BlogPage() {
       }
       
       if (!response.ok) {
-        throw new Error('Failed to save blog post')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `Failed to save blog post (${response.status})`)
       }
       
       // Refresh the blog posts list
@@ -212,7 +233,8 @@ export default function BlogPage() {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to delete blog post')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `Failed to delete blog post (${response.status})`)
       }
       
       // Update local state
@@ -242,6 +264,12 @@ export default function BlogPage() {
   // Handle edit button click
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post)
+    
+    // Determine if the post's category is a custom one
+    const isCustomCategory = post.category && 
+      post.category !== "none" && 
+      !categories.includes(post.category)
+    
     setFormData({
       title: post.title,
       content: post.content,
@@ -249,10 +277,14 @@ export default function BlogPage() {
       author_image: post.author_image || "",
       published_date: post.published_date || new Date().toISOString().split('T')[0],
       featured_image: post.featured_image || "",
-      category: post.category || "none",
+      category: isCustomCategory ? "other" : (post.category || "none"),
       tags: post.tags || "",
       excerpt: post.excerpt || "",
     })
+    
+    // Set custom category if it's a custom one
+    setCustomCategory(isCustomCategory ? post.category || "" : "")
+    
     setIsDialogOpen(true)
   }
   
@@ -269,6 +301,7 @@ export default function BlogPage() {
       tags: "",
       excerpt: "",
     })
+    setCustomCategory("")
     setEditingPost(null)
   }
   
@@ -378,8 +411,22 @@ export default function BlogPage() {
                           {category}
                         </SelectItem>
                       ))}
+                      <SelectItem value="other">Other (Custom)</SelectItem>
                     </SelectContent>
                   </Select>
+                  
+                  {formData.category === "other" && (
+                    <div className="mt-2">
+                      <Label htmlFor="customCategory">Custom Category</Label>
+                      <Input
+                        id="customCategory"
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="Enter your custom category"
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

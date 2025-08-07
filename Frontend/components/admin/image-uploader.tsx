@@ -32,6 +32,8 @@ export function ImageUploader({
     if (label_lower.includes("story") || label_lower.includes("stories")) return "stories"
     if (label_lower.includes("team")) return "team"
     if (label_lower.includes("gallery")) return "gallery"
+    if (label_lower.includes("author")) return "authors"
+    if (label_lower.includes("avatar")) return "authors"
     return "uploads" // default folder
   }
   

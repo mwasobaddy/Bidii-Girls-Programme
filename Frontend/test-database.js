@@ -35,7 +35,7 @@ async function testDatabase() {
 
     // Test table access
     console.log('3. Testing table access...');
-    const tables = ['projects', 'blog_posts', 'team_members', 'gallery_images'];
+    const tables = ['projects', 'blog_posts', 'team_members'];
     
     for (const table of tables) {
       try {

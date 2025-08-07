@@ -28,15 +28,22 @@ export async function GET(request: NextRequest) {
       excerpt: post.excerpt || post.content.substring(0, 150) + '...',
       image: post.featured_image || "/placeholder.svg?height=200&width=300",
       author: post.author || 'Bidii Team',
-      date: post.created_at ? new Date(post.created_at).toLocaleDateString('en-US', {
+      author_image: post.author_image,
+      date: post.published_date ? new Date(post.published_date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
-      }) : 'Unknown date',
+      }) : (post.created_at ? new Date(post.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }) : 'Unknown date'),
       category: post.category || 'General',
       readTime: estimateReadTime(post.content),
       content: post.content,
       published: post.published,
+      published_date: post.published_date,
+      tags: post.tags,
       featured_image: post.featured_image,
       created_at: post.created_at,
       updated_at: post.updated_at,
@@ -93,10 +100,13 @@ export async function POST(request: NextRequest) {
       slug: slug,
       excerpt: body.excerpt || body.content.substring(0, 150) + '...',
       content: body.content,
-      category: body.category || 'General',
+      category: body.category || null,
       author: body.author || 'Bidii Team',
+      author_image: body.author_image || null,
       featured_image: body.featured_image || null,
       published: body.published !== undefined ? body.published : true,
+      published_date: body.published_date || null,
+      tags: body.tags || null,
     };
 
     const newBlogPost = await createBlogPost(blogPostData);
@@ -140,8 +150,11 @@ export async function PUT(request: NextRequest) {
     if (updateData.content !== undefined) blogPostData.content = updateData.content;
     if (updateData.category !== undefined) blogPostData.category = updateData.category;
     if (updateData.author !== undefined) blogPostData.author = updateData.author;
+    if (updateData.author_image !== undefined) blogPostData.author_image = updateData.author_image;
     if (updateData.featured_image !== undefined) blogPostData.featured_image = updateData.featured_image;
     if (updateData.published !== undefined) blogPostData.published = updateData.published;
+    if (updateData.published_date !== undefined) blogPostData.published_date = updateData.published_date;
+    if (updateData.tags !== undefined) blogPostData.tags = updateData.tags;
 
     const updatedBlogPost = await updateBlogPost(id, blogPostData);
     
@@ -166,8 +179,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const body = await request.json();
+    const { id } = body;
     
     if (!id) {
       return NextResponse.json(

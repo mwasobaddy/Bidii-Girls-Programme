@@ -40,7 +40,7 @@ export async function deleteSponsor(id: number): Promise<void> {
   await executeQuery(query, [id]);
 }
 import { executeQuery, executeQuerySingle, executeInsert } from './database';
-import { Project, BlogPost, TeamMember, GalleryImage } from './types';
+import { Project, BlogPost, TeamMember } from './types';
 
 import { Campaign } from './types';
 
@@ -332,8 +332,8 @@ export async function deleteProject(id: number): Promise<void> {
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
   const query = `
     SELECT 
-      id, title, slug, excerpt, content, category, author, 
-      featured_image, published, created_at, updated_at
+      id, title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags, created_at, updated_at
     FROM blog_posts 
     WHERE published = true
     ORDER BY created_at DESC
@@ -344,8 +344,8 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 export async function getAllBlogPostsForAdmin(): Promise<BlogPost[]> {
   const query = `
     SELECT 
-      id, title, slug, excerpt, content, category, author, 
-      featured_image, published, created_at, updated_at
+      id, title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags, created_at, updated_at
     FROM blog_posts 
     ORDER BY created_at DESC
   `;
@@ -355,8 +355,8 @@ export async function getAllBlogPostsForAdmin(): Promise<BlogPost[]> {
 export async function getBlogPostById(id: number): Promise<BlogPost | null> {
   const query = `
     SELECT 
-      id, title, slug, excerpt, content, category, author, 
-      featured_image, published, created_at, updated_at
+      id, title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags, created_at, updated_at
     FROM blog_posts 
     WHERE id = ? AND published = true
   `;
@@ -366,8 +366,8 @@ export async function getBlogPostById(id: number): Promise<BlogPost | null> {
 export async function getBlogPostByIdForAdmin(id: number): Promise<BlogPost | null> {
   const query = `
     SELECT 
-      id, title, slug, excerpt, content, category, author, 
-      featured_image, published, created_at, updated_at
+      id, title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags, created_at, updated_at
     FROM blog_posts 
     WHERE id = ?
   `;
@@ -377,8 +377,8 @@ export async function getBlogPostByIdForAdmin(id: number): Promise<BlogPost | nu
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   const query = `
     SELECT 
-      id, title, slug, excerpt, content, category, author, 
-      featured_image, published, created_at, updated_at
+      id, title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags, created_at, updated_at
     FROM blog_posts 
     WHERE slug = ? AND published = true
   `;
@@ -388,9 +388,9 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 export async function createBlogPost(blogPost: Omit<BlogPost, 'id' | 'created_at' | 'updated_at'>): Promise<BlogPost> {
   const query = `
     INSERT INTO blog_posts (
-      title, slug, excerpt, content, category, author, 
-      featured_image, published
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      title, slug, excerpt, content, category, author, author_image, 
+      featured_image, published, published_date, tags
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   
   const params = [
@@ -400,8 +400,11 @@ export async function createBlogPost(blogPost: Omit<BlogPost, 'id' | 'created_at
     blogPost.content,
     blogPost.category,
     blogPost.author,
+    blogPost.author_image,
     blogPost.featured_image,
-    blogPost.published
+    blogPost.published,
+    blogPost.published_date,
+    blogPost.tags
   ];
   
   try {
@@ -451,6 +454,10 @@ export async function updateBlogPost(id: number, blogPost: Partial<Omit<BlogPost
     fields.push('author = ?');
     params.push(blogPost.author);
   }
+  if (blogPost.author_image !== undefined) {
+    fields.push('author_image = ?');
+    params.push(blogPost.author_image);
+  }
   if (blogPost.featured_image !== undefined) {
     fields.push('featured_image = ?');
     params.push(blogPost.featured_image);
@@ -458,6 +465,14 @@ export async function updateBlogPost(id: number, blogPost: Partial<Omit<BlogPost
   if (blogPost.published !== undefined) {
     fields.push('published = ?');
     params.push(blogPost.published);
+  }
+  if (blogPost.published_date !== undefined) {
+    fields.push('published_date = ?');
+    params.push(blogPost.published_date);
+  }
+  if (blogPost.tags !== undefined) {
+    fields.push('tags = ?');
+    params.push(blogPost.tags);
   }
   
   fields.push('updated_at = NOW()');
@@ -537,31 +552,6 @@ export async function updateTeamMember(id: number, member: Partial<Omit<TeamMemb
 export async function deleteTeamMember(id: number): Promise<void> {
   const query = 'DELETE FROM team_members WHERE id = ?';
   await executeQuery(query, [id]);
-}
-
-// Gallery Services
-export async function getAllGalleryImages(): Promise<GalleryImage[]> {
-  const query = `
-    SELECT 
-      id, title, description, category, image_url, alt_text, 
-      order_index, active, created_at
-    FROM gallery_images 
-    WHERE active = true
-    ORDER BY order_index ASC
-  `;
-  return executeQuery<GalleryImage>(query);
-}
-
-export async function getGalleryImagesByCategory(category: string): Promise<GalleryImage[]> {
-  const query = `
-    SELECT 
-      id, title, description, category, image_url, alt_text, 
-      order_index, active, created_at
-    FROM gallery_images 
-    WHERE category = ? AND active = true
-    ORDER BY order_index ASC
-  `;
-  return executeQuery<GalleryImage>(query, [category]);
 }
 
 // Statistics Services

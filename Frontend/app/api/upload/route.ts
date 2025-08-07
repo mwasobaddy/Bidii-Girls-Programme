@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate folder name
-    const allowedFolders = ['sponsors', 'projects', 'campaigns', 'blog', 'stories', 'team', 'gallery', 'uploads'];
+    const allowedFolders = ['sponsors', 'projects', 'campaigns', 'blog', 'stories', 'team', 'gallery', 'authors', 'uploads'];
     if (!allowedFolders.includes(folder)) {
       console.error(`Invalid folder: ${folder}`);
       return NextResponse.json({ error: 'Invalid folder' }, { status: 400 });

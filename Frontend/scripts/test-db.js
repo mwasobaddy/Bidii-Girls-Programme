@@ -21,7 +21,7 @@ async function testDatabaseConnection() {
     // Test table access and count records
     console.log('2. Testing table access...');
     
-    const tables = ['projects', 'blog_posts', 'team_members', 'gallery_images'];
+    const tables = ['projects', 'blog_posts', 'team_members'];
     
     for (const table of tables) {
       try {
