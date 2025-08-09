@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Heart,
   Mail,
   Phone,
   MapPin,
@@ -53,10 +52,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About Section */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <Heart className="h-8 w-8 text-[#e51083]" />
-              <span className="text-xl font-bold">Bidii Girls Program</span>
-            </div>
+            <div className="flex items-center space-x-2 mb-4"></div>
             <p className="text-gray-400 mb-6">{t("footerAbout")}</p>
 
             {/* Newsletter Subscription */}
@@ -84,41 +80,58 @@ export function Footer() {
 
             {/* Social Media Icons */}
             <div className="flex space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+              <Link
+                href="https://www.facebook.com/profile.php?id=61568344795094"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Facebook className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                >
+                  <Facebook className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link
+                href="https://www.instagram.com/bidiigirlsprogram?igsh=MTB4ZWRmOHh1M2txdw=="
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Twitter className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                >
+                  <Instagram className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link
+                href="https://www.tiktok.com/@jossysimonet?_t=ZM-8yjgd3TPjC1&_r=1"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Instagram className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                >
+                  <TikTokIcon className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link
+                href="https://www.youtube.com/@Bidiigirlsprogram"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Youtube className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
-              >
-                <TikTokIcon className="h-5 w-5" />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-[#e51083] hover:bg-transparent p-2"
+                >
+                  <Youtube className="h-5 w-5" />
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -184,7 +197,7 @@ export function Footer() {
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-[#e51083]" />
                 <span className="text-gray-400">
-                  support@bidiigirlsprogram.org
+                  support@bidiigirlsprogramme.org
                 </span>
               </div>
               <div className="flex items-center space-x-2">
