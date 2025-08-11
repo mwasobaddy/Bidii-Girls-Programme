@@ -14,6 +14,7 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\MpesaController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,12 @@ use App\Http\Controllers\MpesaController;
 // Health check and DB test endpoints
 Route::get('/health', [HealthController::class, 'health']);
 Route::get('/test-db', [HealthController::class, 'testDb']);
+
+// Dashboard statistics (public routes for basic stats)
+Route::prefix('dashboard')->group(function () {
+    Route::get('/stats', [DashboardController::class, 'stats']);
+    Route::get('/recent-activity', [DashboardController::class, 'recentActivity']);
+});
 
 // Get authenticated user route (requires authentication)
 Route::middleware('auth:api')->get('/user', function (Request $request) {

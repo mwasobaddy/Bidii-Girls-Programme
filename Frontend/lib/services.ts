@@ -250,3 +250,16 @@ export async function getProjectStats() {
   if (!res.ok) throw new Error('Failed to fetch project stats');
   return res.json();
 }
+
+// Dashboard Statistics Services
+export async function getDashboardStats() {
+  const res = await fetch(`${API_BASE_URL}/dashboard/stats`);
+  if (!res.ok) throw new Error('Failed to fetch dashboard stats');
+  return res.json();
+}
+
+export async function getRecentActivity() {
+  const res = await fetch(`${API_BASE_URL}/dashboard/recent-activity`);
+  if (!res.ok) throw new Error('Failed to fetch recent activity');
+  return res.json();
+}

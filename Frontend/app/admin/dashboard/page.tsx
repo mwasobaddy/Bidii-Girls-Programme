@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { DatabaseError } from "@/components/admin/database-error"
+import { getDashboardStats, getRecentActivity } from "@/lib/services"
 
 interface DashboardCounts {
   sponsors: number;
@@ -57,44 +58,60 @@ export default function AdminDashboard() {
       setError(null)
       
       try {
-        // This endpoint would aggregate counts from all modules
-        // For now, let's simulate it with mock data
+        // Fetch real dashboard statistics from the backend
+        const [statsResponse, activityResponse] = await Promise.all([
+          getDashboardStats(),
+          getRecentActivity()
+        ]);
         
-        // In a real implementation, you would fetch from an API:
-        // const response = await fetch("/api/admin/dashboard")
-        // const data = await response.json()
-        
-        // Mock data for demonstration
-        const mockCounts = {
-          sponsors: Math.floor(Math.random() * 20) + 5,
-          projects: Math.floor(Math.random() * 15) + 3,
-          campaigns: Math.floor(Math.random() * 10) + 2,
-          stories: Math.floor(Math.random() * 12) + 4,
-          blog: Math.floor(Math.random() * 25) + 8,
-          gallery: Math.floor(Math.random() * 40) + 15,
-          team: Math.floor(Math.random() * 8) + 3,
-          categories: Math.floor(Math.random() * 10) + 5
+        if (statsResponse.success) {
+          setCounts(statsResponse.data);
+        } else {
+          throw new Error(statsResponse.message || 'Failed to fetch dashboard stats');
         }
         
-        setCounts(mockCounts)
-        
-        // Mock recent activity
-        const activityTypes = ['sponsor', 'project', 'campaign', 'story', 'blog post', 'gallery image', 'team member', 'category']
-        const actions = ['created', 'updated', 'deleted']
-        const names = ['Annual Fundraiser', 'School Building', 'John Doe', 'Community Project', 'COVID Response', 'Education Initiative', 'Clean Water Campaign']
-        
-        const mockActivity = Array(10).fill(null).map((_, i) => ({
-          id: i + 1,
-          type: activityTypes[Math.floor(Math.random() * activityTypes.length)],
-          action: actions[Math.floor(Math.random() * actions.length)],
-          itemName: names[Math.floor(Math.random() * names.length)],
-          timestamp: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString()
-        }))
-        
-        // Sort by most recent first
-        mockActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        
-        setRecentActivity(mockActivity)
+        if (activityResponse.success) {
+          // Transform the backend data to match our frontend interface
+          const transformedActivity: RecentActivity[] = [];
+          let idCounter = 1;
+          
+          // Add recent blogs
+          activityResponse.data.recent_blogs?.forEach((blog: any) => {
+            transformedActivity.push({
+              id: idCounter++,
+              type: 'blog post',
+              action: 'created',
+              itemName: blog.title,
+              timestamp: blog.created_at
+            });
+          });
+          
+          // Add recent projects
+          activityResponse.data.recent_projects?.forEach((project: any) => {
+            transformedActivity.push({
+              id: idCounter++,
+              type: 'project',
+              action: 'created',
+              itemName: project.title,
+              timestamp: project.created_at
+            });
+          });
+          
+          // Add recent campaigns
+          activityResponse.data.recent_campaigns?.forEach((campaign: any) => {
+            transformedActivity.push({
+              id: idCounter++,
+              type: 'campaign',
+              action: 'created',
+              itemName: campaign.title,
+              timestamp: campaign.created_at
+            });
+          });
+          
+          // Sort by most recent first and limit to 10 items
+          transformedActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setRecentActivity(transformedActivity.slice(0, 10));
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error)
         setError("Failed to load dashboard data")
@@ -242,10 +259,10 @@ export default function AdminDashboard() {
 function StatsCard({ title, value, icon, link }: { title: string; value: string; icon: React.ReactNode; link: string }) {
   return (
     <Link href={link}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
+      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+        <CardContent className="pt-6 h-full">
+          <div className="flex items-center justify-between h-full">
+            <div className="flex flex-col justify-between h-full">
               <p className="text-sm font-medium text-gray-500">{title}</p>
               <p className="text-2xl font-bold">{value}</p>
             </div>
