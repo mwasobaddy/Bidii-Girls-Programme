@@ -16,6 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Fruitcake\Cors\HandleCors::class,
         ]);
+
+        // Add JWT middleware for protected API routes (to be used in route definitions)
+        $middleware->alias([
+            'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
+        ]);
+
+        // Add rate limiting middleware (default: throttle:api)
+        $middleware->api(append: [
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
