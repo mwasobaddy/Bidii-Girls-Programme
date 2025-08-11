@@ -11,6 +11,20 @@ import { DonateButton } from "@/components/donate-button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 // File System Types
 interface GalleryImage {
   name: string;
@@ -189,7 +203,7 @@ export default function GalleryPage() {
                   onClick={() => setSelectedImage(image)}
                 >
                   <Image
-                    src={image.url || "/placeholder.svg"}
+                    src={getImageUrl(image.url)}
                     alt={image.name}
                     width={600}
                     height={400}
@@ -217,7 +231,7 @@ export default function GalleryPage() {
           {selectedImage && (
             <div className="space-y-4">
               <Image
-                src={selectedImage.url || "/placeholder.svg"}
+                src={getImageUrl(selectedImage.url)}
                 alt={selectedImage.name}
                 width={800}
                 height={600}

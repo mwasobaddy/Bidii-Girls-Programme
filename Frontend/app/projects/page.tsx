@@ -8,6 +8,22 @@ import { DonateButton } from "@/components/donate-button";
 import { getAllProjects } from "@/lib/services";
 import { Project } from "@/lib/types";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 // Transform database project to component format
 function transformProject(project: Project) {
   return {
@@ -128,7 +144,7 @@ export default async function ProjectsPage() {
                 <Card key={project.id} className="overflow-hidden">
                   <div className="relative">
                     <Image
-                      src={project.image || "/placeholder.svg"}
+                      src={getImageUrl(project.image)}
                       alt={project.title}
                       width={400}
                       height={300}

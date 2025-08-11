@@ -21,6 +21,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { DonateButton } from "@/components/donate-button";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 interface Project {
   id: number;
   title: string;
@@ -246,7 +262,7 @@ export default function ProjectDetailPage() {
             {/* Featured Image */}
             <div className="mb-12 animate-fade-in-up">
               <Image
-                src={project.featured_image || "/placeholder.svg?height=500&width=800"}
+                src={getImageUrl(project.featured_image)}
                 alt={project.title}
                 width={800}
                 height={500}
@@ -278,9 +294,9 @@ export default function ProjectDetailPage() {
                   <div className="relative">
                     <div className="aspect-video relative overflow-hidden rounded-lg">
                       <Image
-                        src={
-                          project.images[currentImageIndex] || "/placeholder.svg"
-                        }
+                        src={getImageUrl(
+                          project.images[currentImageIndex]
+                        )}
                         alt={`Gallery image ${currentImageIndex + 1}`}
                         fill
                         className="object-cover transition-all duration-300"
@@ -323,7 +339,7 @@ export default function ProjectDetailPage() {
                           }`}
                         >
                           <Image
-                            src={img || "/placeholder.svg"}
+                            src={getImageUrl(img)}
                             alt={`Thumbnail ${index + 1}`}
                             width={64}
                             height={64}

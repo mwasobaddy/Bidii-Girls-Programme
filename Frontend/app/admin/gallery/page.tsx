@@ -15,6 +15,20 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null | undefined): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 interface GalleryItem {
   name: string;
   url: string;
@@ -305,7 +319,7 @@ export default function GalleryPage() {
               <CardContent className="p-0">
                 <div className="relative w-full h-48 group">
                   <Image
-                    src={item.url}
+                    src={getImageUrl(item.url)}
                     alt={item.name}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
@@ -375,7 +389,7 @@ export default function GalleryPage() {
             <div className="space-y-6">
               <div className="relative w-full h-[60vh] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                 <Image
-                  src={viewingItem.url}
+                  src={getImageUrl(viewingItem.url)}
                   alt={viewingItem.name}
                   fill
                   className="object-contain"

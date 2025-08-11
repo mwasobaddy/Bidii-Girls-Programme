@@ -8,6 +8,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, User, ArrowRight, AlertCircle } from "lucide-react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null | undefined): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 interface BlogPost {
   id: number;
   title: string;
@@ -78,7 +94,7 @@ export function BlogFilter({ categories, blogPosts }: BlogFilterProps) {
                 >
                   <div className="relative">
                     <Image
-                      src={post.image || "/placeholder.svg"}
+                      src={getImageUrl(post.image)}
                       alt={post.title}
                       width={300}
                       height={200}

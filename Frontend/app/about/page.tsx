@@ -10,6 +10,22 @@ import { Mail, Linkedin, Twitter, AlertCircle } from "lucide-react"
 import { getAllTeamMembers } from "@/lib/services"
 import { TeamMember } from "@/lib/types"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+// Helper function to construct proper image URLs
+function getImageUrl(imagePath: string | null | undefined): string {
+  if (!imagePath) return "/placeholder.svg";
+  
+  // If it's already a full URL or base64, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the backend URL
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
+}
+
 // Error fallback component
 function DatabaseError({ message }: { message: string }) {
   return (
@@ -201,7 +217,7 @@ export default function AboutPage() {
                   >
                     <CardContent className="p-6 text-center">
                       <Image
-                        src={member.image || "/placeholder.svg"}
+                        src={getImageUrl(member.image)}
                         alt={member.name}
                         width={200}
                         height={200}
@@ -242,7 +258,7 @@ export default function AboutPage() {
               <div className="space-y-6">
                 <div className="text-center">
                   <Image
-                    src={selectedMember.image || "/placeholder.svg"}
+                    src={getImageUrl(selectedMember.image)}
                     alt={selectedMember.name}
                     width={200}
                     height={200}
