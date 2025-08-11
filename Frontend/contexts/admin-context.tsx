@@ -2,60 +2,14 @@
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-
-// Define types for the various content types
-interface Campaign {
-  id: number;
-  title: string;
-  description: string;
-  location: string;
-  urgency: string;
-  beneficiaries: number;
-  linked_blog?: number | null;
-  feature_image?: string;
-  start_date?: string | null;
-  end_date?: string | null;
-}
-
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  location: string;
-  status: string;
-  progress: number;
-  budget: number;
-  raised: number;
-  beneficiaries: number;
-  start_date: string;
-  featured_image?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface BlogPost {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  author: string;
-  featured_image?: string;
-  published: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  bio: string;
-  email: string;
-  image?: string;
-  order_index: number;
-}
+import { 
+  getAllCampaigns, 
+  getAllProjects, 
+  getAllBlogPostsForAdmin, 
+  getAllTeamMembers, 
+  getAllSponsors 
+} from "@/lib/services"
+import { Campaign, Project, BlogPost, TeamMember, Sponsor } from "@/lib/types"
 
 interface GalleryImage {
   id: number;
@@ -65,14 +19,6 @@ interface GalleryImage {
   image_url: string;
   alt_text: string;
   order_index: number;
-}
-
-interface Sponsor {
-  id: number;
-  name: string;
-  logo: string | null;
-  website: string | null;
-  created_at: Date;
 }
 
 // Define the context state type
@@ -142,9 +88,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchCampaigns = async () => {
     setLoadingCampaigns(true);
     try {
-      const response = await fetch("/api/campaigns");
-      if (!response.ok) throw new Error("Failed to fetch campaigns");
-      const data = await response.json();
+      const data = await getAllCampaigns();
       setCampaigns(data);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
@@ -158,9 +102,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchProjects = async () => {
     setLoadingProjects(true);
     try {
-      const response = await fetch("/api/projects");
-      if (!response.ok) throw new Error("Failed to fetch projects");
-      const data = await response.json();
+      const data = await getAllProjects();
       setProjects(data);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -174,9 +116,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchBlogPosts = async () => {
     setLoadingBlogPosts(true);
     try {
-      const response = await fetch("/api/blog?admin=true");
-      if (!response.ok) throw new Error("Failed to fetch blog posts");
-      const data = await response.json();
+      const data = await getAllBlogPostsForAdmin();
       setBlogPosts(data);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -190,44 +130,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchStories = async () => {
     setLoadingBlogPosts(true);
     try {
-      const response = await fetch("/api/blog?admin=true");
-      if (!response.ok) throw new Error("Failed to fetch stories");
-      const data = await response.json();
+      const data = await getAllBlogPostsForAdmin();
       
       // Filter blog posts that are success stories
-      const storiesData = data
-        .filter((post: any) => post.category === "Success Stories")
-        .map((post: any) => {
-          // Try to extract beneficiary info from content
-          const lines = post.content.split("\n");
-          const beneficiaryLine = lines.find((line: string) =>
-            line.includes("**Beneficiary:**")
-          );
-          const ageLine = lines.find((line: string) =>
-            line.includes("**Age:**")
-          );
-          const locationLine = lines.find((line: string) =>
-            line.includes("**Location:**")
-          );
-  
-          return {
-            id: post.id,
-            title: post.title,
-            content: lines[0] || post.excerpt || "", // First line as main content
-            beneficiaryName: beneficiaryLine
-              ? beneficiaryLine.replace("**Beneficiary:**", "").trim()
-              : "",
-            beneficiaryAge: ageLine
-              ? ageLine.replace("**Age:**", "").trim()
-              : "",
-            location: locationLine
-              ? locationLine.replace("**Location:**", "").trim()
-              : "",
-            featureImage: post.featured_image || "",
-          };
-        });
-        
-      setStories(storiesData);
+      const stories = data.filter(post => 
+        post.category?.toLowerCase().includes('story') || 
+        post.category?.toLowerCase().includes('success')
+      );
+      setStories(stories);
     } catch (error) {
       console.error("Error fetching stories:", error);
       setError("Failed to load stories from database");
@@ -240,9 +150,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchTeamMembers = async () => {
     setLoadingTeamMembers(true);
     try {
-      const response = await fetch("/api/team");
-      if (!response.ok) throw new Error("Failed to fetch team members");
-      const data = await response.json();
+      const data = await getAllTeamMembers();
       setTeamMembers(data);
     } catch (error) {
       console.error("Error fetching team members:", error);
@@ -256,9 +164,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchSponsors = async () => {
     setLoadingSponsors(true);
     try {
-      const response = await fetch("/api/sponsors");
-      if (!response.ok) throw new Error("Failed to fetch sponsors");
-      const data = await response.json();
+      const data = await getAllSponsors();
       setSponsors(data);
     } catch (error) {
       console.error("Error fetching sponsors:", error);
@@ -272,7 +178,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchGalleryImages = async () => {
     setLoadingGalleryImages(true);
     try {
-      const response = await fetch("/api/gallery");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/gallery`);
       if (!response.ok) throw new Error("Failed to fetch gallery images");
       const data = await response.json();
       setGalleryImages(data);

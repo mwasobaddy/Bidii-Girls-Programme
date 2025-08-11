@@ -8,24 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, Eye, Edit, Trash2, Mail, Facebook, Instagram } from "lucide-react"
+import { Plus, Eye, Edit, Trash2, Mail, Linkedin, Twitter } from "lucide-react"
 import Image from "next/image"
 import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
-
-interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  bio: string;
-  email: string;
-  image?: string;
-  order_index: number;
-  facebook?: string;
-  instagram?: string;
-  tiktok?: string;
-}
+import { TeamMember } from "@/lib/types"
+import { getAllTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from "@/lib/services"
 
 export default function TeamMembersPage() {
   // State
@@ -46,9 +35,8 @@ export default function TeamMembersPage() {
     bio: "",
     email: "",
     image: "",
-    facebook: "",
-    instagram: "",
-    tiktok: "",
+    linkedin: "",
+    twitter: "",
   })
   
   const { toast } = useToast()
@@ -58,9 +46,7 @@ export default function TeamMembersPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/team")
-      if (!response.ok) throw new Error("Failed to fetch team members")
-      const data = await response.json()
+      const data = await getAllTeamMembers()
       setTeamMembers(data)
     } catch (error) {
       console.error("Error fetching team members:", error)
@@ -106,31 +92,16 @@ export default function TeamMembersPage() {
         bio: formData.bio,
         email: formData.email,
         image: formData.image,
-        facebook: formData.facebook || null,
-        instagram: formData.instagram || null,
-        tiktok: formData.tiktok || null,
+        linkedin: formData.linkedin || null,
+        twitter: formData.twitter || null,
         order_index: editingMember?.order_index || teamMembers.length + 1,
         active: true,
       };
       
-      let response;
-      
       if (editingMember) {
-        response = await fetch('/api/team', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingMember.id, ...teamData }),
-        });
+        await updateTeamMember(editingMember.id, teamData);
       } else {
-        response = await fetch('/api/team', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(teamData),
-        });
-      }
-      
-      if (!response.ok) {
-        throw new Error('Failed to save team member');
+        await createTeamMember(teamData);
       }
       
       // Refresh the team members list
@@ -159,17 +130,25 @@ export default function TeamMembersPage() {
   const handleDelete = async () => {
     if (!deletingMemberId) return
     
-    const response = await fetch(`/api/team?id=${deletingMemberId}`, {
-      method: 'DELETE',
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete team member')
+    try {
+      await deleteTeamMember(deletingMemberId)
+      
+      // Update local state
+      setTeamMembers(teamMembers.filter((item) => item.id !== deletingMemberId))
+      setDeletingMemberId(null)
+      
+      toast({
+        title: "Team Member Deleted",
+        description: "The team member was successfully deleted.",
+      })
+    } catch (error) {
+      console.error("Error deleting team member:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete team member. Please try again.",
+        variant: "destructive",
+      })
     }
-    
-    // Update local state
-    setTeamMembers(teamMembers.filter((item) => item.id !== deletingMemberId))
-    setDeletingMemberId(null)
   }
   
   // Handle view button click
@@ -187,9 +166,8 @@ export default function TeamMembersPage() {
       bio: member.bio || "",
       email: member.email || "",
       image: member.image || "",
-      facebook: member.facebook || "",
-      instagram: member.instagram || "",
-      tiktok: member.tiktok || "",
+      linkedin: member.linkedin || "",
+      twitter: member.twitter || "",
     })
     setIsDialogOpen(true)
   }
@@ -202,9 +180,8 @@ export default function TeamMembersPage() {
       bio: "",
       email: "",
       image: "",
-      facebook: "",
-      instagram: "",
-      tiktok: "",
+      linkedin: "",
+      twitter: "",
     })
     setEditingMember(null)
   }
@@ -297,35 +274,24 @@ export default function TeamMembersPage() {
               
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="facebook">Facebook Profile</Label>
+                  <Label htmlFor="linkedin">LinkedIn Profile</Label>
                   <Input
-                    id="facebook"
-                    name="facebook"
-                    value={formData.facebook}
+                    id="linkedin"
+                    name="linkedin"
+                    value={formData.linkedin}
                     onChange={handleChange}
-                    placeholder="https://facebook.com/username"
+                    placeholder="https://linkedin.com/in/username"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram Profile</Label>
+                  <Label htmlFor="twitter">Twitter Profile</Label>
                   <Input
-                    id="instagram"
-                    name="instagram"
-                    value={formData.instagram}
+                    id="twitter"
+                    name="twitter"
+                    value={formData.twitter}
                     onChange={handleChange}
-                    placeholder="https://instagram.com/username"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="tiktok">TikTok Profile</Label>
-                  <Input
-                    id="tiktok"
-                    name="tiktok"
-                    value={formData.tiktok}
-                    onChange={handleChange}
-                    placeholder="https://tiktok.com/@username"
+                    placeholder="https://twitter.com/username"
                   />
                 </div>
               </div>
@@ -383,26 +349,26 @@ export default function TeamMembersPage() {
                         <Mail className="h-5 w-5" />
                       </a>
                     )}
-                    {member.facebook && (
+                    {member.linkedin && (
                       <a 
-                        href={member.facebook} 
+                        href={member.linkedin} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-[#1877F2]"
-                        aria-label="Facebook"
+                        className="text-gray-500 hover:text-[#0077B5]"
+                        aria-label="LinkedIn"
                       >
-                        <Facebook className="h-5 w-5" />
+                        <Linkedin className="h-5 w-5" />
                       </a>
                     )}
-                    {member.instagram && (
+                    {member.twitter && (
                       <a 
-                        href={member.instagram} 
+                        href={member.twitter} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-[#C13584]"
-                        aria-label="Instagram"
+                        className="text-gray-500 hover:text-[#1DA1F2]"
+                        aria-label="Twitter"
                       >
-                        <Instagram className="h-5 w-5" />
+                        <Twitter className="h-5 w-5" />
                       </a>
                     )}
                   </div>
@@ -506,33 +472,33 @@ export default function TeamMembersPage() {
                 <div>
                   <h3 className="font-semibold">Social Media</h3>
                   <div className="mt-1 space-y-2">
-                    {viewingMember.facebook && (
+                    {viewingMember.linkedin && (
                       <p className="flex items-center gap-2">
-                        <Facebook className="h-4 w-4" />
+                        <Linkedin className="h-4 w-4" />
                         <a 
-                          href={viewingMember.facebook} 
+                          href={viewingMember.linkedin} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
-                          Facebook Profile
+                          LinkedIn Profile
                         </a>
                       </p>
                     )}
-                    {viewingMember.instagram && (
+                    {viewingMember.twitter && (
                       <p className="flex items-center gap-2">
-                        <Instagram className="h-4 w-4" />
+                        <Twitter className="h-4 w-4" />
                         <a 
-                          href={viewingMember.instagram} 
+                          href={viewingMember.twitter} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
-                          Instagram Profile
+                          Twitter Profile
                         </a>
                       </p>
                     )}
-                    {!viewingMember.facebook && !viewingMember.instagram && (
+                    {!viewingMember.linkedin && !viewingMember.twitter && (
                       <p className="text-gray-500">No social media profiles provided.</p>
                     )}
                   </div>

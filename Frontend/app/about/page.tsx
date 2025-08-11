@@ -7,16 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { Mail, Linkedin, Twitter, AlertCircle } from "lucide-react"
-
-interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  bio: string;
-  email: string;
-  image?: string;
-  order_index: number;
-}
+import { getAllTeamMembers } from "@/lib/services"
+import { TeamMember } from "@/lib/types"
 
 // Error fallback component
 function DatabaseError({ message }: { message: string }) {
@@ -52,15 +44,7 @@ export default function AboutPage() {
     async function fetchTeamMembers() {
       try {
         setLoading(true)
-        const response = await fetch('/api/team')
-        
-        if (!response.ok) {
-          const errorData = await response.json()
-          setError(errorData.error || 'Failed to fetch team members')
-          return
-        }
-
-        const members = await response.json()
+        const members = await getAllTeamMembers()
         setTeamMembers(members)
       } catch (err) {
         console.error('Error fetching team members:', err)

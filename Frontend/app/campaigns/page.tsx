@@ -14,6 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { DonateButton } from "@/components/donate-button";
 import { Campaign } from "@/lib/types";
+import { getAllCampaigns } from "@/lib/services";
 
 // Error fallback component
 function DatabaseError({ message }: { message: string }) {
@@ -47,15 +48,7 @@ export default function CampaignsPage() {
     async function fetchCampaigns() {
       try {
         setLoading(true);
-        const response = await fetch('/api/campaigns');
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          setError(errorData.error || "Failed to fetch campaigns");
-          return;
-        }
-
-        const campaignsData = await response.json();
+        const campaignsData = await getAllCampaigns();
         setCampaigns(campaignsData);
       } catch (err) {
         console.error("Error fetching campaigns:", err);

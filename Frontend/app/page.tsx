@@ -102,7 +102,7 @@ export default function HomePage() {
     const fetchSponsors = async () => {
       try {
         setSponsorsLoading(true);
-        const response = await fetch('/api/sponsors');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/sponsors`);
         if (response.ok) {
           const sponsorsData = await response.json();
           setSponsors(sponsorsData);
@@ -126,7 +126,7 @@ export default function HomePage() {
     const fetchCampaigns = async () => {
       try {
         setCampaignsLoading(true);
-        const response = await fetch('/api/campaigns');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/campaigns`);
         if (response.ok) {
           const campaignsData = await response.json();
           setCampaigns(campaignsData);
@@ -150,7 +150,7 @@ export default function HomePage() {
     const fetchProjects = async () => {
       try {
         setProjectsLoading(true);
-        const response = await fetch('/api/projects');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/projects`);
         if (response.ok) {
           const projectsData = await response.json();
           setProjects(projectsData);

@@ -80,7 +80,7 @@ export function DonateButton({ className, size = "lg" }: DonateButtonProps) {
         .toString(36)
         .substr(2, 9)}`;
 
-      const response = await fetch("/api/mpesa/initiate", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/mpesa/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
