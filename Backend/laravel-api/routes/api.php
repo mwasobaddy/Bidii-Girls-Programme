@@ -1,3 +1,5 @@
+use App\Http\Controllers\GalleryController;
+Route::post('/gallery-scan', [GalleryController::class, 'scan']);
 <?php
 
 
@@ -31,7 +33,7 @@ Route::get('/test-db', [HealthController::class, 'testDb']);
 // Get authenticated user route (requires authentication)
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-});
+// ...existing code...
 
 // Placeholder routes that will be implemented in Phase 4
 Route::prefix('auth')->group(function () {
