@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,35 +61,26 @@ export default function AdminLoginPage() {
         body: JSON.stringify(credentials),
       });
 
-      const data: LoginResponse = await response.json();
+      const data = await response.json();
       console.log('Login response:', data);
 
-      if (data.success && data.user) {
-        console.log('Login successful, setting localStorage and redirecting...');
-        
-        // Set localStorage for authentication
-        localStorage.setItem("adminAuth", "true");
-        localStorage.setItem("adminUser", JSON.stringify(data.user));
-
-        console.log('localStorage set, values:', {
-          adminAuth: localStorage.getItem("adminAuth"),
-          adminUser: localStorage.getItem("adminUser")
-        });
+      if (response.ok && data.access_token) {
+        // Store JWT token and user info
+        localStorage.setItem('adminToken', data.access_token);
+        localStorage.setItem('adminUser', JSON.stringify(data.user));
 
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${data.user.email}! Authenticated via database.`,
+          description: `Welcome back, ${data.user.email}!`,
         });
-
-        console.log('About to redirect to /admin/dashboard');
         router.push("/admin/dashboard");
       } else {
-        setError(data.error || "Authentication failed")
+        setError(data.message || data.error || "Authentication failed");
         toast({
           title: "Login Failed",
-          description: data.error || "Invalid credentials from database",
+          description: data.message || data.error || "Invalid credentials",
           variant: "destructive",
-        })
+        });
       }
     } catch (error) {
       console.error('Login error:', error)

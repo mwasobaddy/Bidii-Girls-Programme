@@ -38,35 +38,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    const authStatus = localStorage.getItem("adminAuth");
-    console.log('Checking localStorage adminAuth:', authStatus);
-    
-    if (authStatus === "true") {
-      console.log('User is authenticated, setting state');
+    const token = localStorage.getItem("adminToken");
+    console.log('Checking localStorage adminToken:', token);
+    if (token) {
       setIsAuthenticated(true);
       setLoading(false);
     } else {
-      console.log('User not authenticated, redirecting to login');
       router.push("/admin/login");
     }
   }, [router, isLoginPage]);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      localStorage.removeItem("adminAuth");
+      const token = localStorage.getItem("adminToken");
+      await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/auth/logout', {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      localStorage.removeItem("adminToken");
       localStorage.removeItem("adminUser");
       toast({
         title: "Logged Out",
-        description: "You have been successfully logged out from the database.",
+        description: "You have been successfully logged out.",
       });
       router.push("/admin/login");
     } catch (error) {
       console.error("Logout error:", error);
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
       toast({
         title: "Logout Error",
-        description:
-          "There was an error logging out, but local session cleared.",
+        description: "There was an error logging out, but local session cleared.",
       });
       router.push("/admin/login");
     }
