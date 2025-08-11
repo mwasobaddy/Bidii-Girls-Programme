@@ -16,6 +16,8 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface Project {
   id: number;
   title: string;
@@ -65,7 +67,7 @@ export default function ProjectsPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/projects")
+      const response = await fetch(`${API_BASE_URL}/projects`)
       if (!response.ok) throw new Error("Failed to fetch projects")
       const data = await response.json()
       setProjects(data)
@@ -119,7 +121,7 @@ export default function ProjectsPage() {
       
       if (editingProject) {
         // Update existing project
-        response = await fetch(`/api/projects`, {
+        response = await fetch(`${API_BASE_URL}/projects`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -131,7 +133,7 @@ export default function ProjectsPage() {
         })
       } else {
         // Create new project
-        response = await fetch('/api/projects', {
+        response = await fetch(`${API_BASE_URL}/projects`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -171,7 +173,7 @@ export default function ProjectsPage() {
     if (!deletingProjectId) return
     
     try {
-      const response = await fetch(`/api/projects?id=${deletingProjectId}`, {
+      const response = await fetch(`${API_BASE_URL}/projects?id=${deletingProjectId}`, {
         method: 'DELETE',
       })
       

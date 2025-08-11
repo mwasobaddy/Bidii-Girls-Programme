@@ -13,6 +13,8 @@ import { Plus, Eye, Folder, Image as ImageIcon, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { ImageUploader } from "@/components/admin/image-uploader"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface GalleryItem {
   name: string;
   url: string;
@@ -61,7 +63,7 @@ export default function GalleryPage() {
     setLoading(true)
     try {
       const categoryParam = selectedCategory === "all" ? "" : `?category=${selectedCategory}`;
-      const response = await fetch(`/api/gallery-scan${categoryParam}`);
+      const response = await fetch(`${API_BASE_URL}/gallery-scan${categoryParam}`);
       
       if (!response.ok) {
         throw new Error("Failed to fetch gallery images");

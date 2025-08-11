@@ -13,6 +13,8 @@ import {
 } from "lucide-react"
 import { DatabaseError } from "@/components/admin/database-error"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     campaigns: 0,
@@ -32,12 +34,12 @@ export default function AdminDashboard() {
     try {
       // Fetch all the counts in parallel
       const [campaignsRes, projectsRes, blogRes, teamRes, sponsorsRes, galleryRes] = await Promise.all([
-        fetch("/api/campaigns?count=true"),
-        fetch("/api/projects?count=true"),
-        fetch("/api/blog?count=true"),
-        fetch("/api/team?count=true"),
-        fetch("/api/sponsors?count=true"),
-        fetch("/api/gallery?count=true")
+        fetch(`${API_BASE_URL}/campaigns?count=true`),
+        fetch(`${API_BASE_URL}/projects?count=true`),
+        fetch(`${API_BASE_URL}/blog?count=true`),
+        fetch(`${API_BASE_URL}/team?count=true`),
+        fetch(`${API_BASE_URL}/sponsors?count=true`),
+        fetch(`${API_BASE_URL}/gallery?count=true`)
       ]);
       
       if (!campaignsRes.ok || !projectsRes.ok || !blogRes.ok || !teamRes.ok || !sponsorsRes.ok || !galleryRes.ok) {
@@ -52,7 +54,7 @@ export default function AdminDashboard() {
       const galleryData = await galleryRes.json();
       
       // Get all blog posts to count stories
-      const blogsResponse = await fetch("/api/blog?admin=true");
+      const blogsResponse = await fetch(`${API_BASE_URL}/blog?admin=true`);
       if (!blogsResponse.ok) throw new Error("Failed to fetch blog posts");
       const blogPosts = await blogsResponse.json();
       

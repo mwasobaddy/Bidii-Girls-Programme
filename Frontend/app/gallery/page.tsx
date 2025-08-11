@@ -9,6 +9,8 @@ import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { DonateButton } from "@/components/donate-button";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 // File System Types
 interface GalleryImage {
   name: string;
@@ -60,7 +62,7 @@ export default function GalleryPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch("/api/gallery-scan");
+      const response = await fetch(`${API_BASE_URL}/gallery-scan`);
       if (!response.ok) {
         throw new Error(
           `Failed to fetch gallery images: ${response.status} ${response.statusText}`

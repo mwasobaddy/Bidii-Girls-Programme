@@ -15,6 +15,8 @@ import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface Campaign {
   id: number;
   title: string;
@@ -66,7 +68,7 @@ export default function CampaignsPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/campaigns")
+      const response = await fetch(`${API_BASE_URL}/campaigns`)
       if (!response.ok) throw new Error("Failed to fetch campaigns")
       const data = await response.json()
       setCampaigns(data)
@@ -81,7 +83,7 @@ export default function CampaignsPage() {
   // Fetch blog posts for linking
   const fetchBlogPosts = async () => {
     try {
-      const response = await fetch("/api/blog")
+      const response = await fetch(`${API_BASE_URL}/blog`)
       if (!response.ok) throw new Error("Failed to fetch blog posts")
       const data = await response.json()
       setBlogPosts(data)
@@ -142,13 +144,13 @@ export default function CampaignsPage() {
       let response
       
       if (editingCampaign) {
-        response = await fetch('/api/campaigns', {
+        response = await fetch(`${API_BASE_URL}/campaigns`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingCampaign.id, ...campaignData }),
         })
       } else {
-        response = await fetch('/api/campaigns', {
+        response = await fetch(`${API_BASE_URL}/campaigns`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(campaignData),
@@ -186,7 +188,7 @@ export default function CampaignsPage() {
     if (!deletingCampaignId) return
     
     try {
-      const response = await fetch(`/api/campaigns?id=${deletingCampaignId}`, {
+      const response = await fetch(`${API_BASE_URL}/campaigns?id=${deletingCampaignId}`, {
         method: 'DELETE',
       })
       

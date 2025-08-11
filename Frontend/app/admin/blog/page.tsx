@@ -15,6 +15,8 @@ import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface BlogPost {
   id: number;
   title: string;
@@ -62,7 +64,7 @@ export default function BlogPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/blog")
+      const response = await fetch(`${API_BASE_URL}/blog`)
       if (!response.ok) throw new Error("Failed to fetch blog posts")
       const data = await response.json()
       setBlogPosts(data)
@@ -179,13 +181,13 @@ export default function BlogPage() {
       let response
       
       if (editingPost) {
-        response = await fetch('/api/blog', {
+        response = await fetch(`${API_BASE_URL}/blog`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingPost.id, ...postData }),
         })
       } else {
-        response = await fetch('/api/blog', {
+        response = await fetch(`${API_BASE_URL}/blog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(postData),
@@ -224,7 +226,7 @@ export default function BlogPage() {
     if (!deletingPostId) return
     
     try {
-      const response = await fetch(`/api/blog`, {
+      const response = await fetch(`${API_BASE_URL}/blog`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

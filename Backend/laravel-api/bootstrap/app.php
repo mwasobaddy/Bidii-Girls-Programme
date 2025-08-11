@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Add CORS middleware
+        // Add CORS middleware (Laravel 11 built-in)
         $middleware->api(prepend: [
-            \Fruitcake\Cors\HandleCors::class,
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
         // Add JWT middleware for protected API routes (to be used in route definitions)

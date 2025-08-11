@@ -13,6 +13,8 @@ import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface Sponsor {
   id: number;
   name: string;
@@ -47,7 +49,7 @@ export default function SponsorsPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/sponsors")
+      const response = await fetch(`${API_BASE_URL}/sponsors`)
       if (!response.ok) throw new Error("Failed to fetch sponsors")
       const data = await response.json()
       setSponsors(data)
@@ -90,7 +92,7 @@ export default function SponsorsPage() {
       
       if (editingSponsor) {
         // Update existing sponsor with ID in request body
-        response = await fetch(`/api/sponsors`, {
+        response = await fetch(`${API_BASE_URL}/sponsors`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -103,7 +105,7 @@ export default function SponsorsPage() {
       } else {
         // Create new sponsor
         console.log("Creating new sponsor with data:", sponsorData)
-        response = await fetch('/api/sponsors', {
+        response = await fetch(`${API_BASE_URL}/sponsors`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -146,7 +148,7 @@ export default function SponsorsPage() {
   const handleDelete = async () => {
     if (!deletingSponsorId) return
     
-    const response = await fetch(`/api/sponsors?id=${deletingSponsorId}`, {
+    const response = await fetch(`${API_BASE_URL}/sponsors?id=${deletingSponsorId}`, {
       method: 'DELETE',
     })
     

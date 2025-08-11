@@ -178,7 +178,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchGalleryImages = async () => {
     setLoadingGalleryImages(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/gallery`);
+      const response = await fetch(`${process.env.API_BASE_URL}/gallery`);
       if (!response.ok) throw new Error("Failed to fetch gallery images");
       const data = await response.json();
       setGalleryImages(data);

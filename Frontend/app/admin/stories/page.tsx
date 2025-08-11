@@ -15,6 +15,8 @@ import { DeleteConfirmation } from "@/components/admin/delete-confirmation"
 import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface Story {
   id: number;
   title: string;
@@ -62,7 +64,7 @@ export default function StoriesPage() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/stories")
+      const response = await fetch(`${API_BASE_URL}/stories`)
       if (!response.ok) throw new Error("Failed to fetch stories")
       const data = await response.json()
       setStories(data)
@@ -77,7 +79,7 @@ export default function StoriesPage() {
   // Fetch categories for linking
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories")
+      const response = await fetch(`${API_BASE_URL}/categories`)
       if (!response.ok) throw new Error("Failed to fetch categories")
       const data = await response.json()
       setCategories(data)
@@ -136,13 +138,13 @@ export default function StoriesPage() {
       let response
       
       if (editingStory) {
-        response = await fetch('/api/stories', {
+        response = await fetch(`${API_BASE_URL}/stories`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingStory.id, ...storyData }),
         })
       } else {
-        response = await fetch('/api/stories', {
+        response = await fetch(`${API_BASE_URL}/stories`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(storyData),
@@ -180,7 +182,7 @@ export default function StoriesPage() {
     if (!deletingStoryId) return
     
     try {
-      const response = await fetch(`/api/stories`, {
+      const response = await fetch(`${API_BASE_URL}/stories`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

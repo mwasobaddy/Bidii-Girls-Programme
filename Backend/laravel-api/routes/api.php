@@ -1,9 +1,4 @@
-use App\Http\Controllers\CategoryController;
-Route::get('/categories', [CategoryController::class, 'index']);
-use App\Http\Controllers\GalleryController;
-Route::post('/gallery-scan', [GalleryController::class, 'scan']);
 <?php
-
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -16,6 +11,9 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\MpesaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +33,7 @@ Route::get('/test-db', [HealthController::class, 'testDb']);
 // Get authenticated user route (requires authentication)
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-// ...existing code...
+});
 
 // Placeholder routes that will be implemented in Phase 4
 Route::prefix('auth')->group(function () {
@@ -95,8 +93,12 @@ Route::prefix('upload')->group(function () {
     Route::get('/images/{path}', [UploadController::class, 'image'])->where('path', '.*');
 });
 
+// Categories and Gallery routes
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::post('/gallery-scan', [GalleryController::class, 'scan']);
+
+// Mpesa routes
 Route::prefix('mpesa')->group(function () {
     Route::post('/initiate', [MpesaController::class, 'initiate']);
     Route::post('/callback', [MpesaController::class, 'callback']);
-});
 });

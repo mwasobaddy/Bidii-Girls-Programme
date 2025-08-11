@@ -20,6 +20,8 @@ import {
   Youtube,
 } from "lucide-react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -35,7 +37,7 @@ export default function ContactPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
