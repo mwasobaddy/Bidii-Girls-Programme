@@ -4,6 +4,14 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TeamController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\SponsorController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\HealthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,36 +24,9 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-// Health check route
-Route::get('/health', function () {
-    return response()->json([
-        'service' => 'Bidii Girls Program API',
-        'status' => 'healthy',
-        'version' => '1.0.0',
-        'timestamp' => now()->toISOString(),
-    ]);
-});
-
-// Test database connection route
-Route::get('/test-db', function () {
-    try {
-        DB::connection()->getPdo();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Database connection successful',
-            'connection' => true,
-            'timestamp' => now()->toISOString(),
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Database connection failed',
-            'error' => $e->getMessage(),
-            'connection' => false,
-            'timestamp' => now()->toISOString(),
-        ], 500);
-    }
-});
+// Health check and DB test endpoints
+Route::get('/health', [HealthController::class, 'health']);
+Route::get('/test-db', [HealthController::class, 'testDb']);
 
 // Get authenticated user route (requires authentication)
 Route::middleware('auth:api')->get('/user', function (Request $request) {
@@ -61,31 +42,53 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('blog')->group(function () {
-    // Blog routes will be added here
+    Route::get('/', [BlogController::class, 'index']);
+    Route::get('/{id}', [BlogController::class, 'show']);
+    Route::post('/', [BlogController::class, 'store'])->middleware('jwt.auth');
+    Route::put('/{id}', [BlogController::class, 'update'])->middleware('jwt.auth');
+    Route::delete('/{id}', [BlogController::class, 'destroy'])->middleware('jwt.auth');
 });
 
 Route::prefix('projects')->group(function () {
-    // Project routes will be added here
+    Route::get('/', [ProjectController::class, 'index']);
+    Route::get('/{id}', [ProjectController::class, 'show']);
+    Route::post('/', [ProjectController::class, 'store'])->middleware('jwt.auth');
+    Route::put('/{id}', [ProjectController::class, 'update'])->middleware('jwt.auth');
+    Route::delete('/{id}', [ProjectController::class, 'destroy'])->middleware('jwt.auth');
+});
+Route::prefix('campaigns')->group(function () {
+    Route::get('/', [CampaignController::class, 'index']);
+    Route::get('/{id}', [CampaignController::class, 'show']);
+    Route::post('/', [CampaignController::class, 'store'])->middleware('jwt.auth');
+    Route::put('/{id}', [CampaignController::class, 'update'])->middleware('jwt.auth');
+    Route::delete('/{id}', [CampaignController::class, 'destroy'])->middleware('jwt.auth');
 });
 
-Route::prefix('campaigns')->group(function () {
-    // Campaign routes will be added here
-});
 
 Route::prefix('team')->group(function () {
-    // Team routes will be added here
+    Route::get('/', [TeamController::class, 'index']);
+    Route::get('/{id}', [TeamController::class, 'show']);
+    Route::post('/', [TeamController::class, 'store'])->middleware('jwt.auth');
+    Route::put('/{id}', [TeamController::class, 'update'])->middleware('jwt.auth');
+    Route::delete('/{id}', [TeamController::class, 'destroy'])->middleware('jwt.auth');
 });
 
 Route::prefix('sponsors')->group(function () {
-    // Sponsor routes will be added here
+    Route::get('/', [SponsorController::class, 'index']);
+    Route::get('/{id}', [SponsorController::class, 'show']);
+    Route::post('/', [SponsorController::class, 'store'])->middleware('jwt.auth');
+    Route::put('/{id}', [SponsorController::class, 'update'])->middleware('jwt.auth');
+    Route::delete('/{id}', [SponsorController::class, 'destroy'])->middleware('jwt.auth');
 });
 
 Route::prefix('contact')->group(function () {
-    // Contact routes will be added here
+    Route::post('/', [ContactController::class, 'store']); // public contact form
+    Route::get('/', [ContactController::class, 'index'])->middleware('jwt.auth'); // admin only
 });
 
 Route::prefix('upload')->group(function () {
-    // Upload routes will be added here
+    Route::post('/', [UploadController::class, 'upload'])->middleware('jwt.auth');
+    Route::get('/images/{path}', [UploadController::class, 'image'])->where('path', '.*');
 });
 
 Route::prefix('mpesa')->group(function () {
