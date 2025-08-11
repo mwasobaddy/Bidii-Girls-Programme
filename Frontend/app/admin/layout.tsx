@@ -18,6 +18,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      await fetch(process.env.API_BASE_URL + '/auth/logout', {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`,

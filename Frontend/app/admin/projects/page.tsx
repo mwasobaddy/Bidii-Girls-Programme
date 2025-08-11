@@ -121,15 +121,12 @@ export default function ProjectsPage() {
       
       if (editingProject) {
         // Update existing project
-        response = await fetch(`${API_BASE_URL}/projects`, {
+        response = await fetch(`${API_BASE_URL}/projects/${editingProject.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            id: editingProject.id,
-            ...projectData 
-          }),
+          body: JSON.stringify(projectData),
         })
       } else {
         // Create new project

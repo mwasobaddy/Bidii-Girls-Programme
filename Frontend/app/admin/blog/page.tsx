@@ -181,10 +181,10 @@ export default function BlogPage() {
       let response
       
       if (editingPost) {
-        response = await fetch(`${API_BASE_URL}/blog`, {
+        response = await fetch(`${API_BASE_URL}/blog/${editingPost.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingPost.id, ...postData }),
+          body: JSON.stringify(postData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/blog`, {

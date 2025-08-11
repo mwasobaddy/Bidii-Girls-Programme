@@ -11,6 +11,8 @@ import {
 } from "@/lib/services"
 import { Campaign, Project, BlogPost, TeamMember, Sponsor } from "@/lib/types"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface GalleryImage {
   id: number;
   title: string;
@@ -178,7 +180,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchGalleryImages = async () => {
     setLoadingGalleryImages(true);
     try {
-      const response = await fetch(`${process.env.API_BASE_URL}/gallery`);
+      const response = await fetch(`${API_BASE_URL}/gallery`);
       if (!response.ok) throw new Error("Failed to fetch gallery images");
       const data = await response.json();
       setGalleryImages(data);

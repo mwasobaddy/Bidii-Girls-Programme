@@ -144,10 +144,10 @@ export default function CampaignsPage() {
       let response
       
       if (editingCampaign) {
-        response = await fetch(`${API_BASE_URL}/campaigns`, {
+        response = await fetch(`${API_BASE_URL}/campaigns/${editingCampaign.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingCampaign.id, ...campaignData }),
+          body: JSON.stringify(campaignData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/campaigns`, {

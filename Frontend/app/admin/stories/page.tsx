@@ -138,10 +138,10 @@ export default function StoriesPage() {
       let response
       
       if (editingStory) {
-        response = await fetch(`${API_BASE_URL}/stories`, {
+        response = await fetch(`${API_BASE_URL}/stories/${editingStory.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingStory.id, ...storyData }),
+          body: JSON.stringify(storyData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/stories`, {

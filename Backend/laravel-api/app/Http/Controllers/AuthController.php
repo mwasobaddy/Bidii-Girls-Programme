@@ -27,14 +27,9 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid credentials.'], 422);
         }
 
-        $user = User::where('email', $credentials['email'])->first();
-        if (!$user || !password_verify($credentials['password'], $user->password_hash)) {
-            return response()->json(['error' => 'Invalid email or password.'], 401);
-        }
-
         try {
-            if (! $token = JWTAuth::fromUser($user)) {
-                return response()->json(['error' => 'Could not create token'], 500);
+            if (! $token = auth('api')->attempt($credentials)) {
+                return response()->json(['error' => 'Invalid email or password.'], 401);
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not create token'], 500);
@@ -44,7 +39,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $user,
+            'user' => auth('api')->user(),
         ]);
     }
 

@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Heart, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface LoginResponse {
   success: boolean;
   user?: {
@@ -53,7 +55,7 @@ export default function AdminLoginPage() {
     setError(null)
 
     try {
-      const response = await fetch(process.env.API_BASE_URL + '/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -91,16 +91,13 @@ export default function SponsorsPage() {
       let response;
       
       if (editingSponsor) {
-        // Update existing sponsor with ID in request body
-        response = await fetch(`${API_BASE_URL}/sponsors`, {
+        // Update existing sponsor with ID in URL path
+        response = await fetch(`${API_BASE_URL}/sponsors/${editingSponsor.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            id: editingSponsor.id,
-            ...sponsorData
-          }),
+          body: JSON.stringify(sponsorData),
         })
       } else {
         // Create new sponsor

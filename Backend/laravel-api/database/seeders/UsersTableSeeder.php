@@ -15,12 +15,12 @@ class UsersTableSeeder extends Seeder
         \DB::table('users')->insert([
             [
                 'email' => 'admin@bidiigirls.org',
-                'password_hash' => '$2b$10$2Ar68X1fTWvN2cVVCIGQUOUNQfpYEe/Oz4O3vEOFBoDpYj/kYup/u',
+                'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
                 'role' => 'admin',
             ],
             [
                 'email' => 'sarah@bidiigirls.org',
-                'password_hash' => '$2b$10$2Ar68X1fTWvN2cVVCIGQUOUNQfpYEe/Oz4O3vEOFBoDpYj/kYup/u',
+                'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
                 'role' => 'admin',
             ],
         ]);

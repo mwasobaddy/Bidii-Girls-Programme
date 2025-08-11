@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface DonateButtonProps {
   className?: string;
   size?: "sm" | "lg" | "default";
@@ -80,7 +82,7 @@ export function DonateButton({ className, size = "lg" }: DonateButtonProps) {
         .toString(36)
         .substr(2, 9)}`;
 
-      const response = await fetch(`${process.env.API_BASE_URL}/mpesa/initiate`, {
+      const response = await fetch(`${API_BASE_URL}/mpesa/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

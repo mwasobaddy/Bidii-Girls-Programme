@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 interface ImageUploaderProps {
   onImageSelected: (imageDataOrUrl: string) => void
   currentImage?: string | null
@@ -132,15 +134,39 @@ export function ImageUploader({
             description: `Uploading "${file.name}" to server...`,
           });
           
+          // Get JWT token from localStorage
+          const token = localStorage.getItem('adminToken');
+          
+          if (!token) {
+            throw new Error('No authentication token found. Please log in again.');
+          }
+          
           // Upload to server
-          const response = await fetch(`${process.env.API_BASE_URL}/upload`, {
+          const response = await fetch(`${API_BASE_URL}/upload`, {
             method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
             body: formData,
           });
           
           if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Upload failed');
+            let errorMessage = `Upload failed with status ${response.status}`;
+            
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+              // If we can't parse JSON, it might be an HTML error page
+              if (response.status === 401) {
+                errorMessage = 'Authentication failed. Please log in again.';
+              } else {
+                errorMessage = `Server error (${response.status}). Please try again.`;
+              }
+            }
+            
+            console.error('Upload failed:', response.status, errorMessage);
+            throw new Error(errorMessage);
           }
           
           const result = await response.json();
@@ -160,11 +186,23 @@ export function ImageUploader({
           });
         } catch (error) {
           console.error("Error uploading image:", error)
-          toast({
-            title: "Upload Error",
-            description: "Failed to upload image to server. Please try again.",
-            variant: "destructive",
-          })
+          
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          
+          // Check if it's an authentication error
+          if (errorMessage.includes('Authentication failed') || errorMessage.includes('No authentication token')) {
+            toast({
+              title: "Authentication Error",
+              description: "Please log in again to upload images.",
+              variant: "destructive",
+            })
+          } else {
+            toast({
+              title: "Upload Error",
+              description: errorMessage,
+              variant: "destructive",
+            })
+          }
         } finally {
           setIsUploading(false)
         }

@@ -33,6 +33,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { Sponsor, Campaign, Project } from "@/lib/types";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
 const featuredPosts = [
   {
     id: 1,
@@ -102,7 +104,7 @@ export default function HomePage() {
     const fetchSponsors = async () => {
       try {
         setSponsorsLoading(true);
-        const response = await fetch(`${process.env.API_BASE_URL || 'http://localhost:8000/api'}/sponsors`);
+        const response = await fetch(`${API_BASE_URL}/sponsors`);
         if (response.ok) {
           const sponsorsData = await response.json();
           setSponsors(sponsorsData);
@@ -126,7 +128,7 @@ export default function HomePage() {
     const fetchCampaigns = async () => {
       try {
         setCampaignsLoading(true);
-        const response = await fetch(`${process.env.API_BASE_URL || 'http://localhost:8000/api'}/campaigns`);
+        const response = await fetch(`${API_BASE_URL}/campaigns`);
         if (response.ok) {
           const campaignsData = await response.json();
           setCampaigns(campaignsData);
@@ -150,7 +152,7 @@ export default function HomePage() {
     const fetchProjects = async () => {
       try {
         setProjectsLoading(true);
-        const response = await fetch(`${process.env.API_BASE_URL || 'http://localhost:8000/api'}/projects`);
+        const response = await fetch(`${API_BASE_URL}/projects`);
         if (response.ok) {
           const projectsData = await response.json();
           setProjects(projectsData);
