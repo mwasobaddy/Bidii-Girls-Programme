@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->longText('logo')->nullable();
             $table->string('website', 500)->nullable();
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamps();
         });
     }
 

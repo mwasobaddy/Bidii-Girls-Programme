@@ -14,6 +14,15 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL without /api
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
+  if (imagePath.startsWith('http')) return imagePath; // Already full URL
+  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+};
 
 interface Sponsor {
   id: number;
@@ -295,7 +304,7 @@ export default function SponsorsPage() {
               <CardContent className="p-6">
                 <div className="text-center">
                   <Image
-                    src={sponsor.logo || "/placeholder.svg"}
+                    src={getImageUrl(sponsor.logo)}
                     alt={sponsor.name}
                     width={120}
                     height={80}
@@ -388,7 +397,7 @@ export default function SponsorsPage() {
                   <div>
                     <strong>Logo:</strong>
                     <Image
-                      src={viewingSponsor.logo || "/placeholder.svg"}
+                      src={getImageUrl(viewingSponsor.logo)}
                       alt={viewingSponsor.name}
                       width={200}
                       height={120}

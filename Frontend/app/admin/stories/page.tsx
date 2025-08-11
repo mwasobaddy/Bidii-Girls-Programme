@@ -16,6 +16,15 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL without /api
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
+  if (imagePath.startsWith('http')) return imagePath; // Already full URL
+  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+};
 
 interface Story {
   id: number;
@@ -445,7 +454,7 @@ export default function StoriesPage() {
                 {story.feature_image && (
                   <div className="relative w-full h-48">
                     <Image
-                      src={story.feature_image}
+                      src={getImageUrl(story.feature_image)}
                       alt={story.title}
                       fill
                       className="object-cover"
@@ -543,7 +552,7 @@ export default function StoriesPage() {
               {viewingStory.feature_image && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden">
                   <Image
-                    src={viewingStory.feature_image}
+                    src={getImageUrl(viewingStory.feature_image)}
                     alt={viewingStory.title}
                     fill
                     className="object-cover"

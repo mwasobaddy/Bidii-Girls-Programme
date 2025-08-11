@@ -16,6 +16,15 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL without /api
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
+  if (imagePath.startsWith('http')) return imagePath; // Already full URL
+  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+};
 
 interface Campaign {
   id: number;
@@ -452,7 +461,7 @@ export default function CampaignsPage() {
                 {campaign.feature_image && (
                   <div className="relative w-full h-48">
                     <Image
-                      src={campaign.feature_image}
+                      src={getImageUrl(campaign.feature_image)}
                       alt={campaign.title}
                       fill
                       className="object-cover"
@@ -553,7 +562,7 @@ export default function CampaignsPage() {
               {viewingCampaign.feature_image && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden">
                   <Image
-                    src={viewingCampaign.feature_image}
+                    src={getImageUrl(viewingCampaign.feature_image)}
                     alt={viewingCampaign.title}
                     fill
                     className="object-cover"

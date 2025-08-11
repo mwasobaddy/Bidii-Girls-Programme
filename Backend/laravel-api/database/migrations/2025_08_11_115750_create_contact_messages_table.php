@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('subject', 255);
             $table->text('message');
             $table->string('status', 50)->default('unread');
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamps();
         });
     }
 

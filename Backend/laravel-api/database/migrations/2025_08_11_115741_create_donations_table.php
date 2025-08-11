@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('payment_status', 50)->default('pending');
             $table->string('transaction_id', 255)->nullable();
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('set null');
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamps();
         });
     }
 

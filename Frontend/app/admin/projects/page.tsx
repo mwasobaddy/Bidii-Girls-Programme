@@ -17,6 +17,15 @@ import { DatabaseError } from "@/components/admin/database-error"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL without /api
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
+  if (imagePath.startsWith('http')) return imagePath; // Already full URL
+  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+};
 
 interface Project {
   id: number;
@@ -439,7 +448,7 @@ export default function ProjectsPage() {
                 {project.featured_image && (
                   <div className="relative w-full h-48">
                     <Image
-                      src={project.featured_image}
+                      src={getImageUrl(project.featured_image)}
                       alt={project.title}
                       fill
                       className="object-cover"
@@ -549,7 +558,7 @@ export default function ProjectsPage() {
               {viewingProject.featured_image && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden">
                   <Image
-                    src={viewingProject.featured_image}
+                    src={getImageUrl(viewingProject.featured_image)}
                     alt={viewingProject.title}
                     fill
                     className="object-cover"

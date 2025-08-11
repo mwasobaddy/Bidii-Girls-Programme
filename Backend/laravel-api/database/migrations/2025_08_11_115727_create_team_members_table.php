@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('twitter', 500)->nullable();
             $table->integer('order_index')->default(0);
             $table->boolean('active')->default(true);
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamps();
         });
     }
 

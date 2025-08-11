@@ -16,6 +16,15 @@ import { ImageUploader } from "@/components/admin/image-uploader"
 import { DatabaseError } from "@/components/admin/database-error"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL without /api
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
+  if (imagePath.startsWith('http')) return imagePath; // Already full URL
+  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+};
 
 interface BlogPost {
   id: number;
@@ -525,7 +534,7 @@ export default function BlogPage() {
                 {post.featured_image && (
                   <div className="relative w-full h-48">
                     <Image
-                      src={post.featured_image}
+                      src={getImageUrl(post.featured_image)}
                       alt={post.title}
                       fill
                       className="object-cover"
@@ -539,7 +548,7 @@ export default function BlogPage() {
                     <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
                       {post.author_image ? (
                         <Image
-                          src={post.author_image}
+                          src={getImageUrl(post.author_image)}
                           alt={post.author}
                           fill
                           className="object-cover"
@@ -656,7 +665,7 @@ export default function BlogPage() {
               {viewingPost.featured_image && (
                 <div className="relative w-full h-72 rounded-lg overflow-hidden">
                   <Image
-                    src={viewingPost.featured_image}
+                    src={getImageUrl(viewingPost.featured_image)}
                     alt={viewingPost.title}
                     fill
                     className="object-cover"
@@ -670,7 +679,7 @@ export default function BlogPage() {
                   <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
                     {viewingPost.author_image ? (
                       <Image
-                        src={viewingPost.author_image}
+                        src={getImageUrl(viewingPost.author_image)}
                         alt={viewingPost.author}
                         fill
                         className="object-cover"
