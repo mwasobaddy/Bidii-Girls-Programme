@@ -141,18 +141,30 @@ export default function CampaignsPage() {
         end_date: formData.end_date !== "" ? formData.end_date : null,
       }
       
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       let response
       
       if (editingCampaign) {
         response = await fetch(`${API_BASE_URL}/campaigns/${editingCampaign.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(campaignData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/campaigns`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(campaignData),
         })
       }
@@ -188,8 +200,17 @@ export default function CampaignsPage() {
     if (!deletingCampaignId) return
     
     try {
-      const response = await fetch(`${API_BASE_URL}/campaigns?id=${deletingCampaignId}`, {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/campaigns/${deletingCampaignId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       })
       
       if (!response.ok) {

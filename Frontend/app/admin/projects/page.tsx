@@ -117,6 +117,12 @@ export default function ProjectsPage() {
         featured_image: formData.featured_image || null,
       }
       
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       let response;
       
       if (editingProject) {
@@ -125,6 +131,7 @@ export default function ProjectsPage() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(projectData),
         })
@@ -134,6 +141,7 @@ export default function ProjectsPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(projectData),
         })
@@ -170,8 +178,17 @@ export default function ProjectsPage() {
     if (!deletingProjectId) return
     
     try {
-      const response = await fetch(`${API_BASE_URL}/projects?id=${deletingProjectId}`, {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/projects/${deletingProjectId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       })
       
       if (!response.ok) {

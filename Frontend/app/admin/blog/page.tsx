@@ -178,18 +178,32 @@ export default function BlogPage() {
         published: true, // Always publish by default, you can add a checkbox later if needed
       }
       
+      console.log("Saving blog post with data:", postData)
+      
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       let response
       
       if (editingPost) {
         response = await fetch(`${API_BASE_URL}/blog/${editingPost.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(postData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/blog`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(postData),
         })
       }
@@ -226,12 +240,17 @@ export default function BlogPage() {
     if (!deletingPostId) return
     
     try {
-      const response = await fetch(`${API_BASE_URL}/blog`, {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/blog/${deletingPostId}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ id: deletingPostId }),
       })
       
       if (!response.ok) {

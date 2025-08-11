@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeamMember extends Model
 {
-    //
+    protected $fillable = [
+        'name',
+        'role',
+        'bio',
+        'email',
+        'image',
+        'order_index'
+    ];
 }

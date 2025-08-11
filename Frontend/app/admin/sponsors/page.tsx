@@ -82,6 +82,12 @@ export default function SponsorsPage() {
     e.preventDefault()
     
     try {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+
       const sponsorData = {
         name: formData.name,
         logo: formData.logo || null,
@@ -96,6 +102,7 @@ export default function SponsorsPage() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(sponsorData),
         })
@@ -106,6 +113,7 @@ export default function SponsorsPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(sponsorData),
         })
@@ -145,8 +153,17 @@ export default function SponsorsPage() {
   const handleDelete = async () => {
     if (!deletingSponsorId) return
     
-    const response = await fetch(`${API_BASE_URL}/sponsors?id=${deletingSponsorId}`, {
+    // Get JWT token for authentication
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('No authentication token found. Please log in again.');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/sponsors/${deletingSponsorId}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     })
     
     if (!response.ok) {

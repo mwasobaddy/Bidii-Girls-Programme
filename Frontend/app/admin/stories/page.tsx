@@ -135,18 +135,30 @@ export default function StoriesPage() {
         category_id: formData.category_id !== "" ? Number(formData.category_id) : null,
       }
       
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       let response
       
       if (editingStory) {
         response = await fetch(`${API_BASE_URL}/stories/${editingStory.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(storyData),
         })
       } else {
         response = await fetch(`${API_BASE_URL}/stories`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(storyData),
         })
       }
@@ -182,12 +194,17 @@ export default function StoriesPage() {
     if (!deletingStoryId) return
     
     try {
-      const response = await fetch(`${API_BASE_URL}/stories`, {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/stories/${deletingStoryId}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ id: deletingStoryId }),
       })
       
       if (!response.ok) {
