@@ -92,5 +92,7 @@ Route::prefix('upload')->group(function () {
 });
 
 Route::prefix('mpesa')->group(function () {
-    // M-Pesa routes will be added here
+    Route::post('/initiate', [MpesaController::class, 'initiate']);
+    Route::post('/callback', [MpesaController::class, 'callback']);
+});
 });
