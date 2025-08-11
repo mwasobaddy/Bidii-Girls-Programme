@@ -1,3 +1,5 @@
+use App\Http\Controllers\CategoryController;
+Route::get('/categories', [CategoryController::class, 'index']);
 use App\Http\Controllers\GalleryController;
 Route::post('/gallery-scan', [GalleryController::class, 'scan']);
 <?php
