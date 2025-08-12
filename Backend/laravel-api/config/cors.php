@@ -22,6 +22,8 @@ return [
     'allowed_origins' => [
         'http://localhost:3000', // Frontend development
         'http://127.0.0.1:3000', // Alternative localhost
+        'https://bidiigirlsprogramme.org', // Production frontend
+        'https://www.bidiigirlsprogramme.org', // Production frontend with www
     ],
 
     'allowed_origins_patterns' => [],
