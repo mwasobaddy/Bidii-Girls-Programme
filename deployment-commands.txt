@@ -1,0 +1,61 @@
+# Hostinger SSH Deployment Commands
+# Copy and paste these commands when connected to your Hostinger server
+
+# 1. Navigate to your domain directory
+cd /home/u367410712/domains/bidiigirlsprogramme.org/public_html
+
+# 2. Create backup of current deployment (if exists)
+if [ -d "api" ]; then
+    mv api api-backup-$(date +%Y%m%d-%H%M%S)
+fi
+
+# 3. Create directory structure
+mkdir -p api
+mkdir -p frontend-static
+
+# 4. Upload and extract backend (after uploading backend-production.tar.gz)
+tar -xzf backend-production.tar.gz
+mv Backend/* api/
+rm -rf Backend backend-production.tar.gz
+
+# 5. Configure backend environment
+cd api
+cp .env.production .env
+
+# 6. Generate new keys
+php artisan key:generate --force
+php artisan jwt:secret --force
+
+# 7. Set permissions
+chmod 644 .env
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
+chown -R u367410712:u367410712 storage
+chown -R u367410712:u367410712 bootstrap/cache
+
+# 8. Install dependencies (if not done locally)
+composer install --optimize-autoloader --no-dev
+
+# 9. Run migrations and seed database
+php artisan migrate --force
+php artisan db:seed --force
+
+# 10. Create storage link
+php artisan storage:link
+
+# 11. Cache for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 12. Go back to public_html and extract frontend
+cd /home/u367410712/domains/bidiigirlsprogramme.org/public_html
+tar -xzf frontend-production.tar.gz
+mv Frontend/out/* frontend-static/ 2>/dev/null || mv Frontend/dist/* frontend-static/ 2>/dev/null
+rm -rf Frontend frontend-production.tar.gz
+
+# 13. Set frontend permissions
+chmod -R 755 frontend-static/
+
+# 14. Test deployment
+curl -s https://bidiigirlsprogramme.org/api/health

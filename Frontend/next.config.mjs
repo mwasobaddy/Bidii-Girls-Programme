@@ -10,7 +10,6 @@ const nextConfig = {
     unoptimized: true,
   },
   // Production optimizations
-  output: 'export',
   trailingSlash: true,
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
 }

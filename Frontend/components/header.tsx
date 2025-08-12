@@ -14,7 +14,7 @@ import { Menu, X, ChevronDown, Sun, Moon, Globe } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage, type Language } from "@/hooks/use-language";
 import { DonateButton } from "@/components/donate-button";
 import { usePathname } from "next/navigation";
 
@@ -129,7 +129,7 @@ export function Header() {
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
+                    onClick={() => setLanguage(lang.code as Language)}
                     className="flex items-center space-x-2"
                   >
                     <span>{lang.flag}</span>
@@ -225,7 +225,7 @@ export function Header() {
                         {languages.map((lang) => (
                           <DropdownMenuItem
                             key={lang.code}
-                            onClick={() => setLanguage(lang.code)}
+                            onClick={() => setLanguage(lang.code as Language)}
                             className="flex items-center space-x-2"
                           >
                             <span>{lang.flag}</span>
