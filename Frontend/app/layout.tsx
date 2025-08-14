@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/hooks/use-language";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { DisablePrefetching } from "@/components/disable-prefetching";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
+            <DisablePrefetching />
             <Header />
             <main>{children}</main>
             <Footer />

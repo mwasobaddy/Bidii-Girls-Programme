@@ -12,6 +12,10 @@ const nextConfig = {
   // Production optimizations
   trailingSlash: true,
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  // Disable prefetching for static export
+  experimental: {
+    disableOptimizedLoading: true,
+  },
 }
 
 export default nextConfig

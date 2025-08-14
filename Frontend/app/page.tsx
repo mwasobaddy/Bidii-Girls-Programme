@@ -441,6 +441,7 @@ export default function HomePage() {
                       <Link
                         href={`/campaigns/${campaign.id}`}
                         className="flex-1"
+                        prefetch={false}
                       >
                         <Button
                           variant="outline"
@@ -514,6 +515,7 @@ export default function HomePage() {
                       <Link
                         href={`/campaigns/${campaign.id}`}
                         className="flex-1"
+                        prefetch={false}
                       >
                         <Button
                           variant="outline"
@@ -963,7 +965,7 @@ export default function HomePage() {
                     </p>
                     <div className="flex flex-col gap-2">
                       <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                      <Link href={`/projects/${project.id}`} className="flex-1">
+                      <Link href={`/projects/${project.id}`} prefetch={false} className="flex-1">
                         <Button
                           variant="outline"
                           className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
@@ -1014,7 +1016,7 @@ export default function HomePage() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
-                      <Link href={`/projects/${project.id}`} className="flex-1">
+                      <Link href={`/projects/${project.id}`} prefetch={false} className="flex-1">
                         <Button
                           variant="outline"
                           className="w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent"
@@ -1085,6 +1087,7 @@ export default function HomePage() {
                       <span className="text-xs text-gray-500">{post.date}</span>
                       <Link
                         href={`/blog/${post.id}`}
+                        prefetch={false}
                         className="text-[#e51083] hover:text-[#c50e73] font-semibold text-xs transition-colors duration-300"
                       >
                         {t("readMore")}
@@ -1134,6 +1137,7 @@ export default function HomePage() {
                         </span>
                         <Link
                           href={`/blog/${post.id}`}
+                          prefetch={false}
                           className="text-[#e51083] hover:text-[#c50e73] font-semibold text-sm transition-colors duration-300"
                         >
                           {t("readMore")}
