@@ -10,7 +10,7 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     Header always set X-Frame-Options DENY
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://us-bos-web1915.main-hosting.eu https://bidiigirlsprogramme.org;"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob: https://www.google-analytics.com; font-src 'self' data:; connect-src 'self' https://us-bos-web1915.main-hosting.eu https://bidiigirlsprogramme.org https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; worker-src 'self' blob:; object-src 'none';"
 </IfModule>
 
 # Custom Error Pages
@@ -21,9 +21,10 @@ ErrorDocument 500 /404.html
 # Redirect /admin/login to /login
 RewriteRule ^admin/login/?$ /login/ [R=301,L]
 
-# Handle RSC (React Server Components) prefetch requests for dynamic routes
+# Handle RSC (React Server Components) prefetch requests
+# Block any request with _rsc parameter (more aggressive approach)
 RewriteCond %{QUERY_STRING} _rsc=
-RewriteRule ^(campaigns|projects|blog)/[0-9]+/?$ - [R=404,L]
+RewriteRule ^.*$ - [R=204,L]
 
 # Handle dynamic routes that don't exist in static export
 RewriteCond %{REQUEST_FILENAME} !-f
