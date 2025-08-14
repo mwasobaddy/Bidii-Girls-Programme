@@ -26,10 +26,10 @@ RewriteRule ^admin/login/?$ /login/ [R=301,L]
 RewriteCond %{QUERY_STRING} _rsc=
 RewriteRule ^.*$ - [R=204,L]
 
-# Handle dynamic routes that don't exist in static export
+# Handle dynamic routes correctly with proper fallback to index.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(campaigns|projects|blog)/[0-9]+/?$ /404.html [L]
+RewriteRule ^(campaigns|projects|blog)/[0-9]+/?$ /index.html [L]
 
 # API Routes
 RewriteRule ^api/(.*)$ api/public/index.php [L,QSA]
@@ -38,7 +38,7 @@ RewriteRule ^api/(.*)$ api/public/index.php [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/
-RewriteRule ^(.*)$ frontend-static/index.html [L,QSA]
+RewriteRule ^(.*)$ /index.html [L,QSA]
 
 # Cache Control for Static Assets
 <IfModule mod_expires.c>
