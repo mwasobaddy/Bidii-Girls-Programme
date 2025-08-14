@@ -32,7 +32,7 @@ class DashboardController extends Controller
                 'team' => TeamMember::count(),
                 'categories' => 0, // No Category model found yet, set to 0
                 'contacts' => ContactMessage::count(),
-                'active_campaigns' => Campaign::where('status', 'active')->count(),
+                'active_campaigns' => Campaign::where('urgency', 'active')->count(),
                 'completed_projects' => Project::where('status', 'completed')->count(),
                 'published_blogs' => BlogPost::where('published', true)->count(),
             ];
