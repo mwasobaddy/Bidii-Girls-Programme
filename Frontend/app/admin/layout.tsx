@@ -83,7 +83,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
-  if (!isAuthenticated || loading) {
+  // Show loading spinner only for authenticated pages, not login page
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#e51083]"></div>
+      </div>
+    );
+  }
+
+  // If not authenticated and not on login page, redirect will happen in useEffect
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#e51083]"></div>

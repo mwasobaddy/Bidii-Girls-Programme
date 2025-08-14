@@ -31,7 +31,7 @@ function DatabaseError({ message }: DatabaseErrorProps) {
   );
 }
 
-export default function AdminLoginPage() {
+export default function SimpleLoginPage() {
   const [credentials, setCredentials] = useState({ email: "", password: "" })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
