@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
         // Add CORS middleware (Laravel 11 built-in)
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
@@ -20,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add JWT middleware for protected API routes (to be used in route definitions)
         $middleware->alias([
             'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
+            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
         ]);
 
         // Add rate limiting middleware (default: throttle:api)

@@ -7,6 +7,26 @@ use App\Models\BlogPost;
 
 class BlogController extends Controller
 {
+    // GET /api/featured-posts
+    public function featured()
+    {
+        // Return posts marked as featured, or latest 4 if none
+        $posts = BlogPost::where('is_featured', true)
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get();
+
+        // If no featured posts, fallback to latest 4 published
+        if ($posts->isEmpty()) {
+            $posts = BlogPost::where('published', true)
+                ->orderBy('created_at', 'desc')
+                ->take(4)
+                ->get();
+        }
+
+        return response()->json($posts);
+    }
+
     // GET /api/blog?admin=1
     public function index(Request $request)
     {

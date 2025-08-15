@@ -1,0 +1,1 @@
+import{j as s}from"./app-1-J-Rkvr.js";import{H as r,h as a}from"./Footer-D5nGiAW4.js";function x({children:e}){return s.jsxs("div",{className:"min-h-screen flex flex-col",children:[s.jsx(r,{}),s.jsx("main",{className:"flex-1",children:e}),s.jsx(a,{})]})}export{x as G};

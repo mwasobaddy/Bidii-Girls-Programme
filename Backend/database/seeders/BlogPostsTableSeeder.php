@@ -21,6 +21,7 @@ class BlogPostsTableSeeder extends Seeder
                 'category' => 'Education',
                 'author' => 'Sarah Wanjiku',
                 'published' => true,
+                'is_featured' => true,
             ],
             [
                 'title' => 'Success Story: How Maria Overcame Period Poverty',
@@ -30,6 +31,7 @@ class BlogPostsTableSeeder extends Seeder
                 'category' => 'Success Stories',
                 'author' => 'Grace Muthoni',
                 'published' => true,
+                'is_featured' => true,
             ],
             [
                 'title' => 'The Economic Impact of Period Poverty in Kenya',
@@ -39,6 +41,7 @@ class BlogPostsTableSeeder extends Seeder
                 'category' => 'Research',
                 'author' => 'David Kimani',
                 'published' => true,
+                'is_featured' => false,
             ],
         ]);
     }

@@ -6,6 +6,19 @@
     <title>404 - Page Not Found | Bidii Girls Programme</title>
     <meta name="description" content="The page you're looking for could not be found. Return to Bidii Girls Programme homepage.">
     <link rel="icon" href="/favicon.png" type="image/png">
+    <script>
+        // Check if this is a dynamic route
+        const path = window.location.pathname;
+        const isDynamicRoute = 
+            /^\/campaigns\/\d+\/?$/.test(path) || 
+            /^\/projects\/\d+\/?$/.test(path) || 
+            /^\/blog\/\d+\/?$/.test(path);
+            
+        if (isDynamicRoute) {
+            // Redirect to the homepage with a special parameter
+            window.location.href = '/?redirect=' + encodeURIComponent(path);
+        }
+    </script>
     
     <style>
         * {

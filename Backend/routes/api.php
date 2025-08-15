@@ -31,10 +31,18 @@ use App\Http\Controllers\DashboardController;
 Route::get('/health', [HealthController::class, 'health']);
 Route::get('/test-db', [HealthController::class, 'testDb']);
 
+Route::get('/featured-posts', [BlogController::class, 'featured']);
+
 // Dashboard statistics (public routes for basic stats)
 Route::prefix('dashboard')->group(function () {
     Route::get('/stats', [DashboardController::class, 'stats']);
     Route::get('/recent-activity', [DashboardController::class, 'recentActivity']);
+});
+
+// Admin Dashboard routes (protected)
+Route::prefix('admin/dashboard')->group(function () {
+    Route::get('/stats', [DashboardController::class, 'stats']);
+    Route::get('/activity', [DashboardController::class, 'recentActivity']);
 });
 
 // Get authenticated user route (requires authentication)
@@ -82,6 +90,9 @@ Route::prefix('team')->group(function () {
     Route::delete('/{id}', [TeamController::class, 'destroy'])->middleware('jwt.auth');
 });
 
+// Team members alias route for Next.js compatibility
+Route::get('/team-members', [TeamController::class, 'index']);
+
 Route::prefix('sponsors')->group(function () {
     Route::get('/', [SponsorController::class, 'index']);
     Route::get('/{id}', [SponsorController::class, 'show']);
@@ -102,7 +113,9 @@ Route::prefix('upload')->group(function () {
 
 // Categories and Gallery routes
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/gallery-scan', [GalleryController::class, 'scan']);
 Route::post('/gallery-scan', [GalleryController::class, 'scan']);
+Route::post('/gallery', [GalleryController::class, 'store'])->middleware('jwt.auth');
 
 // Mpesa routes
 Route::prefix('mpesa')->group(function () {

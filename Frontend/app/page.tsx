@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -88,6 +89,7 @@ const featuredPosts = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [sponsorsLoading, setSponsorsLoading] = useState(true);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -112,6 +114,35 @@ export default function HomePage() {
   });
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  // Handle dynamic route redirects
+  useEffect(() => {
+    // Check if we have a redirect parameter in the URL
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectPath = urlParams.get('redirect');
+      
+      if (redirectPath) {
+        // Remove the parameter from the URL without refreshing
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        // Parse the path to get route type and ID
+        const pathParts = redirectPath.split('/').filter(Boolean);
+        if (pathParts.length >= 2) {
+          const routeType = pathParts[0]; // 'campaigns', 'projects', or 'blog'
+          const id = pathParts[1];        // The numeric ID
+          
+          console.log(`Redirecting to dynamic route: ${routeType}/${id}`);
+          
+          // Navigate to the correct dynamic route
+          setTimeout(() => {
+            router.push(`/${routeType}/${id}`);
+          }, 100);
+        }
+      }
+    }
+  }, [router]);
 
   // Fetch sponsors from database
   useEffect(() => {

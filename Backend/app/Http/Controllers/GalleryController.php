@@ -30,13 +30,14 @@ class GalleryController extends Controller
                 if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
                     continue;
                 }
-                $meta = Storage::disk('public')->getMetadata($file);
+                $size = Storage::disk('public')->size($file);
+                $lastModified = Storage::disk('public')->lastModified($file);
                 $images[] = [
                     'name' => basename($file),
                     'url' => '/storage/' . $file,
                     'category' => $folder,
-                    'size' => $meta['size'] ?? null,
-                    'lastModified' => isset($meta['timestamp']) ? date('c', $meta['timestamp']) : null,
+                    'size' => $size,
+                    'lastModified' => $lastModified ? date('c', $lastModified) : null,
                 ];
             }
         }
@@ -44,5 +45,53 @@ class GalleryController extends Controller
             return strtotime($b['lastModified']) <=> strtotime($a['lastModified']);
         });
         return response()->json($images);
+    }
+    // POST /api/gallery
+    public function store(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|string',
+            'category' => 'required|string',
+            'alt_text' => 'nullable|string',
+            'caption' => 'nullable|string',
+        ]);
+
+        $imageData = $request->input('image');
+        $category = $request->input('category');
+        $altText = $request->input('alt_text');
+        $caption = $request->input('caption');
+
+        // Parse base64 image
+        if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
+            $image = substr($imageData, strpos($imageData, ',') + 1);
+            $image = base64_decode($image);
+            $extension = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
+        } else {
+            return response()->json(['message' => 'Invalid image format'], 422);
+        }
+
+        // Generate unique filename
+        $filename = uniqid('img_') . '.' . $extension;
+        $folder = 'uploads/' . $category;
+        $path = $folder . '/' . $filename;
+
+        // Ensure folder exists
+        if (!Storage::disk('public')->exists($folder)) {
+            Storage::disk('public')->makeDirectory($folder);
+        }
+
+        // Save image
+        Storage::disk('public')->put($path, $image);
+
+        // Optionally, save metadata to DB here (not implemented)
+
+        return response()->json([
+            'message' => 'Image uploaded successfully',
+            'name' => $filename,
+            'url' => '/storage/' . $path,
+            'category' => $category,
+            'alt_text' => $altText,
+            'caption' => $caption,
+        ], 201);
     }
 }

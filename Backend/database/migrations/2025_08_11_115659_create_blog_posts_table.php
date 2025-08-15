@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('author_image', 500)->nullable();
             $table->string('featured_image', 500)->nullable();
             $table->boolean('published')->default(false);
+            $table->boolean('is_featured')->default(false);
             $table->date('published_date')->nullable();
             $table->text('tags')->nullable();
             $table->timestamps();

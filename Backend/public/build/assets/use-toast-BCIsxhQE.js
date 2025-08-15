@@ -1,0 +1,1 @@
+import{r as u}from"./app-1-J-Rkvr.js";function T(){const[a,s]=u.useState([]);return{toast:({title:r,description:e})=>{const o=Math.random().toString(36).substr(2,9),n={id:o,title:r,description:e};s(t=>[...t,n]),setTimeout(()=>{s(t=>t.filter(i=>i.id!==o))},3e3)},toasts:a}}export{T as u};
