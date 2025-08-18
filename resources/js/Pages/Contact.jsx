@@ -35,6 +35,7 @@ export default function Contact({ auth }) {
     setIsLoading(true);
 
     try {
+      // POST to backend, which should use SMTP config to send email
       const response = await fetch(`${API_BASE_URL}/contact`, {
         method: "POST",
         headers: {

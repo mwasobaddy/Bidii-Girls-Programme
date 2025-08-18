@@ -106,6 +106,12 @@ Route::prefix('contact')->group(function () {
     Route::get('/', [ContactController::class, 'index'])->middleware('jwt.auth'); // admin only
 });
 
+// Partner application form (public)
+Route::post('/partner', [ContactController::class, 'partner']);
+
+// Volunteer application form (public)
+Route::post('/volunteer', [ContactController::class, 'volunteer']);
+
 Route::prefix('upload')->group(function () {
     Route::post('/', [UploadController::class, 'upload'])->middleware('jwt.auth');
     Route::get('/images/{path}', [UploadController::class, 'image'])->where('path', '.*');

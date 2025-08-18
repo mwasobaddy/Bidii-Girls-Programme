@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isTokenExpired } from "@/utils/jwt";
 import { router, usePage } from '@inertiajs/react';
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -35,10 +36,12 @@ export default function AdminLayout({ children }) {
       return;
     }
     const token = localStorage.getItem("adminToken");
-    if (token) {
+    if (token && !isTokenExpired(token)) {
       setIsAuthenticated(true);
       setLoading(false);
     } else {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
       router.visit("/admin/login");
     }
   }, [url, isLoginPage]);

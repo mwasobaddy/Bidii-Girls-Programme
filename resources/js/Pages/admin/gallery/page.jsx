@@ -61,11 +61,11 @@ export default function GalleryPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery-scan`);
-      if (!response.ok) throw new Error("Failed to fetch gallery items");
-      const data = await response.json();
-      setGalleryItems(data);
-      setFilteredItems(data);
+  const response = await fetch(`${API_BASE_URL}/gallery-scan`);
+  if (!response.ok) throw new Error("Failed to fetch gallery items");
+  const data = await response.json();
+  setGalleryItems(data);
+  setFilteredItems(data);
     } catch (error) {
       console.error("Error fetching gallery items:", error);
       setError("Failed to fetch gallery items from server");

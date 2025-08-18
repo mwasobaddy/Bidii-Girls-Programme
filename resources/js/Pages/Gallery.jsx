@@ -57,36 +57,36 @@ export default function Gallery({ auth }) {
   ];
 
   // Fetch gallery images from file system
-  const fetchGalleryImages = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`${API_BASE_URL}/gallery-scan`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch gallery images: ${response.status} ${response.statusText}`
-        );
-      }
+    const fetchGalleryImages = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(`${API_BASE_URL}/gallery-scan`);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch gallery images: ${response.status} ${response.statusText}`
+          );
+        }
 
-      const data = await response.json();
-      
-      // Filter to only include blogs, projects, and campaigns
-      const filteredData = data.filter(img => 
-        ['blog', 'projects', 'campaigns'].includes(img.category)
-      );
-      
-      setGalleryImages(filteredData);
-    } catch (error) {
-      console.error("Error fetching gallery images:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to load gallery images"
-      );
-    } finally {
-      setLoading(false);
-    }
+        const data = await response.json();
+        
+        // Filter to only include blogs, projects, and campaigns
+        const filteredData = data.filter(img => 
+          ['blog', 'projects', 'campaigns'].includes(img.category)
+        );
+        
+        setGalleryImages(filteredData);
+      } catch (error) {
+        console.error("Error fetching gallery images:", error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load gallery images"
+        );
+      } finally {
+        setLoading(false);
+      }
   };
 
   useEffect(() => {

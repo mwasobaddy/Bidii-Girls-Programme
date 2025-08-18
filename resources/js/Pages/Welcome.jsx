@@ -202,64 +202,78 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
     );
   };
 
-  const handlePartnerSubmit = (e) => {
+  const handlePartnerSubmit = async (e) => {
     e.preventDefault();
-
-    // Save to localStorage for admin panel to access
-    const existingPartners = JSON.parse(
-      localStorage.getItem("partnershipApplications") || "[]"
-    );
-    const newPartner = {
-      id: Date.now(),
-      ...partnerForm,
-      submittedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(
-      "partnershipApplications",
-      JSON.stringify([...existingPartners, newPartner])
-    );
-
-    toast({
-      title: "Data collected successfully",
-      description: "We will contact you soon.",
-    });
-    setPartnerForm({
-      fullName: "",
-      role: "",
-      organizationName: "",
-      email: "",
-      phoneNumber: "",
-      type: "",
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/partner`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(partnerForm),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Application Sent!",
+          description: "Thank you for your interest. We'll contact you soon.",
+        });
+        setPartnerForm({
+          fullName: "",
+          role: "",
+          organizationName: "",
+          email: "",
+          phoneNumber: "",
+          type: "",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to send application. Please try again.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send application. Please try again.",
+      });
+    }
   };
 
-  const handleVolunteerSubmit = (e) => {
+  const handleVolunteerSubmit = async (e) => {
     e.preventDefault();
-
-    // Save to localStorage for admin panel to access
-    const existingVolunteers = JSON.parse(
-      localStorage.getItem("volunteerApplications") || "[]"
-    );
-    const newVolunteer = {
-      id: Date.now(),
-      ...volunteerForm,
-      submittedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(
-      "volunteerApplications",
-      JSON.stringify([...existingVolunteers, newVolunteer])
-    );
-
-    toast({
-      title: "Data collected successfully",
-      description: "We will contact you soon.",
-    });
-    setVolunteerForm({
-      fullName: "",
-      email: "",
-      phoneNumber: "",
-      type: "volunteer",
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/volunteer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(volunteerForm),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Application Sent!",
+          description: "Thank you for volunteering. We'll contact you soon.",
+        });
+        setVolunteerForm({
+          fullName: "",
+          email: "",
+          phoneNumber: "",
+          type: "volunteer",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to send application. Please try again.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send application. Please try again.",
+      });
+    }
   };
 
   const scrollToTop = () => {

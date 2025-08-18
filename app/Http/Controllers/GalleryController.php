@@ -4,45 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\GalleryImage;
 
 class GalleryController extends Controller
 {
-    // POST /api/gallery-scan
+    // GET /api/gallery-scan
     public function scan(Request $request)
     {
         $category = $request->input('category');
-        $folders = [
-            'authors', 'blog', 'campaigns', 'projects', 'stories', 'team', 'sponsors', 'gallery', 'uploads'
-        ];
-        $images = [];
-        $basePath = 'uploads';
-        foreach ($folders as $folder) {
-            if ($category && $category !== 'all' && $category !== $folder) {
-                continue;
-            }
-            $folderPath = $basePath . '/' . $folder;
-            if (!Storage::disk('public')->exists($folderPath)) {
-                continue;
-            }
-            $files = Storage::disk('public')->files($folderPath);
-            foreach ($files as $file) {
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
-                    continue;
-                }
-                $size = Storage::disk('public')->size($file);
-                $lastModified = Storage::disk('public')->lastModified($file);
-                $images[] = [
-                    'name' => basename($file),
-                    'url' => '/storage/' . $file,
-                    'category' => $folder,
-                    'size' => $size,
-                    'lastModified' => $lastModified ? date('c', $lastModified) : null,
-                ];
-            }
+        $query = GalleryImage::query();
+        if ($category && $category !== 'all') {
+            $query->where('category', $category);
         }
-        usort($images, function ($a, $b) {
-            return strtotime($b['lastModified']) <=> strtotime($a['lastModified']);
+        $images = $query->orderByDesc('last_modified')->get()->map(function ($img) {
+            return [
+                'name' => $img->name,
+                'url' => $img->path,
+                'category' => $img->category,
+                'size' => $img->size,
+                'lastModified' => $img->last_modified,
+                'alt_text' => $img->alt_text,
+                'caption' => $img->caption,
+            ];
         });
         return response()->json($images);
     }
@@ -83,12 +66,21 @@ class GalleryController extends Controller
         // Save image
         Storage::disk('public')->put($path, $image);
 
-        // Optionally, save metadata to DB here (not implemented)
+        // Save metadata to DB
+        $imgModel = GalleryImage::create([
+            'name' => $filename,
+            'path' => '/storage/' . $path,
+            'category' => $category,
+            'alt_text' => $altText,
+            'caption' => $caption,
+            'size' => strlen($image),
+            'last_modified' => now(),
+        ]);
 
         return response()->json([
             'message' => 'Image uploaded successfully',
             'name' => $filename,
-            'url' => '/storage/' . $path,
+            'url' => $imgModel->path,
             'category' => $category,
             'alt_text' => $altText,
             'caption' => $caption,
