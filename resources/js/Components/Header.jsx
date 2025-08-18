@@ -168,12 +168,20 @@ export function Header() {
               <div className="flex flex-col space-y-4">
                 {/* Mobile Logo */}
                 <div className="flex items-center space-x-2 pb-4 border-b">
-                  <img
-                    src="/logo.webp"
-                    alt="Bidii Girls Programme"
-                    className="h-8 w-8"
-                  />
-                  <span className="font-bold">Bidii Girls Programme</span>
+                  {/* Logo */}
+                  <Link
+                    href="/"
+                    className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300 pl-[10px]"
+                    onClick={handleNavClick}
+                  >
+                    <img
+                      src="/logo.webp"
+                      alt="Bidii Girls Program"
+                      width={100}
+                      height={120}
+                      className="rounded-full"
+                    />
+                </Link>
                 </div>
 
                 {/* Mobile Navigation */}

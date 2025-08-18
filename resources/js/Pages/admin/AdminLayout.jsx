@@ -18,9 +18,11 @@ import { Footer } from "@/components/Footer";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
+
 export default function AdminLayout({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const { toast } = useToast();
   const { url } = usePage();
 
@@ -28,17 +30,11 @@ export default function AdminLayout({ children }) {
   const isLoginPage = url === '/admin/login';
 
   useEffect(() => {
-    console.log('AdminLayout useEffect running, url:', url, 'isLoginPage:', isLoginPage);
-    
-    // Skip authentication check for login page
     if (isLoginPage) {
-      console.log('Login page detected, skipping auth check');
       setLoading(false);
       return;
     }
-
     const token = localStorage.getItem("adminToken");
-    console.log('Checking localStorage adminToken:', token);
     if (token) {
       setIsAuthenticated(true);
       setLoading(false);
@@ -64,7 +60,6 @@ export default function AdminLayout({ children }) {
       });
       router.visit("/admin/login");
     } catch (error) {
-      console.error("Logout error:", error);
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminUser");
       toast({
@@ -75,7 +70,6 @@ export default function AdminLayout({ children }) {
     }
   };
 
-  // Navigation items matching the exact image design
   const navigationItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Sponsors", href: "/admin/sponsors", icon: Users2 },
@@ -84,15 +78,12 @@ export default function AdminLayout({ children }) {
     { name: "Blog", href: "/admin/blog", icon: FileText },
     { name: "Gallery", href: "/admin/gallery", icon: Camera },
     { name: "Team", href: "/admin/team", icon: Users },
-    { name: "Applications", href: "/admin/applications", icon: ClipboardList },
+    { name: "Logout", href: "#logout", icon: LogOut, isLogout: true },
   ];
 
-  // If it's the login page, just render the children without authentication checks
   if (isLoginPage) {
     return <>{children}</>;
   }
-
-  // Show loading spinner only for authenticated pages, not login page
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -100,8 +91,6 @@ export default function AdminLayout({ children }) {
       </div>
     );
   }
-
-  // If not authenticated and not on login page, redirect will happen in useEffect
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -110,60 +99,63 @@ export default function AdminLayout({ children }) {
     );
   }
 
+  // Sidebar width and content based on expanded state
+  const sidebarWidth = sidebarExpanded ? "w-64" : "w-20";
+
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
       {/* Homepage Header */}
       <Header />
-      
       <div className="flex">
-        {/* Dark Sidebar - matching the exact image design */}
-        <div className="w-64 bg-gray-800 min-h-screen pt-16 left-0 top-0 border-r border-gray-700">
-          {/* Admin Title Section */}
-          <div className="p-6 border-b border-gray-700">
-            <h1 className="text-white text-xl font-semibold mb-4">Admin Dashboard</h1>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 w-full justify-start text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
+        {/* Sidebar: icons only by default, expands on click */}
+        <div
+          className={`${sidebarWidth} bg-gray-100 dark:bg-gray-800 min-h-screen pt-16 left-0 top-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 h-screen sticky`}
+          onClick={() => setSidebarExpanded(true)}
+          onMouseLeave={() => setSidebarExpanded(false)}
+          style={{ zIndex: 20 }}
+        >
+          <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${sidebarExpanded ? "block" : "hidden"}`}>
+            <h1 className="text-gray-900 dark:text-white text-xl font-semibold mb-4">Admin Dashboard</h1>
           </div>
-          
           {/* Navigation Menu - exactly matching the image */}
-          <nav className="py-6">
+          <nav className={`py-6 flex flex-col items-center ${sidebarExpanded ? "items-stretch" : "items-center"}`}>
             {navigationItems.map((item) => {
               const Icon = item.icon;
-              const isActive = url === item.href;
-              
+              const isActive = item.isLogout ? false : url === item.href;
+              const activeClass = isActive
+                ? 'bg-pink-500 text-white border-r-2 border-pink-500'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-[#e51083] dark:hover:text-white';
+              if (item.isLogout) {
+                return (
+                  <button
+                    key={item.name}
+                    onClick={handleLogout}
+                    className={`flex items-center ${sidebarExpanded ? "gap-3 px-6 py-3 text-left" : "justify-center py-4"} w-full transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-[#e51083] dark:hover:text-white`}
+                  >
+                    <Icon className="h-6 w-6" />
+                    {sidebarExpanded && <span className="font-medium">{item.name}</span>}
+                  </button>
+                );
+              }
               return (
                 <button
                   key={item.name}
                   onClick={() => router.visit(item.href)}
-                  className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-colors ${
-                    isActive 
-                      ? 'bg-gray-700 text-white border-r-2 border-pink-500' 
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
+                  className={`flex items-center ${sidebarExpanded ? "gap-3 px-6 py-3 text-left" : "justify-center py-4"} w-full transition-colors ${activeClass}`}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <Icon className="h-6 w-6" />
+                  {sidebarExpanded && <span className="font-medium">{item.name}</span>}
                 </button>
               );
             })}
           </nav>
         </div>
-        
         {/* Main Content Area */}
-        <div className="flex-1 pt-16 min-h-screen bg-gray-900">
+        <div className="flex-1 pt-16 min-h-screen bg-white dark:bg-gray-900">
           <main className="p-6">
             {children}
           </main>
-          
-          {/* Homepage Footer */}
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </div>
     </div>

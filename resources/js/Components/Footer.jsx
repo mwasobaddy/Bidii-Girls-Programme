@@ -48,7 +48,7 @@ export function Footer() {
             </p>
 
             {/* Newsletter Subscription */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">
                 Subscribe to Newsletter
               </h3>
@@ -68,7 +68,7 @@ export function Footer() {
                   Subscribe
                 </Button>
               </form>
-            </div>
+            </div> */}
 
             {/* Social Media Icons */}
             <div className="flex space-x-4">

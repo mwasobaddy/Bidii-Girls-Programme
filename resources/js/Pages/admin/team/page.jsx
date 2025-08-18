@@ -255,7 +255,7 @@ export default function TeamMembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Team Management</h1>
           <p className="text-gray-500 mt-2">Manage team members and their information</p>

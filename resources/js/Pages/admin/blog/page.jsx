@@ -1,3 +1,4 @@
+import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -325,7 +326,7 @@ export default function BlogPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Blog Management</h1>
           <p className="text-gray-500 mt-2">Create and manage blog posts</p>

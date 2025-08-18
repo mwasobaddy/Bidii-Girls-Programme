@@ -1,3 +1,4 @@
+import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { router } from '@inertiajs/react';
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminAuthGuard>
+      <Head title="Admin Dashboard" />
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
