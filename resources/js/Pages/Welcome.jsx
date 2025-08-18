@@ -391,7 +391,15 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                       <p className="text-gray-600 mb-4 line-clamp-2 text-xs">
                         {campaign.description}
                       </p>
-                      <DonateButton className="w-full text-xs py-2" />
+                      <div className="flex gap-2">
+                        <DonateButton className="w-full text-xs py-2" />
+                        <Link href={`/campaigns/${campaign.id}`}>
+                          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border px-4 py-2 w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent">
+                            {t("readMore")}
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
                     </CardContent>
                   </Card>
                 ))
@@ -432,7 +440,15 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {campaign.description}
                       </p>
-                      <DonateButton className="w-full" />
+                      <div className="flex gap-2">
+                        <DonateButton className="w-full" />
+                        <Link href={`/campaigns/${campaign.id}`}>
+                          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border px-4 py-2 w-full h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98] border-[#e51083] text-[#e51083] hover:bg-[#e51083] hover:text-white bg-transparent">
+                            {t("readMore")}
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
                     </CardContent>
                   </Card>
                 ))

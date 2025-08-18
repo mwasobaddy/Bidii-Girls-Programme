@@ -210,7 +210,7 @@ export default function Blog({ auth, blogPosts: initialBlogPosts = [] }) {
               Every donation brings us closer to our goal of eradicating period
               poverty.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto mb-12">
+            <div className="flex flex-row gap-3 justify-center max-w-md mx-auto mb-12">
               <DonateButton className="flex-1 h-11 flex items-center justify-center rounded-md font-medium transition-all duration-200 hover:scale-[0.98]" />
               <Link href="/contact" className="flex-1">
                 <Button

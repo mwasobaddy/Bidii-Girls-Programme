@@ -7,6 +7,7 @@ use App\Models\BlogPost;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Campaign;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -17,6 +18,13 @@ Route::get('/', function () {
         'sponsors' => [],
     ]);
 });
+
+Route::get('/campaigns/{id}', function ($id) {
+    $campaign = Campaign::findOrFail($id);
+    return Inertia::render('CampaignDetails', [
+        'campaign' => $campaign,
+    ]);
+})->name('campaigns.show');
 
 Route::get('/about', function () {
     $teamMembers = TeamMember::orderBy('order_index', 'asc')
