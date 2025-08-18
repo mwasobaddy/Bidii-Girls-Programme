@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 
 
@@ -80,7 +80,7 @@ export function DonateButton({ className, size = "lg" }) {
         .toString(36)
         .substr(2, 9)}`;
 
-      const response = await fetch("https://api.hashback.co.ke/initiatestk", {
+      const response = await fetch(`${API_BASE_URL}/mpesa/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
