@@ -391,22 +391,6 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                       <p className="text-gray-600 mb-4 line-clamp-2 text-xs">
                         {campaign.description}
                       </p>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-xs">
-                          <span>{t("raised")}</span>
-                          <span>{campaign.progress_percentage || 0}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-[#e51083] h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${campaign.progress_percentage || 0}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span>KES {campaign.amount_raised?.toLocaleString() || 0}</span>
-                          <span>KES {campaign.target_amount?.toLocaleString() || 0}</span>
-                        </div>
-                      </div>
                       <DonateButton className="w-full text-xs py-2" />
                     </CardContent>
                   </Card>
@@ -448,22 +432,6 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {campaign.description}
                       </p>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span>{t("raised")}</span>
-                          <span>{campaign.progress_percentage || 0}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-[#e51083] h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${campaign.progress_percentage || 0}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>KES {campaign.amount_raised?.toLocaleString() || 0}</span>
-                          <span>KES {campaign.target_amount?.toLocaleString() || 0}</span>
-                        </div>
-                      </div>
                       <DonateButton className="w-full" />
                     </CardContent>
                   </Card>
