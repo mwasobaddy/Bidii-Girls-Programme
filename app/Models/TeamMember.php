@@ -11,7 +11,8 @@ class TeamMember extends Model
         'role',
         'bio',
         'email',
-        'image',
-        'order_index'
+        'order_index',
+        'image'
     ];
+    // ...existing code...
 }

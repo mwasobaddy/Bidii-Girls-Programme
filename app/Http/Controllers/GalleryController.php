@@ -19,7 +19,7 @@ class GalleryController extends Controller
         $images = $query->orderByDesc('last_modified')->get()->map(function ($img) {
             return [
                 'name' => $img->name,
-                'url' => $img->path,
+                'base64' => $img->base64,
                 'category' => $img->category,
                 'size' => $img->size,
                 'lastModified' => $img->last_modified,
@@ -44,46 +44,42 @@ class GalleryController extends Controller
         $altText = $request->input('alt_text');
         $caption = $request->input('caption');
 
-        // Parse base64 image
-        if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
-            $image = substr($imageData, strpos($imageData, ',') + 1);
-            $image = base64_decode($image);
-            $extension = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
-        } else {
+        // Validate base64 image format
+        if (!preg_match('/^data:image\/(\w+);base64,/', $imageData)) {
             return response()->json(['message' => 'Invalid image format'], 422);
         }
 
-        // Generate unique filename
-        $filename = uniqid('img_') . '.' . $extension;
-        $folder = 'uploads/' . $category;
-        $path = $folder . '/' . $filename;
+        // Generate unique name
+        $filename = uniqid('img_');
 
-        // Ensure folder exists
-        if (!Storage::disk('public')->exists($folder)) {
-            Storage::disk('public')->makeDirectory($folder);
-        }
-
-        // Save image
-        Storage::disk('public')->put($path, $image);
-
-        // Save metadata to DB
+        // Save metadata and base64 to DB (removed 'path')
         $imgModel = GalleryImage::create([
             'name' => $filename,
-            'path' => '/storage/' . $path,
+            'base64' => $imageData,
             'category' => $category,
             'alt_text' => $altText,
             'caption' => $caption,
-            'size' => strlen($image),
+            'size' => strlen($imageData),
             'last_modified' => now(),
         ]);
 
         return response()->json([
             'message' => 'Image uploaded successfully',
             'name' => $filename,
-            'url' => $imgModel->path,
+            'base64' => $imgModel->base64,
             'category' => $category,
             'alt_text' => $altText,
             'caption' => $caption,
         ], 201);
+    }
+    // DELETE /api/gallery/{name}
+    public function destroy($name)
+    {
+        $image = GalleryImage::where('name', $name)->first();
+        if (!$image) {
+            return response()->json(['message' => 'Image not found'], 404);
+        }
+        $image->delete();
+        return response()->json(['message' => 'Image deleted']);
     }
 }

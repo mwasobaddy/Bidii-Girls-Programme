@@ -43,9 +43,6 @@ export default function ProjectsPage() {
     description: "",
     location: "",
     status: "active",
-    progress: "0",
-    budget: "0",
-    raised: "0",
     beneficiaries: "0",
     start_date: "",
     featured_image: "",
@@ -111,9 +108,9 @@ export default function ProjectsPage() {
         description: formData.description,
         location: formData.location || null,
         status: formData.status,
-        progress: parseInt(formData.progress) || 0,
-        budget: parseFloat(formData.budget) || 0,
-        raised: parseFloat(formData.raised) || 0,
+        progress: 0,
+        budget: 0,
+        raised: 0,
         beneficiaries: parseInt(formData.beneficiaries) || 0,
         start_date: formData.start_date || null,
         featured_image: formData.featured_image || null,
@@ -185,9 +182,6 @@ export default function ProjectsPage() {
       description: "",
       location: "",
       status: "active",
-      progress: "0",
-      budget: "0",
-      raised: "0",
       beneficiaries: "0",
       start_date: "",
       featured_image: "",
@@ -203,9 +197,6 @@ export default function ProjectsPage() {
       description: project.description || "",
       location: project.location || "",
       status: project.status || "active",
-      progress: project.progress?.toString() || "0",
-      budget: project.budget?.toString() || "0",
-      raised: project.raised?.toString() || "0",
       beneficiaries: project.beneficiaries?.toString() || "0",
       start_date: project.start_date || "",
       featured_image: project.featured_image || "",
@@ -314,7 +305,6 @@ export default function ProjectsPage() {
                       required
                     />
                   </div>
-                  
                   <div>
                     <Label htmlFor="location">Location</Label>
                     <Input
@@ -325,7 +315,6 @@ export default function ProjectsPage() {
                       placeholder="Project location"
                     />
                   </div>
-                  
                   <div>
                     <Label htmlFor="status">Status</Label>
                     <Select
@@ -343,21 +332,6 @@ export default function ProjectsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <div>
-                    <Label htmlFor="progress">Progress (%)</Label>
-                    <Input
-                      id="progress"
-                      name="progress"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.progress}
-                      onChange={handleChange}
-                      placeholder="0"
-                    />
-                  </div>
-                  
                   <div>
                     <Label htmlFor="start_date">Start Date</Label>
                     <Input
@@ -369,36 +343,7 @@ export default function ProjectsPage() {
                     />
                   </div>
                 </div>
-                
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="budget">Budget ($)</Label>
-                    <Input
-                      id="budget"
-                      name="budget"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.budget}
-                      onChange={handleChange}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="raised">Amount Raised ($)</Label>
-                    <Input
-                      id="raised"
-                      name="raised"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.raised}
-                      onChange={handleChange}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
                   <div>
                     <Label htmlFor="beneficiaries">Beneficiaries</Label>
                     <Input
@@ -411,7 +356,6 @@ export default function ProjectsPage() {
                       placeholder="0"
                     />
                   </div>
-                  
                   <div>
                     <Label>Featured Image</Label>
                     <ImageUploader
@@ -477,18 +421,7 @@ export default function ProjectsPage() {
               <h3 className="font-semibold text-lg mb-2 line-clamp-2">{project.title}</h3>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{project.description}</p>
               
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span>Progress</span>
-                  <span>{project.progress}%</span>
-                </div>
-                <Progress value={project.progress} className="h-2" />
-                
-                <div className="flex justify-between text-sm">
-                  <span>Raised: {formatCurrency(project.raised)}</span>
-                  <span>Goal: {formatCurrency(project.budget)}</span>
-                </div>
-              </div>
+              {/* Removed progress, raised, and budget display as requested */}
               
               <div className="flex items-center justify-between mb-4">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -561,18 +494,6 @@ export default function ProjectsPage() {
                 <div>
                   <p className="text-sm text-gray-600">Status</p>
                   <p className="font-medium capitalize">{viewingProject.status}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Budget</p>
-                  <p className="font-medium">{formatCurrency(viewingProject.budget)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Raised</p>
-                  <p className="font-medium">{formatCurrency(viewingProject.raised)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Progress</p>
-                  <p className="font-medium">{viewingProject.progress}%</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Beneficiaries</p>

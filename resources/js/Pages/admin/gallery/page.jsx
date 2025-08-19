@@ -364,7 +364,7 @@ export default function GalleryPage() {
           <Card key={index} className="overflow-hidden">
             <div className="aspect-square bg-gray-100 relative group">
               <img
-                src={getImageUrl(item.url)}
+                src={getImageUrl(item.base64)}
                 alt={item.alt_text || item.name}
                 className="w-full h-full object-cover"
               />
@@ -425,7 +425,7 @@ export default function GalleryPage() {
             <div className="space-y-4">
               <div className="flex justify-center">
                 <img
-                  src={getImageUrl(viewingImage.url)}
+                  src={getImageUrl(viewingImage.base64)}
                   alt={viewingImage.alt_text || viewingImage.name}
                   className="max-w-full max-h-96 object-contain rounded-lg"
                 />

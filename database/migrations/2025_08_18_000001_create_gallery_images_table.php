@@ -9,7 +9,8 @@ return new class extends Migration {
         Schema::create('gallery_images', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('path');
+                // Removed 'path' column
+                $table->longText('base64');
             $table->string('category');
             $table->string('alt_text')->nullable();
             $table->string('caption')->nullable();

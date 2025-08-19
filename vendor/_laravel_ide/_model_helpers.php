@@ -1284,12 +1284,14 @@ namespace App\Models {
      * @property string|null $caption
      * @property string|null $alt_text
      * @property string $category
+     * @property string $base64
      * @property string $path
      * @property string $name
      * @property int $id
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage wherePath($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereBase64($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereCategory($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereAltText($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GalleryImage>|GalleryImage whereCaption($value)

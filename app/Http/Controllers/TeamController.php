@@ -33,6 +33,7 @@ class TeamController extends Controller
             'bio' => 'nullable|string',
             'email' => 'nullable|email',
             'order_index' => 'nullable|integer',
+            'image' => 'nullable|string', // Accept base64 or URL
         ]);
         $member = TeamMember::create($data);
         return response()->json($member, 201);
@@ -51,6 +52,7 @@ class TeamController extends Controller
             'bio' => 'nullable|string',
             'email' => 'nullable|email',
             'order_index' => 'nullable|integer',
+            'image' => 'nullable|string', // Accept base64 or URL
         ]);
         $member->update($data);
         return response()->json($member);

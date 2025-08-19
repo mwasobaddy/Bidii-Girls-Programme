@@ -38,12 +38,8 @@ export default function SponsorsPage() {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
     website: "",
-    contact_email: "",
     logo: "",
-    contribution_amount: "",
-    partnership_type: "financial",
   });
   
   const { toast } = useToast();
@@ -72,7 +68,7 @@ export default function SponsorsPage() {
   // Handle form input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  setFormData(prev => ({ ...prev, [name]: value }));
   };
   
   // Handle select change
@@ -82,7 +78,7 @@ export default function SponsorsPage() {
   
   // Handle logo upload
   const handleLogoSelected = (imageDataUrl) => {
-    setFormData(prev => ({ ...prev, logo: imageDataUrl }));
+  setFormData(prev => ({ ...prev, logo: imageDataUrl }));
   };
   
   // Handle form submission
@@ -102,13 +98,8 @@ export default function SponsorsPage() {
       
       const sponsorData = {
         name: formData.name,
-        description: formData.description || null,
         website: formData.website || null,
-        contact_email: formData.contact_email || null,
         logo: formData.logo || null,
-        contribution_amount: parseFloat(formData.contribution_amount) || 0,
-        partnership_type: formData.partnership_type,
-        active: true,
       };
       
       console.log("Saving sponsor with data:", sponsorData);
@@ -174,12 +165,8 @@ export default function SponsorsPage() {
   const resetForm = () => {
     setFormData({
       name: "",
-      description: "",
       website: "",
-      contact_email: "",
       logo: "",
-      contribution_amount: "",
-      partnership_type: "financial",
     });
     setEditingSponsor(null);
   };
@@ -189,12 +176,8 @@ export default function SponsorsPage() {
     setEditingSponsor(sponsor);
     setFormData({
       name: sponsor.name || "",
-      description: sponsor.description || "",
       website: sponsor.website || "",
-      contact_email: sponsor.contact_email || "",
       logo: sponsor.logo || "",
-      contribution_amount: sponsor.contribution_amount?.toString() || "",
-      partnership_type: sponsor.partnership_type || "financial",
     });
     setIsDialogOpen(true);
   };
@@ -243,12 +226,7 @@ export default function SponsorsPage() {
   };
 
   // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  // Removed formatCurrency since contribution_amount is not used
 
   if (loading) {
     return (
@@ -300,7 +278,6 @@ export default function SponsorsPage() {
                       required
                     />
                   </div>
-                  
                   <div>
                     <Label htmlFor="website">Website</Label>
                     <Input
@@ -312,50 +289,7 @@ export default function SponsorsPage() {
                       placeholder="https://example.com"
                     />
                   </div>
-                  
-                  <div>
-                    <Label htmlFor="contact_email">Contact Email</Label>
-                    <Input
-                      id="contact_email"
-                      name="contact_email"
-                      type="email"
-                      value={formData.contact_email}
-                      onChange={handleChange}
-                      placeholder="contact@sponsor.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="contribution_amount">Contribution Amount ($)</Label>
-                    <Input
-                      id="contribution_amount"
-                      name="contribution_amount"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.contribution_amount}
-                      onChange={handleChange}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="partnership_type">Partnership Type</Label>
-                    <select
-                      id="partnership_type"
-                      name="partnership_type"
-                      value={formData.partnership_type}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="financial">Financial</option>
-                      <option value="in-kind">In-Kind</option>
-                      <option value="service">Service</option>
-                      <option value="strategic">Strategic</option>
-                    </select>
-                  </div>
                 </div>
-                
                 <div className="space-y-4">
                   <div>
                     <Label>Logo</Label>
@@ -369,15 +303,7 @@ export default function SponsorsPage() {
               </div>
               
               <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Sponsor description"
-                  rows={4}
-                />
+                {/* Description removed */}
               </div>
               
               <div className="flex justify-end space-x-2">
@@ -419,35 +345,19 @@ export default function SponsorsPage() {
             </div>
             <CardContent className="p-4">
               <h3 className="font-semibold text-lg mb-2">{sponsor.name}</h3>
-              {sponsor.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{sponsor.description}</p>
-              )}
-              
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Partnership:</span>
-                  <span className="capitalize font-medium">{sponsor.partnership_type}</span>
+              {sponsor.website && (
+                <div className="flex items-center space-x-1 text-sm mb-4">
+                  <ExternalLink className="h-3 w-3" />
+                  <a
+                    href={sponsor.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline truncate"
+                  >
+                    {sponsor.website.replace(/^https?:\/\//, '')}
+                  </a>
                 </div>
-                {sponsor.contribution_amount > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Contribution:</span>
-                    <span className="font-medium">{formatCurrency(sponsor.contribution_amount)}</span>
-                  </div>
-                )}
-                {sponsor.website && (
-                  <div className="flex items-center space-x-1 text-sm">
-                    <ExternalLink className="h-3 w-3" />
-                    <a
-                      href={sponsor.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline truncate"
-                    >
-                      {sponsor.website.replace(/^https?:\/\//, '')}
-                    </a>
-                  </div>
-                )}
-              </div>
+              )}
               
               <div className="flex space-x-2">
                 <Button
@@ -500,39 +410,17 @@ export default function SponsorsPage() {
                   />
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
+              {viewingSponsor.website && (
                 <div>
-                  <p className="text-sm text-gray-600">Partnership Type</p>
-                  <p className="font-medium capitalize">{viewingSponsor.partnership_type}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Contribution</p>
-                  <p className="font-medium">{formatCurrency(viewingSponsor.contribution_amount)}</p>
-                </div>
-                {viewingSponsor.contact_email && (
-                  <div>
-                    <p className="text-sm text-gray-600">Contact Email</p>
-                    <p className="font-medium">{viewingSponsor.contact_email}</p>
-                  </div>
-                )}
-                {viewingSponsor.website && (
-                  <div>
-                    <p className="text-sm text-gray-600">Website</p>
-                    <a
-                      href={viewingSponsor.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-blue-600 hover:underline"
-                    >
-                      {viewingSponsor.website}
-                    </a>
-                  </div>
-                )}
-              </div>
-              {viewingSponsor.description && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Description</p>
-                  <p className="whitespace-pre-wrap">{viewingSponsor.description}</p>
+                  <p className="text-sm text-gray-600">Website</p>
+                  <a
+                    href={viewingSponsor.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    {viewingSponsor.website}
+                  </a>
                 </div>
               )}
             </div>

@@ -122,6 +122,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/gallery-scan', [GalleryController::class, 'scan']);
 Route::post('/gallery-scan', [GalleryController::class, 'scan']);
 Route::post('/gallery', [GalleryController::class, 'store'])->middleware('jwt.auth');
+Route::delete('/gallery/{name}', [GalleryController::class, 'destroy'])->middleware('jwt.auth');
 
 // Mpesa routes
 Route::prefix('mpesa')->group(function () {

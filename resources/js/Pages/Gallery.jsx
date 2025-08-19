@@ -11,17 +11,11 @@ import GuestLayout from "@/Layouts/GuestLayout";
 const API_BASE_URL = window.location.origin + '/api';
 
 // Helper function to construct proper image URLs
-function getImageUrl(imagePath) {
-  if (!imagePath) return "/placeholder.svg";
-  
-  // If it's already a full URL or base64, return as is
-  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
-    return imagePath;
-  }
-  
-  // If it's a relative path, prepend the backend URL
-  const BACKEND_URL = API_BASE_URL.replace('/api', '');
-  return `${BACKEND_URL}${imagePath}`;
+function getImageUrl(imageData) {
+  if (!imageData) return "/placeholder.svg";
+  if (imageData.startsWith('data:')) return imageData;
+  if (imageData.startsWith('http')) return imageData;
+  return "/placeholder.svg";
 }
 
 function DatabaseError({ message }) {
@@ -192,7 +186,7 @@ export default function Gallery({ auth }) {
                     onClick={() => setSelectedImage(image)}
                   >
                     <img
-                      src={getImageUrl(image.url)}
+                      src={getImageUrl(image.base64)}
                       alt={image.name}
                       width={600}
                       height={400}
@@ -220,7 +214,7 @@ export default function Gallery({ auth }) {
             {selectedImage && (
               <div className="space-y-4">
                 <img
-                  src={getImageUrl(selectedImage.url)}
+                  src={getImageUrl(selectedImage.base64)}
                   alt={selectedImage.name}
                   width={800}
                   height={600}
