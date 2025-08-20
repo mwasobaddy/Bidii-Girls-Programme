@@ -102,7 +102,7 @@ export default function CampaignDetails({ campaign }) {
             <div className="max-w-4xl mx-auto">
               <div className="mb-12 animate-fade-in-up">
                 <img
-                  src={getImageUrl(processedCampaign.image)}
+                  src={getImageUrl(processedCampaign.feature_image)}
                   alt={processedCampaign.title}
                   width={800}
                   height={500}

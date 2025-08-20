@@ -37,14 +37,11 @@ const API_BASE_URL = window.location.origin + '/api';
 function getImageUrl(imagePath) {
   if (!imagePath) return "/placeholder.svg";
   
-  // If it's already a full URL or base64, return as is
-  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
-    return imagePath;
-  }
+    // Always treat as base64 or fallback
+    if (imagePath.startsWith('data:')) return imagePath;
   
-  // If it's a relative path, prepend the backend URL
-  const BACKEND_URL = API_BASE_URL.replace('/api', '');
-  return `${BACKEND_URL}${imagePath}`;
+  // No longer use relative paths; always return placeholder if not base64
+  return "/placeholder.svg";
 }
 
 
@@ -390,7 +387,7 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                   >
                     <div className="relative h-48">
                       <img
-                        src={getImageUrl(campaign.image)}
+                        src={getImageUrl(campaign.feature_image)}
                         alt={campaign.title}
                         className="w-full h-full object-cover"
                       />
@@ -439,7 +436,7 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                   >
                     <div className="relative h-48">
                       <img
-                        src={getImageUrl(campaign.image)}
+                        src={getImageUrl(campaign.feature_image)}
                         alt={campaign.title}
                         className="w-full h-full object-cover"
                       />
@@ -889,7 +886,7 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                   <Card key={post.id} className="flex-shrink-0 w-80 overflow-hidden">
                     <div className="relative h-40">
                       <img
-                        src={post.image}
+                        src={getImageUrl(post.featured_image)}
                         alt={post.title}
                         className="w-full h-full object-cover"
                       />
@@ -930,7 +927,7 @@ export default function Welcome({ auth, campaigns: initialCampaigns = [], projec
                   >
                     <div className="relative h-48">
                       <img
-                        src={post.image}
+                        src={getImageUrl(post.featured_image)}
                         alt={post.title}
                         className="w-full h-full object-cover"
                       />
