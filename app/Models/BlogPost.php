@@ -13,9 +13,9 @@ class BlogPost extends Model
         'content',
         'category',
         'author',
-        'author_image',
+        'author_image', // now stored as longText (base64)
         'published_date',
-        'featured_image',
+        'featured_image', // now stored as longText (base64)
         'tags',
         'published'
     ];

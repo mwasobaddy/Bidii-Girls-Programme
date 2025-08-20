@@ -37,6 +37,7 @@ class ProjectController extends Controller
             'raised' => 'nullable|numeric',
             'beneficiaries' => 'nullable|integer',
             'start_date' => 'nullable|date',
+            'featured_image' => 'nullable|string', // Accept base64 image data
         ]);
         $project = Project::create($data);
         return response()->json($project, 201);
@@ -59,6 +60,7 @@ class ProjectController extends Controller
             'raised' => 'nullable|numeric',
             'beneficiaries' => 'nullable|integer',
             'start_date' => 'nullable|date',
+            'featured_image' => 'nullable|string', // Accept base64 image data
         ]);
         $project->update($data);
         return response()->json($project);

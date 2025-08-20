@@ -19,9 +19,9 @@ const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL wi
 // Helper function to get full image URL
 const getImageUrl = (imagePath) => {
   if (!imagePath) return "/placeholder.svg";
-  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
-  if (imagePath.startsWith('http')) return imagePath; // Already full URL
-  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+  // Always treat as base64 or fallback
+  if (imagePath.startsWith('data:')) return imagePath;
+  return "/placeholder.svg";
 };
 
 export default function CampaignsPage() {

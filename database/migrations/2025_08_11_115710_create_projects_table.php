@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('raised', 10, 2)->default(0);
             $table->integer('beneficiaries')->nullable();
             $table->date('start_date')->nullable();
-            $table->string('featured_image', 500)->nullable();
+            $table->longText('featured_image')->nullable();
             $table->timestamps();
         });
     }

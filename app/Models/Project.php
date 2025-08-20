@@ -16,6 +16,6 @@ class Project extends Model
         'raised',
         'beneficiaries',
         'start_date',
-        'featured_image'
+        'featured_image', // now stored as longText (base64)
     ];
 }

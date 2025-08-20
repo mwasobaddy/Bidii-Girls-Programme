@@ -19,8 +19,8 @@ return new class extends Migration
             $table->text('content');
             $table->string('category', 100)->nullable();
             $table->string('author', 255)->nullable();
-            $table->string('author_image', 500)->nullable();
-            $table->string('featured_image', 500)->nullable();
+            $table->longText('author_image')->nullable();
+            $table->longText('featured_image')->nullable();
             $table->boolean('published')->default(false);
             $table->boolean('is_featured')->default(false);
             $table->date('published_date')->nullable();

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('urgency', 50)->default('active');
             $table->integer('beneficiaries')->nullable();
             $table->integer('linked_blog')->nullable();
-            $table->string('feature_image', 500)->nullable();
+            $table->longText('feature_image')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->timestamps();

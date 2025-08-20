@@ -61,8 +61,8 @@ class BlogController extends Controller
             'content' => 'required|string',
             'category' => 'nullable|string',
             'author' => 'nullable|string',
-            'author_image' => 'nullable|string',
-            'featured_image' => 'nullable|string',
+            'author_image' => 'nullable|string', // Accept base64 image data
+            'featured_image' => 'nullable|string', // Accept base64 image data
             'published' => 'boolean',
             'published_date' => 'nullable|date',
             'tags' => 'nullable|string',
@@ -85,8 +85,8 @@ class BlogController extends Controller
             'content' => 'sometimes|required|string',
             'category' => 'nullable|string',
             'author' => 'nullable|string',
-            'author_image' => 'nullable|string',
-            'featured_image' => 'nullable|string',
+            'author_image' => 'nullable|string', // Accept base64 image data
+            'featured_image' => 'nullable|string', // Accept base64 image data
             'published' => 'boolean',
             'published_date' => 'nullable|date',
             'tags' => 'nullable|string',

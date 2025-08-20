@@ -9,11 +9,12 @@ class Campaign extends Model
     protected $fillable = [
         'title',
         'description',
-        'featured_image',
-        'goal_amount',
-        'raised_amount',
-        'status',
+        'location',
+        'urgency',
+        'beneficiaries',
+        'linked_blog',
+        'feature_image', // now stored as longText (base64)
         'start_date',
-        'end_date'
+        'end_date',
     ];
 }

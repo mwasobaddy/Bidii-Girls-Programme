@@ -34,7 +34,7 @@ class CampaignController extends Controller
             'urgency' => 'nullable|string',
             'beneficiaries' => 'nullable|integer',
             'linked_blog' => 'nullable|integer',
-            'feature_image' => 'nullable|string',
+            'feature_image' => 'nullable|string', // Accept base64 image data
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
         ]);
@@ -56,7 +56,7 @@ class CampaignController extends Controller
             'urgency' => 'nullable|string',
             'beneficiaries' => 'nullable|integer',
             'linked_blog' => 'nullable|integer',
-            'feature_image' => 'nullable|string',
+            'feature_image' => 'nullable|string', // Accept base64 image data
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
         ]);

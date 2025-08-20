@@ -20,9 +20,9 @@ const BACKEND_URL = API_BASE_URL.replace('/api', ''); // Get base backend URL wi
 // Helper function to get full image URL
 const getImageUrl = (imagePath) => {
   if (!imagePath) return "/placeholder.svg";
-  if (imagePath.startsWith('data:')) return imagePath; // Base64 images
-  if (imagePath.startsWith('http')) return imagePath; // Already full URL
-  return `${BACKEND_URL}${imagePath}`; // Prepend backend URL for relative paths
+  // Always treat as base64 or fallback
+  if (imagePath.startsWith('data:')) return imagePath;
+  return "/placeholder.svg";
 };
 
 export default function BlogPage() {
@@ -159,9 +159,19 @@ export default function BlogPage() {
         finalCategory = null;
       }
       
+      // Helper to generate slug from title
+      const generateSlug = (title) => {
+        return title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 100);
+      };
+
       // Always send all fields, never undefined
       const postData = {
         title: formData.title,
+        slug: generateSlug(formData.title),
         content: formData.content,
         author: formData.author || "Anonymous",
         author_image: formData.author_image || null,
