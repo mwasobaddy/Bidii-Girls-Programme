@@ -11,11 +11,13 @@ import GuestLayout from "@/Layouts/GuestLayout";
 const API_BASE_URL = window.location.origin + '/api';
 
 // Helper function to construct proper image URLs
-function getImageUrl(imageData) {
-  if (!imageData) return "/placeholder.svg";
-  if (imageData.startsWith('data:')) return imageData;
-  if (imageData.startsWith('http')) return imageData;
-  return "/placeholder.svg";
+function getImageUrl(imagePath) {
+  if (!imagePath) return "/placeholder.svg";
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  const BACKEND_URL = API_BASE_URL.replace('/api', '');
+  return `${BACKEND_URL}${imagePath}`;
 }
 
 function DatabaseError({ message }) {
@@ -42,45 +44,38 @@ export default function Gallery({ auth }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Only include blogs, projects, and campaigns categories
+  // Include all categories for filtering
   const categories = [
     { name: "All", folder: "all" },
     { name: "Blog Images", folder: "blog" },
     { name: "Project Images", folder: "projects" },
     { name: "Campaign Images", folder: "campaigns" },
+    { name: "Other Images", folder: "other" },
   ];
 
-  // Fetch gallery images from file system
-    const fetchGalleryImages = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch(`${API_BASE_URL}/gallery-scan`);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch gallery images: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const data = await response.json();
-        
-        // Filter to only include blogs, projects, and campaigns
-        const filteredData = data.filter(img => 
-          ['blog', 'projects', 'campaigns'].includes(img.category)
+  // Fetch all gallery images from backend
+  const fetchGalleryImages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/gallery-scan`);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch gallery images: ${response.status} ${response.statusText}`
         );
-        
-        setGalleryImages(filteredData);
-      } catch (error) {
-        console.error("Error fetching gallery images:", error);
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to load gallery images"
-        );
-      } finally {
-        setLoading(false);
       }
+      const data = await response.json();
+      setGalleryImages(data); // Store all images
+    } catch (error) {
+      console.error("Error fetching gallery images:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load gallery images"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

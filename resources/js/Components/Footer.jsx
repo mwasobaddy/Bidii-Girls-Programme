@@ -171,14 +171,14 @@ export function Footer() {
                   Contact
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href="/admin/login"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   Admin
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
