@@ -285,7 +285,10 @@ export function DonateButton({ className, size = "lg" }) {
               {isLoading ? "Processing..." : "Donate"}
             </Button>
             <p className="text-sm text-gray-600 text-center">
-              Till Number: 7977329
+              Business Number: 522533
+            </p>
+            <p className="text-sm text-gray-600 text-center">
+              Account Number: 7977329
             </p>
           </TabsContent>
         </Tabs>
